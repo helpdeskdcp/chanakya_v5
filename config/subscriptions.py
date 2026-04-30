@@ -21,5 +21,3 @@ class SubscriptionSystem:
 
     def add_tier(self, tier):
         self.tiers[tier.name] = tier
-
-# Rest of the code remains unchanged...
