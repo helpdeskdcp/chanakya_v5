@@ -2,7 +2,10 @@ import os
 from dotenv import load_dotenv
 
 # Load .env file
-load_dotenv()
+try:
+    load_dotenv()
+except Exception as e:
+    print(f"Error loading .env file: {e}")
 
 # Backend
 FLASK_PORT = int(os.getenv('FLASK_PORT', 5002))
@@ -27,10 +30,10 @@ AI_XGBOOST = 'XGBoost'
 
 # Broker
 BROKER = 'Angel One SmartAPI'
-BROKER_API_KEY = os.getenv('BROKER_API_KEY')
-BROKER_API_SECRET = os.getenv('BROKER_API_SECRET')
-BROKER_USER_ID = os.getenv('BROKER_USER_ID')
-BROKER_PASSWORD = os.getenv('BROKER_PASSWORD')
+BROKER_API_KEY = os.getenv('BROKER_API_KEY', 'default_api_key')
+BROKER_API_SECRET = os.getenv('BROKER_API_SECRET', 'default_api_secret')
+BROKER_USER_ID = os.getenv('BROKER_USER_ID', 'default_user_id')
+BROKER_PASSWORD = os.getenv('BROKER_PASSWORD', 'default_password')
 
 # Real-time
 REALTIME_METHOD = 'SSE (Server-Sent Events)'
