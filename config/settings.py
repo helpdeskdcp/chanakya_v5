@@ -11,9 +11,11 @@ AUTH_METHOD = 'Firebase Gmail login'
 # Database
 DB_FIRESTORE = 'Firebase Firestore'
 DB_SQLITE = 'SQLite local'
+DB_SQLITE_PATH = 'data/db.sqlite3'
 
 # Cache
 CACHE_METHOD = 'File-based cache'
+CACHE_PATH = 'data/cache'
 
 # AI
 AI_MODEL = 'Groq LLaMA 3.3 70B'
@@ -52,3 +54,4 @@ KEY_PRINCIPLES = [
     'Rate limit safe',
     'Crash proof — try/except everywhere'
 ]
+LOGS_PATH = 'data/logs'
