@@ -29,13 +29,13 @@ FRONTEND_TYPE = 'Single HTML file (SPA)'
 
 # Subscription Tiers
 SUBSCRIPTION_TIERS = {
-    'developer': {'expiry': None, 'features': 'ALL'},
-    'administrator': {'expiry': None, 'features': 'ALL'},
-    'platinum': {'expiry': 365, 'features': 'all features'},
-    'gold': {'expiry': 180, 'features': 'live trading'},
-    'silver': {'expiry': 90, 'features': 'paper only'},
-    'premium': {'expiry': 30, 'features': 'basic'},
-    'demo': {'expiry': 15, 'features': 'paper + global broker'}
+    'developer': {'expiry': None, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
+    'administrator': {'expiry': None, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
+    'platinum': {'expiry': 365, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
+    'gold': {'expiry': 180, 'features': ['live_trading', 'paper_trading', 'global_broker']},
+    'silver': {'expiry': 90, 'features': ['paper_trading', 'global_broker']},
+    'premium': {'expiry': 30, 'features': ['paper_trading']},
+    'demo': {'expiry': 15, 'features': ['paper_trading', 'global_broker']}
 }
 
 # Key Principles
