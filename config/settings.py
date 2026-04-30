@@ -1,6 +1,7 @@
 import os
 
 # Backend
+FLASK_PORT = 5002
 BACKEND_PORT = 5002
 BACKEND_URL = 'bramha.cloud/v5'
 
