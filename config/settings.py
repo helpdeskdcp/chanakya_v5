@@ -55,3 +55,6 @@ KEY_PRINCIPLES = [
     'Crash proof — try/except everywhere'
 ]
 LOGS_PATH = 'data/logs'
+RATE_LIMITER_ENABLED = True
+RATE_LIMITER_MAX_REQUESTS = 100
+RATE_LIMITER_TIME_WINDOW = 60  # in seconds
