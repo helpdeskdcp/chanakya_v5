@@ -44,8 +44,19 @@ FRONTEND_TYPE = 'Single HTML file (SPA)'
 # Subscription Tiers
 SUBSCRIPTION_TIERS = {
     'developer': {'expiry': None, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
-    'administrator': {'expiry': None, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
-    'platinum': {'expiry': 365, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']},
+    'administrator': {'expiry': None, 'features': ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data'], 'max_users': 100},
+    'platinum': {'expiry': 365, 'features': [
+        'live_trading',
+        'paper_trading',
+        'ai_chat',
+        'prediction',
+        'options_chain',
+        'equity_scanner',
+        'auto_trade',
+        'telegram_alerts',
+        'backtesting',
+        'advanced_analytics'
+    ]},
     'gold': {'expiry': 180, 'features': ['live_trading', 'paper_trading', 'global_broker']},
     'silver': {'expiry': 90, 'features': ['paper_trading', 'global_broker']},
     'premium': {'expiry': 30, 'features': ['paper_trading']},

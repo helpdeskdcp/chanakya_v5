@@ -34,7 +34,8 @@ subscription_system.add_tier(
     SubscriptionTier(
         'administrator',
         None,
-        ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']
+        ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data'],
+        max_users=100
     )
 )
 
@@ -42,7 +43,18 @@ subscription_system.add_tier(
     SubscriptionTier(
         'platinum',
         365,
-        ['live_trading', 'paper_trading', 'global_broker', 'ai_model', 'xgboost', 'realtime_data']
+        [
+            'live_trading',
+            'paper_trading',
+            'ai_chat',
+            'prediction',
+            'options_chain',
+            'equity_scanner',
+            'auto_trade',
+            'telegram_alerts',
+            'backtesting',
+            'advanced_analytics'
+        ]
     )
 )
 
