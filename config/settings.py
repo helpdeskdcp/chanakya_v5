@@ -1,9 +1,13 @@
 import os
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 # Backend
-FLASK_PORT = 5002
-BACKEND_PORT = 5002
-BACKEND_URL = 'bramha.cloud/v5'
+FLASK_PORT = int(os.getenv('FLASK_PORT', 5002))
+BACKEND_PORT = int(os.getenv('BACKEND_PORT', 5002))
+BACKEND_URL = os.getenv('BACKEND_URL', 'bramha.cloud/v5')
 
 # Auth
 AUTH_METHOD = 'Firebase Gmail login'
@@ -23,10 +27,10 @@ AI_XGBOOST = 'XGBoost'
 
 # Broker
 BROKER = 'Angel One SmartAPI'
-BROKER_API_KEY = 'YOUR_API_KEY'
-BROKER_API_SECRET = 'YOUR_API_SECRET'
-BROKER_USER_ID = 'YOUR_USER_ID'
-BROKER_PASSWORD = 'YOUR_PASSWORD'
+BROKER_API_KEY = os.getenv('BROKER_API_KEY')
+BROKER_API_SECRET = os.getenv('BROKER_API_SECRET')
+BROKER_USER_ID = os.getenv('BROKER_USER_ID')
+BROKER_PASSWORD = os.getenv('BROKER_PASSWORD')
 
 # Real-time
 REALTIME_METHOD = 'SSE (Server-Sent Events)'
