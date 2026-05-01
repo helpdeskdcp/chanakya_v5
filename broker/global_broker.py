@@ -167,6 +167,52 @@ def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional
         print(f"An error occurred while fetching LTP for {symbol} on {exchange}: {e}")
         return None
 
+def get_candles(token: str, exchange: str, interval: str, fromdate: datetime.date, todate: datetime.date) -> Optional[List[Dict[str, Any]]]:
+    """
+    Fetches historical candle data (OHLCV) for a given instrument.
+
+    Args:
+        token: The unique token for the instrument.
+        exchange: The exchange code (e.g., 'NSE', 'BSE', 'NFO', 'MCX').
+        interval: The candle interval (e.g., '1minute', '5minute', '1day').
+        fromdate: The start date for fetching candles.
+        todate: The end date for fetching candles.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a candle's data (e.g., 'open', 'high', 'low', 'close', 'volume', 'timestamp'),
+        or None if data cannot be fetched or an error occurs.
+    """
+    if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
+        print("Error: SmartApi instance is not properly initialized or is a placeholder. Cannot fetch candles.")
+        return None
+
+    try:
+        # The smartapi library's get_candles method requires specific parameters.
+        # Ensure dates are in the correct format (YYYY-MM-DD).
+        from_date_str = fromdate.strftime('%Y-%m-%d')
+        to_date_str = todate.strftime('%Y-%m-%d')
+
+        print(f"Fetching candles for token {token} on {exchange} ({interval}) from {from_date_str} to {to_date_str}...")
+        
+        candles_data = smart_api_instance.get_candles(
+            token,
+            exchange,
+            interval,
+            from_date_str,
+            to_date_str
+        )
+
+        if candles_data and candles_data.get("status") == "success":
+            # The response structure typically contains a list of candle data.
+            # Each candle might have keys like 'open', 'high', 'low', 'close', 'volume', 'timestamp'.
+            return candles_data.get("data", [])
+        else:
+            print(f"Failed to fetch candles for token {token} on {exchange}. Response: {candles_data}")
+            return None
+    except Exception as e:
+        print(f"An error occurred while fetching candles for token {token} on {exchange}: {e}")
+        return None
+
 
 # --- Subscription Management Logic ---
 # Import the core subscription logic from the configuration module.
