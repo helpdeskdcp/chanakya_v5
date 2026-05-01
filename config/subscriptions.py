@@ -38,6 +38,8 @@ class SubscriptionSystem:
         self.add_tier("basic", 30, ["basic_analytics", "email_support", "api_access"])
         self.add_tier("standard", 30, ["advanced_analytics", "email_support", "api_access", "custom_branding"])
         self.add_tier("premium", 30, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"])
+        self.add_tier("platinum", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support"]) # Platinum tier
+        self.add_tier("gold", 180, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Gold tier
         self.add_tier("enterprise", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support", "dedicated_account_manager"])
         self.add_tier("trial", 7, ["basic_analytics", "email_support", "api_access"]) # Example trial tier
 
