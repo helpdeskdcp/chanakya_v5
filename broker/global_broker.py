@@ -65,6 +65,13 @@ class AngelOneBroker:
         self._password: Optional[str] = ANGEL_PASSWORD
         self._totp_key: Optional[str] = ANGEL_TOTP_KEY
 
+    def connect(self) -> None:
+        try:
+            self._api = SmartApi()
+            self._api.login(ANGEL_CLIENT_ID, ANGEL_PASSWORD, ANGEL_TOTP_KEY)
+        except Exception as e:
+            print(f"Error connecting to Angel One SmartAPI: {e}")
+
     def get_tier_data(self, tier_name: str) -> Optional[Dict[str, Any]]:
         try:
             from config import subscriptions  # Import config here
