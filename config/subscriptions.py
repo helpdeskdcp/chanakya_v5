@@ -36,8 +36,8 @@ class SubscriptionSystem:
         self.add_tier("administrator", None, all_features) # No expiry, all features
         self.add_tier("free", 30, ["basic_analytics", "email_support"])
         self.add_tier("basic", 30, ["basic_analytics", "email_support", "api_access"])
-        self.add_tier("standard", 30, ["advanced_analytics", "email_support", "api_access", "custom_branding"])
-        self.add_tier("premium", 30, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"])
+        self.add_tier("silver", 90, ["advanced_analytics", "email_support", "api_access", "custom_branding"]) # Silver tier
+        self.add_tier("premium", 30, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Premium tier
         self.add_tier("platinum", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support"]) # Platinum tier
         self.add_tier("gold", 180, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Gold tier
         self.add_tier("enterprise", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support", "dedicated_account_manager"])
