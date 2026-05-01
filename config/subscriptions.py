@@ -1,7 +1,6 @@
 # Subscription Tier System
 
 import datetime
-from collections import defaultdict
 
 class SubscriptionTier:
     def __init__(self, expiry, features):
@@ -10,7 +9,7 @@ class SubscriptionTier:
 
 class SubscriptionSystem:
     def __init__(self):
-        self.tiers = defaultdict(SubscriptionTier)
+        self.tiers = {}  # Use a normal dictionary
 
     def add_tier(self, tier_name, expiry, features):
         self.tiers[tier_name] = SubscriptionTier(expiry, features)
