@@ -10,6 +10,17 @@ It follows a service locator pattern.
 import datetime
 from typing import Dict, List, Optional, Any
 
+# Import SmartApi for potential broker connection functionalities
+try:
+    from smartapi import SmartApi
+except ImportError:
+    print("Warning: smartapi library not found. SmartApi functionalities will not be available.")
+    # Define a placeholder if SmartApi is not found, to avoid NameError
+    class SmartApi:
+        def __init__(self, *args, **kwargs):
+            print("SmartApi placeholder initialized. Actual API connection not available.")
+            pass
+
 # Import the core subscription logic from the configuration module.
 # We assume config.subscriptions provides the necessary functions and data structures.
 try:
