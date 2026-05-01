@@ -281,36 +281,40 @@ class AngelOneBroker:
 
 
 # --------------------------------------------------------------------------- #
+# Global singleton instance
+# --------------------------------------------------------------------------- #
+# Instantiate the singleton broker once and expose it via the module‑level
+# ``_broker`` variable.  All helper functions below will delegate to this
+# instance.
+_broker: AngelOneBroker = AngelOneBroker()
+
+
+# --------------------------------------------------------------------------- #
 # Global accessor helpers – thin wrappers around the singleton instance.
 # --------------------------------------------------------------------------- #
-def _broker() -> AngelOneBroker:
-    """Internal helper to obtain the singleton AngelOneBroker instance."""
-    return AngelOneBroker()
-
-
 def get_smart_api_instance_global() -> Optional[SmartApi]:
     """Return the underlying SmartApi client (may be a placeholder)."""
     try:
-        return _broker()._api
+        return _broker._api
     except Exception:  # pragma: no cover
         return None
 
 
 def connect_global() -> bool:
     """Convenient wrapper to trigger a login."""
-    return _broker().connect()
+    return _broker.connect()
 
 
 def is_connected_global() -> bool:
     """Return the connection status."""
-    return _broker().is_connected()
+    return _broker.is_connected()
 
 
 def get_ltp_global(
     exchange: str, symbol: str, token: Optional[str] = None
 ) -> Optional[float]:
     """Global shortcut for ``AngelOneBroker.get_ltp``."""
-    return _broker().get_ltp(exchange, symbol, token)
+    return _broker.get_ltp(exchange, symbol, token)
 
 
 def get_candles_global(
@@ -321,42 +325,42 @@ def get_candles_global(
     todate: datetime.date,
 ) -> Optional[List[Dict[str, Any]]]:
     """Global shortcut for ``AngelOneBroker.get_candles``."""
-    return _broker().get_candles(token, exchange, interval, fromdate, todate)
+    return _broker.get_candles(token, exchange, interval, fromdate, todate)
 
 
 # Subscription‑related global helpers
 def get_subscription_tier_data_global(tier_name: str) -> Optional[Dict[str, Any]]:
     """Retrieve tier definition."""
-    return _broker().get_tier_data(tier_name)
+    return _broker.get_tier_data(tier_name)
 
 
 def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
     """Check if a tier includes a feature."""
-    return _broker().has_feature(tier_name, feature_name)
+    return _broker.has_feature(tier_name, feature_name)
 
 
 def check_user_feature_access_global(role: str, feature: str) -> bool:
     """Alias for ``does_tier_have_feature_global``."""
-    return _broker().check_feature_access(role, feature)
+    return _broker.check_feature_access(role, feature)
 
 
 def get_days_remaining_for_tier_global(
     created_at: datetime.datetime, role: str
 ) -> Optional[int]:
     """Calculate remaining days for a tier."""
-    return _broker().days_remaining(created_at, role)
+    return _broker.days_remaining(created_at, role)
 
 
 def add_or_update_subscription_tier_global(
     tier_name: str, expiry_days: Optional[int], features: List[str]
 ) -> None:
     """Add or update a tier definition."""
-    _broker().add_or_update_tier(tier_name, expiry_days, features)
+    _broker.add_or_update_tier(tier_name, expiry_days, features)
 
 
 def remove_subscription_tier_global(tier_name: str) -> None:
     """Remove a tier definition."""
-    _broker().remove_tier(tier_name)
+    _broker.remove_tier(tier_name)
 
 
 # --------------------------------------------------------------------------- #
@@ -369,7 +373,7 @@ def connect() -> bool:
     This is a thin wrapper around the singleton broker's ``connect`` method,
     providing a simple function‑level API.
     """
-    return _broker().connect()
+    return _broker.connect()
 
 
 def is_connected() -> bool:
@@ -378,7 +382,7 @@ def is_connected() -> bool:
 
     Returns ``True`` if the broker is currently connected, ``False`` otherwise.
     """
-    return _broker().is_connected()
+    return _broker.is_connected()
 
 
 def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
@@ -387,7 +391,7 @@ def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional
 
     Delegates to the singleton broker's ``get_ltp`` method.
     """
-    return _broker().get_ltp(exchange, symbol, token)
+    return _broker.get_ltp(exchange, symbol, token)
 
 
 def get_candles(
@@ -402,4 +406,4 @@ def get_candles(
 
     Delegates to the singleton broker's ``get_candles`` method.
     """
-    return _broker().get_candles(token, exchange, interval, fromdate, todate)
+    return _broker.get_candles(token, exchange, interval, fromdate, todate)
