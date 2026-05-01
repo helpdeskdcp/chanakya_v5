@@ -72,14 +72,38 @@ def get_stock_ltp(symbol, broker=None):
         pass
     return None
 
+def get_options_ctx(message):
+    try:
+        from ai.options_ai import analyze_chain
+        msg_up = message.upper()
+        if not any(x in msg_up for x in ["NIFTY","BANKNIFTY","OPTION","CE","PE","OTM","ATM","ITM"]):
+            return ""
+        sym = "BANKNIFTY" if "BANKNIFTY" in msg_up else "NIFTY"
+        chain = analyze_chain(sym)
+        if not chain or "error" in chain:
+            return ""
+        return ("OPTIONS " + sym + ":"
+                + " PCR=" + str(chain.get("pcr",""))
+                + " Bias=" + str(chain.get("bias",""))
+                + " MaxPain=" + str(chain.get("max_pain",""))
+                + " Support=" + str(chain.get("support_oi",""))
+                + " Resistance=" + str(chain.get("resistance_oi",""))
+                + " ATM_CE=" + str(chain.get("atm_ce_ltp",""))
+                + " ATM_PE=" + str(chain.get("atm_pe_ltp",""))
+                + " ATM_CE_IV=" + str(chain.get("atm_ce_iv","")) + "%"
+                + " ATM_PE_IV=" + str(chain.get("atm_pe_iv","")) + "%")
+    except:
+        return ""
+
 def smart_chat(message, broker=None):
     try:
         from ai.groq_client import get_client
         client = get_client()
         if not client: return "AI unavailable"
         ctx = get_context(broker)
+        # Stock LTP lookup
         words = re.findall(r"[A-Z]{3,}", message.upper())
-        skip = {"LTP","LIVE","NSE","MCX","BSE","BUY","SELL","SIGNAL","AANI","KAAY","AAHE"}
+        skip = {"LTP","LIVE","NSE","MCX","BSE","BUY","SELL","SIGNAL","AANI","KAAY","AAHE","CE","PE","ATM","OTM","ITM"}
         extra = []
         if broker and broker.is_connected():
             for w in words[:3]:
@@ -87,22 +111,19 @@ def smart_chat(message, broker=None):
                     ltp = get_stock_ltp(w, broker)
                     if ltp: extra.append(w+"="+str(ltp))
         if extra: ctx += "\nSTOCKS:" + " | ".join(extra)
-        # Options chain context
-options_ctx = ""
-try:
-    from ai.options_ai import analyze_chain
-    if any(x in message.upper() for x in ["NIFTY","BANKNIFTY","OPTION","CE","PE","OTM","ATM","ITM"]):
-        sym = "BANKNIFTY" if "BANKNIFTY" in message.upper() else "NIFTY"
-        chain = analyze_chain(sym)
-        if chain and "error" not in chain:
-            options_ctx = ("OPTIONS CHAIN "+sym+": PCR="+str(chain["pcr"])+
-                          " Bias="+chain["bias"]+" MaxPain="+str(chain["max_pain"])+
-                          " Support="+str(chain["support_oi"])+" Resistance="+str(chain["resistance_oi"])+
-                          " ATM_CE="+str(chain["atm_ce_ltp"])+" ATM_PE="+str(chain["atm_pe_ltp"]))
-except: pass
-if options_ctx: ctx += "
-" + options_ctx
-sys_msg = "You are Chanakya AI, expert Indian trading assistant.\nLIVE DATA:\n" + ctx + "\nRules: Use live data, give Entry/Target/SL, always answer, reply in user language, max 4 lines."
+        # Options context
+        opt_ctx = get_options_ctx(message)
+        if opt_ctx: ctx += "\n" + opt_ctx
+        sys_msg = ("You are Chanakya AI, expert Indian trading assistant.\n"
+                   "LIVE DATA:\n" + ctx + "\n"
+                   "Rules:\n"
+                   "- Use live data above\n"
+                   "- For options: suggest CE/PE, ATM/ITM/OTM with entry/target/SL\n"
+                   "- PCR>1.2=bullish(buy CE), PCR<0.8=bearish(buy PE)\n"
+                   "- Max Pain = strong support/resistance\n"
+                   "- Give specific Entry/Target/SL always\n"
+                   "- Reply in user language (Marathi/Hindi/English)\n"
+                   "- Max 4 lines")
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role":"system","content":sys_msg},{"role":"user","content":message}],
