@@ -87,7 +87,22 @@ def smart_chat(message, broker=None):
                     ltp = get_stock_ltp(w, broker)
                     if ltp: extra.append(w+"="+str(ltp))
         if extra: ctx += "\nSTOCKS:" + " | ".join(extra)
-        sys_msg = "You are Chanakya AI, expert Indian trading assistant.\nLIVE DATA:\n" + ctx + "\nRules: Use live data, give Entry/Target/SL, always answer, reply in user language, max 4 lines."
+        # Options chain context
+options_ctx = ""
+try:
+    from ai.options_ai import analyze_chain
+    if any(x in message.upper() for x in ["NIFTY","BANKNIFTY","OPTION","CE","PE","OTM","ATM","ITM"]):
+        sym = "BANKNIFTY" if "BANKNIFTY" in message.upper() else "NIFTY"
+        chain = analyze_chain(sym)
+        if chain and "error" not in chain:
+            options_ctx = ("OPTIONS CHAIN "+sym+": PCR="+str(chain["pcr"])+
+                          " Bias="+chain["bias"]+" MaxPain="+str(chain["max_pain"])+
+                          " Support="+str(chain["support_oi"])+" Resistance="+str(chain["resistance_oi"])+
+                          " ATM_CE="+str(chain["atm_ce_ltp"])+" ATM_PE="+str(chain["atm_pe_ltp"]))
+except: pass
+if options_ctx: ctx += "
+" + options_ctx
+sys_msg = "You are Chanakya AI, expert Indian trading assistant.\nLIVE DATA:\n" + ctx + "\nRules: Use live data, give Entry/Target/SL, always answer, reply in user language, max 4 lines."
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role":"system","content":sys_msg},{"role":"user","content":message}],
