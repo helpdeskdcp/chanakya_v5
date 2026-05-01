@@ -296,6 +296,24 @@ def predictions_scan():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+@app.route("/api/options-chain")
+@require_auth
+def options_chain():
+    try:
+        symbol = request.args.get("symbol","NIFTY")
+        from data_stream.cache import get as cget, set as cset
+        from broker.global_broker import get_broker
+        key = "chain_"+symbol
+        data = cget(key)
+        if not data:
+            from ai.options_ai import get_option_signal
+            data = get_option_signal(symbol, get_broker())
+            if data and "error" not in data: cset(key, data, ttl=300)
+        return jsonify({"success":True,"data":data})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/pnl")
 @require_auth
 def pnl():
