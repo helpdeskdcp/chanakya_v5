@@ -89,7 +89,7 @@ class AngelOneBroker:
             print(f"Error checking feature access: {e}")
             return False
 
-    def days_remaining(self, created_at: datetime.datetime, role: str) -> int | None:
+    def days_remaining(self, created_at: datetime.datetime, role: str) -> Optional[int]:
         try:
             tier_data = self.get_tier_data(role)
             if tier_data is None:
