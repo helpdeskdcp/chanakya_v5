@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional
 # --------------------------------------------------------------------------- #
 from smartapi import SmartApi  # type: ignore
 import pyotp  # type: ignore
+import config  # <--- NEW IMPORT
 
 # --------------------------------------------------------------------------- #
 # Read Angel One credentials from environment variables
