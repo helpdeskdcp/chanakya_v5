@@ -24,6 +24,14 @@ from smartapi import SmartApi  # type: ignore
 import pyotp  # type: ignore
 
 # --------------------------------------------------------------------------- #
+# Read Angel One credentials from environment variables
+# --------------------------------------------------------------------------- #
+ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
+ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
+ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
+ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+
+# --------------------------------------------------------------------------- #
 # AngelOneBroker singleton implementation
 # --------------------------------------------------------------------------- #
 class AngelOneBroker:
@@ -50,12 +58,12 @@ class AngelOneBroker:
         self.__class__._initialized = True
 
         # --------------------------------------------------------------- #
-        # Load environment variables for Angel One credentials
+        # Assign credentials from the module‑level environment variables
         # --------------------------------------------------------------- #
-        self._api_key: Optional[str] = os.getenv("ANGEL_API_KEY")
-        self._client_id: Optional[str] = os.getenv("ANGEL_CLIENT_ID")
-        self._password: Optional[str] = os.getenv("ANGEL_PASSWORD")
-        self._totp_key: Optional[str] = os.getenv("ANGEL_TOTP_KEY")
+        self._api_key: Optional[str] = ANGEL_API_KEY
+        self._client_id: Optional[str] = ANGEL_CLIENT_ID
+        self._password: Optional[str] = ANGEL_PASSWORD
+        self._totp_key: Optional[str] = ANGEL_TOTP_KEY
 
         # --------------------------------------------------------------- #
         # Initialise the SmartApi client
