@@ -1,13 +1,15 @@
 """
-Global Broker for Subscription Management.
+Global Broker for Subscription Management and Angel One SmartAPI Connection.
 
 This module acts as a central registry for subscription-related functions,
 allowing access to subscription tier data and operations without direct
 importing of the configuration module in every part of the application.
+It also handles the initialization and access to the Angel One SmartAPI broker connection.
 It follows a service locator pattern.
 """
 
 import datetime
+import os
 from typing import Dict, List, Optional, Any
 
 # Import SmartApi for potential broker connection functionalities
@@ -21,8 +23,47 @@ except ImportError:
             print("SmartApi placeholder initialized. Actual API connection not available.")
             pass
 
+# --- Angel One SmartAPI Credentials ---
+# Retrieve credentials from environment variables
+ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
+ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
+ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
+ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+
+# Initialize SmartApi instance (or placeholder)
+# This instance can be accessed globally.
+# In a real application, you might want to add error handling if credentials are missing.
+if ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY:
+    try:
+        # Attempt to initialize SmartApi with credentials
+        # Note: The actual login/session management might happen elsewhere or on first use.
+        # For now, we just instantiate it.
+        smart_api_instance = SmartApi(
+            ANGEL_API_KEY,
+            ANGEL_CLIENT_ID,
+            ANGEL_PASSWORD,
+            ANGEL_TOTP_KEY
+        )
+        print("Angel One SmartAPI instance initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing SmartApi instance: {e}")
+        # Fallback to placeholder if initialization fails
+        smart_api_instance = SmartApi()
+else:
+    print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
+    smart_api_instance = SmartApi()
+
+def get_smart_api_instance() -> SmartApi:
+    """
+    Returns the globally accessible Angel One SmartApi instance.
+
+    Returns:
+        The initialized SmartApi instance.
+    """
+    return smart_api_instance
+
+# --- Subscription Management Logic ---
 # Import the core subscription logic from the configuration module.
-# We assume config.subscriptions provides the necessary functions and data structures.
 try:
     from config.subscriptions import (
         SUBSCRIPTION_TIERS as CONFIG_SUBSCRIPTION_TIERS,
@@ -34,9 +75,6 @@ try:
         remove_tier as config_remove_tier
     )
 except ImportError:
-    # Provide mock implementations if config.subscriptions is not available
-    # This allows the broker to be imported even if the config is missing,
-    # though functions relying on it will fail or return defaults.
     print("Warning: config.subscriptions module not found. Using mock subscription functions.")
     CONFIG_SUBSCRIPTION_TIERS = {}
     def config_get_tier_data(tier_name: str) -> Optional[Dict[str, Any]]: return None
@@ -47,93 +85,41 @@ except ImportError:
     def config_remove_tier(tier_name: str): pass
 
 
-# --- Global Access to Subscription Data and Functions ---
-
 # Expose the raw tier data dictionary for inspection if needed.
-# It's generally better to use the provided functions for interaction.
 ALL_SUBSCRIPTION_TIERS: Dict[str, Dict[str, Any]] = CONFIG_SUBSCRIPTION_TIERS
 
 def get_subscription_tier_data(tier_name: str) -> Optional[Dict[str, Any]]:
     """
     Retrieves the data dictionary for a specific subscription tier.
-
-    Args:
-        tier_name: The name of the tier to retrieve.
-
-    Returns:
-        A dictionary containing the tier's data (e.g., 'expiry_days', 'features')
-        if the tier is found, otherwise None.
     """
     return config_get_tier_data(tier_name)
 
 def does_tier_have_feature(tier_name: str, feature_name: str) -> bool:
     """
     Checks if a given subscription tier includes a specific feature.
-
-    Args:
-        tier_name: The name of the subscription tier.
-        feature_name: The name of the feature to check for.
-
-    Returns:
-        True if the tier exists and has the feature, False otherwise.
     """
     return config_has_feature(tier_name, feature_name)
 
 def check_user_feature_access(role: str, feature: str) -> bool:
     """
     Checks if a user's role (subscription tier) grants access to a specific feature.
-
-    This is a convenience wrapper around the underlying check_feature_access function.
-
-    Args:
-        role: The name of the user's subscription tier (e.g., 'premium', 'free').
-        feature: The name of the feature to check access for.
-
-    Returns:
-        True if the role has access to the feature, False otherwise.
     """
     return config_check_feature_access(role, feature)
 
 def get_days_remaining_for_tier(created_at: datetime.datetime, role: str) -> Optional[int]:
     """
     Calculates the number of days remaining until a user's subscription tier expires.
-
-    Args:
-        created_at: The datetime when the user's current tier was assigned or activated.
-        role: The name of the user's subscription tier.
-
-    Returns:
-        The number of days remaining until the tier expires.
-        Returns None if the tier does not expire, the tier is not found, or an error occurs.
     """
     return config_days_remaining(created_at, role)
 
 def add_or_update_subscription_tier(tier_name: str, expiry_days: Optional[int], features: List[str]):
     """
     Adds a new subscription tier or updates an existing one globally.
-
-    This function modifies the underlying subscription tier configuration.
-
-    Args:
-        tier_name: The name of the tier to add or update.
-        expiry_days: The number of days until the tier expires. Use None for no expiry.
-        features: A list of strings representing the features included in this tier.
     """
     config_add_or_update_tier(tier_name, expiry_days, features)
 
 def remove_subscription_tier(tier_name: str):
     """
     Removes a subscription tier from the global configuration.
-
-    Args:
-        tier_name: The name of the tier to remove.
     """
     config_remove_tier(tier_name)
-
-# --- Example of adding another global service ---
-# import logging
-# global_logger = logging.getLogger("app_logger")
-#
-# def get_global_logger():
-#     """Returns the globally configured logger instance."""
-#     return global_logger
