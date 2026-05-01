@@ -1,5 +1,5 @@
 import sqlite3, os, datetime
-DB_PATH = os.getenv("DB_PATH", "data/chanakya_v5.db")
+DB_PATH = "data/chanakya_v5.db"
 
 def init_db():
     try:
