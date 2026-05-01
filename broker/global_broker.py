@@ -1,66 +1,84 @@
-from typing import Optional, List
-import config
-import datetime
+import os, logging, time, pyotp
+logger = logging.getLogger(__name__)
 
-def add_or_update_subscription_tier_global(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
-    try:
-        if tier_name in config.subscriptions:
-            print(f"Info: Tier '{tier_name}' already exists. Updating.")
-        if expiry_days is None:
-            raise ValueError("Expiry days cannot be None")
-        config.subscriptions[tier_name] = {"expiry_days": expiry_days, "features": features}
-    except Exception as e:
-        print(f"Error updating tier: {e}")
+_broker = None
 
-def get_ltp_global(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
-    try:
-        # Your code to get LTP global
-        ltp_value = 123.45  # Replace with actual value
-        return ltp_value
-    except Exception as e:
-        print(f"Error getting LTP global: {e}")
+class GlobalBroker:
+    def __init__(self):
+        self.api = None
+        self.connected = False
+        self.api_key   = os.getenv("ANGEL_API_KEY","")
+        self.client_id = os.getenv("ANGEL_CLIENT_ID","")
+        self.password  = os.getenv("ANGEL_PASSWORD","")
+        self.totp_key  = os.getenv("ANGEL_TOTP_KEY","")
+
+    def connect(self):
+        try:
+            from SmartApi import SmartConnect
+            self.api = SmartConnect(api_key=self.api_key)
+            totp = pyotp.TOTP(self.totp_key).now()
+            r = self.api.generateSession(self.client_id, self.password, totp)
+            if r and r.get("status"):
+                self.connected = True
+                logger.info(f"Broker connected: {self.client_id}")
+                return True
+            logger.error(f"Broker failed: {r}")
+            return False
+        except Exception as e:
+            logger.error(f"Broker connect: {e}")
+            self.connected = False
+            return False
+
+    def get_ltp(self, exchange, symbol, token):
+        try:
+            if not self.connected: return None
+            r = self.api.ltpData(exchange, symbol, str(token))
+            if r and r.get("data"):
+                return float(r["data"]["ltp"])
+        except Exception as e:
+            logger.debug(f"LTP {symbol}: {e}")
         return None
 
-def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
-    try:
-        tier_data = config.subscriptions.get(tier_name)
-        if tier_data is None:
-            return False
-        return feature_name in tier_data.get("features", [])
-    except Exception as e:
-        print(f"Error checking feature access: {e}")
-        return False
+    def get_candles(self, token, exchange, interval, days=2):
+        try:
+            if not self.connected: return []
+            from datetime import datetime, timedelta
+            import pytz
+            IST = pytz.timezone("Asia/Kolkata")
+            now = datetime.now(IST)
+            r = self.api.getCandleData({
+                "exchange": exchange,
+                "symboltoken": str(token),
+                "interval": interval,
+                "fromdate": (now-timedelta(days=days)).strftime("%Y-%m-%d 09:00"),
+                "todate": now.strftime("%Y-%m-%d %H:%M"),
+            })
+            if r and r.get("data"):
+                return r["data"]
+        except Exception as e:
+            logger.debug(f"Candles {token}: {e}")
+        return []
 
-def check_user_feature_access_global(role: str, feature: str) -> bool:
-    try:
-        tier_data = config.subscriptions.get(role)
-        if tier_data is None:
-            return False
-        return feature in tier_data.get("features", [])
-    except Exception as e:
-        print(f"Error checking feature access: {e}")
-        return False
+    def is_connected(self):
+        return self.connected
 
-def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str) -> Optional[int]:
-    try:
-        tier_data = config.subscriptions.get(role)
-        if tier_data is None:
-            return None
-        expiry_days = tier_data.get("expiry_days")
-        if expiry_days is None:
-            return None
-        days_left = (datetime.datetime.now() - created_at).days
-        return max(0, expiry_days - days_left)
-    except Exception as e:
-        print(f"Error calculating days remaining: {e}")
-        return None
+def get_broker():
+    global _broker
+    if _broker is None:
+        from dotenv import load_dotenv
+        load_dotenv("/root/chanakya_v5/.env")
+        _broker = GlobalBroker()
+        _broker.connect()
+    return _broker
 
-def remove_subscription_tier_global(self, tier_name: str):
-    try:
-        if tier_name in config.subscriptions:
-            del config.subscriptions[tier_name]
-            print(f"Info: Tier '{tier_name}' removed.")
-        else:
-            print(f"Warning: Tier '{tier_name}' not found for removal.")
-    except Exception as e:
-        print(f"Error removing tier: {e}")
+def get_ltp(exchange, symbol, token):
+    try: return get_broker().get_ltp(exchange, symbol, token)
+    except: return None
+
+def get_candles(token, exchange, interval, days=2):
+    try: return get_broker().get_candles(token, exchange, interval, days)
+    except: return []
+
+def is_connected():
+    try: return get_broker().is_connected()
+    except: return False
