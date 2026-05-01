@@ -15,13 +15,23 @@ from typing import Dict, List, Optional, Any
 # Import SmartApi for potential broker connection functionalities
 try:
     from smartapi import SmartApi
+    import pyotp # Import pyotp for TOTP handling
 except ImportError:
-    print("Warning: smartapi library not found. SmartApi functionalities will not be available.")
+    print("Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available.")
     # Define a placeholder if SmartApi is not found, to avoid NameError
     class SmartApi:
         def __init__(self, *args, **kwargs):
             print("SmartApi placeholder initialized. Actual API connection not available.")
             pass
+    # Define a placeholder for pyotp if not found
+    class pyotp:
+        class TOTP:
+            def __init__(self, key):
+                print("pyotp.TOTP placeholder initialized.")
+                self.key = key
+            def at(self, for_time=None):
+                print("pyotp.TOTP.at placeholder called.")
+                return "000000" # Default placeholder TOTP
 
 # --- Angel One SmartAPI Credentials ---
 # Retrieve credentials from environment variables
@@ -32,23 +42,19 @@ ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
 
 # Initialize SmartApi instance (or placeholder)
 # This instance can be accessed globally.
-# In a real application, you might want to add error handling if credentials are missing.
+smart_api_instance = None
 if ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY:
     try:
-        # Attempt to initialize SmartApi with credentials
-        # Note: The actual login/session management might happen elsewhere or on first use.
-        # For now, we just instantiate it.
         smart_api_instance = SmartApi(
             ANGEL_API_KEY,
             ANGEL_CLIENT_ID,
             ANGEL_PASSWORD,
             ANGEL_TOTP_KEY
         )
-        print("Angel One SmartAPI instance initialized successfully.")
+        print("Angel One SmartAPI instance created.")
     except Exception as e:
-        print(f"Error initializing SmartApi instance: {e}")
-        # Fallback to placeholder if initialization fails
-        smart_api_instance = SmartApi()
+        print(f"Error creating SmartApi instance: {e}")
+        smart_api_instance = SmartApi() # Fallback to placeholder
 else:
     print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
     smart_api_instance = SmartApi()
@@ -61,6 +67,48 @@ def get_smart_api_instance() -> SmartApi:
         The initialized SmartApi instance.
     """
     return smart_api_instance
+
+def connect() -> bool:
+    """
+    Connects to the Angel One SmartAPI using TOTP.
+
+    Retrieves credentials from environment variables and attempts to log in.
+
+    Returns:
+        True if the connection (login) is successful, False otherwise.
+    """
+    if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
+        print("Error: SmartApi instance is not properly initialized or is a placeholder.")
+        return False
+
+    if not (ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY):
+        print("Error: Missing Angel One API credentials. Cannot connect.")
+        return False
+
+    try:
+        # Generate TOTP
+        totp = pyotp.TOTP(ANGEL_TOTP_KEY)
+        totp_value = totp.at()
+
+        # Attempt to login
+        print("Attempting to connect to Angel One SmartAPI...")
+        login_response = smart_api_instance.login(
+            ANGEL_CLIENT_ID,
+            ANGEL_PASSWORD,
+            totp_value
+        )
+
+        if login_response and login_response.get("status") == "success":
+            print("Successfully connected to Angel One SmartAPI.")
+            # You might want to store session tokens or other relevant info here
+            # For example: smart_api_instance.session_token = login_response.get("jwtToken")
+            return True
+        else:
+            print(f"Failed to connect to Angel One SmartAPI. Response: {login_response}")
+            return False
+    except Exception as e:
+        print(f"An error occurred during Angel One SmartAPI connection: {e}")
+        return False
 
 # --- Subscription Management Logic ---
 # Import the core subscription logic from the configuration module.
