@@ -372,6 +372,15 @@ def connect() -> bool:
     return _broker().connect()
 
 
+def is_connected() -> bool:
+    """
+    Top‑level convenience wrapper to check connection status.
+
+    Returns ``True`` if the broker is currently connected, ``False`` otherwise.
+    """
+    return _broker().is_connected()
+
+
 def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
     """
     Top‑level convenience wrapper to fetch the Last Traded Price (LTP).
