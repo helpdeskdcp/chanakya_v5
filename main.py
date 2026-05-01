@@ -335,8 +335,6 @@ def index():
 
 
 PORT = int(os.getenv("PORT",5002))
-    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
-    app.run(host="0.0.0.0", port=PORT, debug=False)
 
 @app.route("/api/chart")
 @require_auth
