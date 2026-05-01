@@ -379,3 +379,18 @@ def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional
     Delegates to the singleton broker's ``get_ltp`` method.
     """
     return _broker().get_ltp(exchange, symbol, token)
+
+
+def get_candles(
+    token: str,
+    exchange: str,
+    interval: str,
+    fromdate: datetime.date,
+    todate: datetime.date,
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Top‑level convenience wrapper to fetch historical candle data.
+
+    Delegates to the singleton broker's ``get_candles`` method.
+    """
+    return _broker().get_candles(token, exchange, interval, fromdate, todate)
