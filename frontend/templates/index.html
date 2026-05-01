@@ -407,7 +407,7 @@ async function loadUsers() {
       "<td style='color:"+roleClr+"'>"+u.role.toUpperCase()+"</td>"+
       "<td>"+(u.is_active?"✅":"❌")+"</td>"+
       "<td>"+
-        "<select onchange='changeRole(""+u.username+"",this.value)' style='background:#0a0f1a;color:#e0e8f0;border:1px solid var(--border);border-radius:4px;font-size:10px;padding:2px'>"+
+        "<select onchange='changeRole(u.username,this.value)' style='background:#0a0f1a;color:#e0e8f0;border:1px solid var(--border);border-radius:4px;font-size:10px;padding:2px'>"+
           "<option>Action</option>"+
           "<option value='demo'>→ Demo</option>"+
           "<option value='premium'>→ Premium</option>"+
