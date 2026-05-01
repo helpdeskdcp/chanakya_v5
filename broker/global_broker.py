@@ -357,3 +357,16 @@ def add_or_update_subscription_tier_global(
 def remove_subscription_tier_global(tier_name: str) -> None:
     """Remove a tier definition."""
     _broker().remove_tier(tier_name)
+
+
+# --------------------------------------------------------------------------- #
+# Top‑level convenience function
+# --------------------------------------------------------------------------- #
+def connect() -> bool:
+    """
+    Connect to Angel One SmartAPI using TOTP.
+
+    This is a thin wrapper around the singleton broker's ``connect`` method,
+    providing a simple function‑level API.
+    """
+    return _broker().connect()
