@@ -1,4 +1,5 @@
 from typing import Optional, List
+import config
 
 def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
     try:
