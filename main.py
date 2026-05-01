@@ -333,8 +333,8 @@ def index():
     except:
         return "<h1>Chanakya AI v5.0</h1><p>Frontend loading...</p>"
 
-if __name__ == "__main__":
-    PORT = int(os.getenv("PORT",5002))
+
+PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
 
@@ -403,3 +403,8 @@ def ml_status():
         return jsonify({"success":True,"status":get_status()})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+
+if __name__ == "__main__":
+    PORT = int(os.getenv("PORT",5002))
+    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
+    app.run(host="0.0.0.0", port=PORT, debug=False)
