@@ -18,69 +18,10 @@ import os
 from typing import Any, Dict, List, Optional
 
 # --------------------------------------------------------------------------- #
-# SmartApi import – fall back to a lightweight placeholder if the library is missing.
+# SmartApi import – direct import from the smartapi library.
 # --------------------------------------------------------------------------- #
-try:
-    from smartapi import SmartApi  # type: ignore
-    import pyotp  # type: ignore
-except Exception as import_err:  # pragma: no cover
-    print(
-        f"Warning: smartapi or pyotp could not be imported ({import_err}). "
-        "A placeholder SmartApi implementation will be used."
-    )
-
-    class SmartApi:  # pylint: disable=too-few-public-methods
-        """Very small stub that mimics the real SmartApi interface."""
-
-        def __init__(self, *_, **__) -> None:
-            self._connected = False
-
-        def login(self, client_id: str, password: str, totp: str) -> Dict[str, Any]:
-            self._connected = True
-            return {"status": "success"}
-
-        def get_quotes(self, instruments: List[Dict[str, str]]) -> Dict[str, Any]:
-            if not self._connected:
-                return {"status": "error", "data": []}
-            # Return a deterministic mock LTP for testing.
-            return {"status": "success", "data": [{"ltp": 100.0}]}
-
-        def get_candles(
-            self,
-            token: str,
-            exchange: str,
-            interval: str,
-            from_date: str,
-            to_date: str,
-        ) -> Dict[str, Any]:
-            if not self._connected:
-                return {"status": "error", "data": []}
-            # Return a single mock candle.
-            return {
-                "status": "success",
-                "data": [
-                    {
-                        "timestamp": f"{from_date}T09:15:00+05:30",
-                        "open": 100,
-                        "high": 105,
-                        "low": 98,
-                        "close": 102,
-                        "volume": 1000,
-                    }
-                ],
-            }
-
-    class pyotp:  # pragma: no cover
-        """Placeholder for the pyotp library."""
-
-        class TOTP:
-            def __init__(self, key: str) -> None:
-                self.key = key
-
-            def at(self, for_time: Optional[int] = None) -> str:  # noqa: D401
-                """Return a deterministic 6‑digit code."""
-                return "000000"
-
+from smartapi import SmartApi  # type: ignore
+import pyotp  # type: ignore
 
 # --------------------------------------------------------------------------- #
 # AngelOneBroker singleton implementation
@@ -117,7 +58,7 @@ class AngelOneBroker:
         self._totp_key: Optional[str] = os.getenv("ANGEL_TOTP_KEY")
 
         # --------------------------------------------------------------- #
-        # Initialise the SmartApi client (placeholder if real lib missing)
+        # Initialise the SmartApi client
         # --------------------------------------------------------------- #
         try:
             if all([self._api_key, self._client_id, self._password, self._totp_key]):
@@ -130,7 +71,7 @@ class AngelOneBroker:
                 print("SmartApi instance created.")
             else:
                 print(
-                    "Warning: Incomplete Angel One credentials – using placeholder SmartApi."
+                    "Warning: Incomplete Angel One credentials – SmartApi instance not fully configured."
                 )
                 self._api = SmartApi()
         except Exception as exc:  # pragma: no cover
