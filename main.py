@@ -337,3 +337,69 @@ if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
+@app.route("/api/chart")
+@require_auth
+def get_chart():
+    try:
+        symbol   = request.args.get("symbol","NIFTY")
+        token    = request.args.get("token","99926000")
+        exchange = request.args.get("exchange","NSE")
+        interval = request.args.get("interval","FIVE_MINUTE")
+        days     = int(request.args.get("days","2"))
+        from broker.global_broker import get_broker
+        from engine.indicators import ema, rsi, vwap, atr
+        broker = get_broker()
+        if not broker or not broker.is_connected():
+            return jsonify({"success":False,"error":"Broker not connected"})
+        candles = broker.get_candles(token, exchange, interval, days)
+        if not candles:
+            return jsonify({"success":False,"error":"No candle data"})
+        closes = [float(c[4]) for c in candles]
+        highs  = [float(c[2]) for c in candles]
+        lows   = [float(c[3]) for c in candles]
+        times  = [c[0] for c in candles]
+        # Indicators
+        ema9_vals  = [ema(closes[:i+1],9)  for i in range(len(closes))]
+        ema21_vals = [ema(closes[:i+1],21) for i in range(len(closes))]
+        vwap_val   = vwap(candles)
+        atr_val    = atr(candles)
+        rsi_val    = rsi(closes)
+        return jsonify({
+            "success": True,
+            "symbol": symbol,
+            "candles": [{"t":c[0],"o":float(c[1]),"h":float(c[2]),"l":float(c[3]),"c":float(c[4]),"v":float(c[5])} for c in candles[-100:]],
+            "indicators": {
+                "ema9":  ema9_vals[-100:],
+                "ema21": ema21_vals[-100:],
+                "vwap":  vwap_val,
+                "atr":   atr_val,
+                "rsi":   rsi_val,
+            },
+            "ltp": closes[-1],
+        })
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/ml/train", methods=["POST"])
+@require_auth
+def ml_train():
+    try:
+        from broker.global_broker import get_broker
+        from ai.ml_engine import train_model
+        import threading
+        def _train():
+            train_model(get_broker())
+        threading.Thread(target=_train, daemon=True).start()
+        return jsonify({"success":True,"message":"Training started"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/ml/status")
+@require_auth
+def ml_status():
+    try:
+        from ai.ml_engine import get_status
+        return jsonify({"success":True,"status":get_status()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})

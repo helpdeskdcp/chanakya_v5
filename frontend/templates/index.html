@@ -72,6 +72,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 /* TOAST */
 #toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:12px;z-index:9999;display:none;max-width:300px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -159,6 +160,37 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
         </div>
         <div style="font-size:10px;color:#d4af37;padding:4px 0 8px">MTF 1m+5m+15m+30m+1hr + Groq AI verdict</div>
         <div id="predList"><div style="color:#8090a8;text-align:center;padding:20px">Click Scan to start</div></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div id="pg-chart" class="hidden">
+      <div class="card">
+        <div class="card-header">📊 Live Chart
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="chartSym" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
+              <option value="NIFTY|99926000|NSE">NIFTY</option>
+              <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
+              <option value="CRUDEOIL|488290|MCX">CRUDEOIL</option>
+              <option value="NATURALGAS|488505|MCX">NATURALGAS</option>
+              <option value="RELIANCE|2885|NSE">RELIANCE</option>
+              <option value="WIPRO|3787|NSE">WIPRO</option>
+            </select>
+            <select id="chartInt" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
+              <option value="ONE_MINUTE">1m</option>
+              <option value="FIVE_MINUTE" selected>5m</option>
+              <option value="FIFTEEN_MINUTE">15m</option>
+              <option value="ONE_HOUR">1hr</option>
+            </select>
+            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 10px">Load</button>
+          </div>
+        </div>
+        <div id="chartInfo" style="display:flex;gap:12px;padding:4px 0 8px;font-size:11px;flex-wrap:wrap"></div>
+        <canvas id="mainChart" style="width:100%;height:350px"></canvas>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;color:#8090a8;margin-bottom:4px">RSI</div>
+          <canvas id="rsiChart" style="width:100%;height:80px"></canvas>
+        </div>
       </div>
     </div>
     <!-- POSITIONS -->
