@@ -29,3 +29,13 @@ def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
     except Exception as e:
         print(f"Error checking feature access: {e}")
         return False
+
+def check_user_feature_access_global(role: str, feature: str) -> bool:
+    try:
+        tier_data = config.subscriptions.get(role)
+        if tier_data is None:
+            return False
+        return feature in tier_data.get("features", [])
+    except Exception as e:
+        print(f"Error checking feature access: {e}")
+        return False
