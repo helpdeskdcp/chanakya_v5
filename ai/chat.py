@@ -26,7 +26,8 @@ def load_scrip():
                 sym = s.get("symbol","").upper().replace("-EQ","")
                 if sym not in _scrip:
                     _scrip[sym] = {"token":s.get("token",""),"exch":s.get("exch_seg","NSE"),"name":s.get("symbol","")}
-        except: _scrip = {}
+        except:
+            _scrip = {}
     return _scrip
 
 def get_context(broker=None):
@@ -51,8 +52,7 @@ def get_context(broker=None):
                     if ltp: cset("ltp_"+name, ltp, ttl=5)
                 if ltp: ltps.append(name+"="+str(int(ltp)))
             if ltps: parts.append("LTP:" + " | ".join(ltps))
-        return "
-".join(parts)
+        return "\n".join(parts)
     except Exception as e:
         logger.error("get_context: %s", e)
         return "Market data unavailable"
@@ -68,7 +68,8 @@ def get_stock_ltp(symbol, broker=None):
         info = load_scrip().get(symbol.upper())
         if info:
             return broker.get_ltp(info["exch"], info["name"], info["token"])
-    except: pass
+    except:
+        pass
     return None
 
 def smart_chat(message, broker=None):
@@ -85,18 +86,11 @@ def smart_chat(message, broker=None):
                 if w not in skip:
                     ltp = get_stock_ltp(w, broker)
                     if ltp: extra.append(w+"="+str(ltp))
-        if extra: ctx += "
-STOCKS:" + " | ".join(extra)
-        system = ("You are Chanakya AI, expert Indian trading assistant.
-"
-                  "LIVE DATA:
-" + ctx + "
-"
-                  "Rules: Use live data, give Entry/Target/SL, "
-                  "always answer, reply in user language, max 4 lines.")
+        if extra: ctx += "\nSTOCKS:" + " | ".join(extra)
+        sys_msg = "You are Chanakya AI, expert Indian trading assistant.\nLIVE DATA:\n" + ctx + "\nRules: Use live data, give Entry/Target/SL, always answer, reply in user language, max 4 lines."
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role":"system","content":system},{"role":"user","content":message}],
+            messages=[{"role":"system","content":sys_msg},{"role":"user","content":message}],
             max_tokens=300, temperature=0.3)
         return r.choices[0].message.content.strip()
     except Exception as e:
