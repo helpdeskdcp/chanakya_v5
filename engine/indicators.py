@@ -6,6 +6,9 @@ def exponential_moving_average(data, period):
     weighted_sum = sum(i * x for i, x in enumerate(data[-period:], 1))
     return weighted_sum / sum_weights
 
+def ema(data, period):
+    return exponential_moving_average(data, period)
+
 def relative_strength_index(data, period):
     delta = [x - y for y, x in zip(data, data[1:])]
     up, down = [x for x in delta if x > 0], [x for x in delta if x < 0]
