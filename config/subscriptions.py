@@ -95,3 +95,31 @@ class SubscriptionSystem:
             True if the role has access to the feature, False otherwise.
         """
         return self.has_feature(role, feature)
+
+    def days_remaining(self, created_at: datetime.datetime, role: str) -> int | None:
+        """
+        Calculates the number of days remaining for a given role (tier).
+
+        Args:
+            created_at: The datetime when the role was created or assigned.
+            role: The name of the subscription tier (e.g., 'premium', 'free').
+
+        Returns:
+            The number of days remaining until the tier expires.
+            Returns None if the tier does not expire or if the tier is not found.
+        """
+        tier = self.get_tier(role)
+        if tier is None:
+            return None  # Tier not found
+
+        if tier.expiry is None:
+            return None  # Tier does not expire
+
+        # Calculate the expiry date
+        expiry_date = created_at + tier.expiry
+
+        # Calculate the difference in days
+        days_left = (expiry_date - datetime.datetime.now()).days
+
+        # Ensure we don't return a negative number of days if already expired
+        return max(0, days_left)
