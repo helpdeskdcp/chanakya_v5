@@ -22,7 +22,20 @@ except ImportError:
     class SmartApi:
         def __init__(self, *args, **kwargs):
             print("SmartApi placeholder initialized. Actual API connection not available.")
+            self._is_connected = False # Placeholder for connection status
             pass
+        def login(self, client_id, password, totp):
+            print("SmartApi.login placeholder called.")
+            self._is_connected = True # Simulate connection
+            return {"status": "success"}
+        def get_quotes(self, instruments):
+            print("SmartApi.get_quotes placeholder called.")
+            if not self._is_connected: return {"status": "error", "data": []}
+            return {"status": "success", "data": [{"ltp": 100.0}]} # Mock LTP
+        def get_candles(self, token, exchange, interval, from_date, to_date):
+            print("SmartApi.get_candles placeholder called.")
+            if not self._is_connected: return {"status": "error", "data": []}
+            return {"status": "success", "data": [{"timestamp": "2023-01-01T09:15:00+05:30", "open": 100, "high": 105, "low": 98, "close": 102, "volume": 1000}]} # Mock candle
     # Define a placeholder for pyotp if not found
     class pyotp:
         class TOTP:
@@ -43,6 +56,8 @@ ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
 # Initialize SmartApi instance (or placeholder)
 # This instance can be accessed globally.
 smart_api_instance = None
+_is_api_connected = False # Global flag to track connection status
+
 if ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY:
     try:
         smart_api_instance = SmartApi(
@@ -52,6 +67,8 @@ if ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY:
             ANGEL_TOTP_KEY
         )
         print("Angel One SmartAPI instance created.")
+        # Note: The actual connection happens in the connect() function.
+        # We initialize the instance here, but it's not connected yet.
     except Exception as e:
         print(f"Error creating SmartApi instance: {e}")
         smart_api_instance = SmartApi() # Fallback to placeholder
@@ -73,16 +90,21 @@ def connect() -> bool:
     Connects to the Angel One SmartAPI using TOTP.
 
     Retrieves credentials from environment variables and attempts to log in.
+    Updates the global connection status flag.
 
     Returns:
         True if the connection (login) is successful, False otherwise.
     """
+    global _is_api_connected # Declare intent to modify the global flag
+
     if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
         print("Error: SmartApi instance is not properly initialized or is a placeholder.")
+        _is_api_connected = False
         return False
 
     if not (ANGEL_API_KEY and ANGEL_CLIENT_ID and ANGEL_PASSWORD and ANGEL_TOTP_KEY):
         print("Error: Missing Angel One API credentials. Cannot connect.")
+        _is_api_connected = False
         return False
 
     try:
@@ -100,14 +122,32 @@ def connect() -> bool:
 
         if login_response and login_response.get("status") == "success":
             print("Successfully connected to Angel One SmartAPI.")
+            _is_api_connected = True # Set connection status
             # You might want to store session tokens or other relevant info here
             # For example: smart_api_instance.session_token = login_response.get("jwtToken")
             return True
         else:
             print(f"Failed to connect to Angel One SmartAPI. Response: {login_response}")
+            _is_api_connected = False
             return False
     except Exception as e:
         print(f"An error occurred during Angel One SmartAPI connection: {e}")
+        _is_api_connected = False
+        return False
+
+def is_connected() -> bool:
+    """
+    Checks if the Angel One SmartAPI is currently connected.
+
+    Returns:
+        True if connected, False otherwise.
+    """
+    # If the instance is a placeholder, it's not truly connected.
+    if isinstance(smart_api_instance, SmartApi) and smart_api_instance.__class__.__name__ != 'SmartApi':
+        # If the actual SmartApi instance exists, rely on the global connection flag
+        return _is_api_connected
+    else:
+        # If it's a placeholder or not initialized, it's not connected.
         return False
 
 def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
@@ -122,16 +162,11 @@ def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional
     Returns:
         The LTP as a float, or None if it cannot be fetched or an error occurs.
     """
-    if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
-        print("Error: SmartApi instance is not properly initialized or is a placeholder. Cannot fetch LTP.")
+    if not is_connected():
+        print("Error: Not connected to Angel One SmartAPI. Cannot fetch LTP.")
         return None
 
     try:
-        # The smartapi library's get_quotes method can fetch LTP.
-        # It typically requires a list of instruments.
-        # We'll construct the instrument format expected by the library.
-        # The format is usually {'exchange': 'EX', 'symboltoken': 'TOKEN'} or {'exchange': 'EX', 'symbol': 'SYM'}
-        
         instrument = {
             "exchange": exchange,
             "symbol": symbol
@@ -139,16 +174,11 @@ def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional
         if token:
             instrument["symboltoken"] = token
         else:
-            # If token is not provided, we might need to fetch it first or rely on symbol lookup.
-            # For simplicity here, we'll assume symbol is sufficient if token is missing,
-            # but a real implementation might need a token lookup.
             print(f"Warning: Token not provided for {symbol} on {exchange}. LTP fetch might be less reliable.")
 
         quotes = smart_api_instance.get_quotes([instrument])
 
         if quotes and quotes.get("status") == "success":
-            # The response structure can vary, but typically it's a list of quote data.
-            # We expect one quote for our single instrument.
             quote_data = quotes.get("data", [])
             if quote_data:
                 ltp = quote_data[0].get("ltp")
@@ -182,13 +212,11 @@ def get_candles(token: str, exchange: str, interval: str, fromdate: datetime.dat
         A list of dictionaries, where each dictionary represents a candle's data (e.g., 'open', 'high', 'low', 'close', 'volume', 'timestamp'),
         or None if data cannot be fetched or an error occurs.
     """
-    if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
-        print("Error: SmartApi instance is not properly initialized or is a placeholder. Cannot fetch candles.")
+    if not is_connected():
+        print("Error: Not connected to Angel One SmartAPI. Cannot fetch candles.")
         return None
 
     try:
-        # The smartapi library's get_candles method requires specific parameters.
-        # Ensure dates are in the correct format (YYYY-MM-DD).
         from_date_str = fromdate.strftime('%Y-%m-%d')
         to_date_str = todate.strftime('%Y-%m-%d')
 
@@ -203,8 +231,6 @@ def get_candles(token: str, exchange: str, interval: str, fromdate: datetime.dat
         )
 
         if candles_data and candles_data.get("status") == "success":
-            # The response structure typically contains a list of candle data.
-            # Each candle might have keys like 'open', 'high', 'low', 'close', 'volume', 'timestamp'.
             return candles_data.get("data", [])
         else:
             print(f"Failed to fetch candles for token {token} on {exchange}. Response: {candles_data}")
