@@ -1,3 +1,4 @@
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os, sys, logging
 sys.path.insert(0,'/root/chanakya_v5')
 from flask import Flask, jsonify, request, render_template, session
@@ -11,7 +12,9 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="frontend/templates")
+app.config["APPLICATION_ROOT"] = "/v5"
 app.secret_key = os.getenv("SECRET_KEY","chanakya_v5_secret")
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # ── Auth decorator ─────────────────────────────────────
 def require_auth(f):

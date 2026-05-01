@@ -1,0 +1,27 @@
+2026-05-01 09:34:17,671 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 09:34:17,683 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 09:34:17,683 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 09:34:27,578 [INFO] 127.0.0.1 - - [01/May/2026 09:34:27] "POST /api/login HTTP/1.1" 200 -
+2026-05-01 09:34:27,633 [INFO] 127.0.0.1 - - [01/May/2026 09:34:27] "GET /health HTTP/1.1" 200 -
+2026-05-01 09:37:13,801 [INFO] 127.0.0.1 - - [01/May/2026 09:37:13] "GET / HTTP/1.1" 200 -
+2026-05-01 09:41:57,079 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 09:41:57,083 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 09:41:57,083 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 09:42:01,931 [INFO] 127.0.0.1 - - [01/May/2026 09:42:01] "GET /health HTTP/1.1" 200 -
+2026-05-01 09:42:50,738 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 09:42:50,742 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 09:42:50,743 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 09:44:38,847 [INFO] 127.0.0.1 - - [01/May/2026 09:44:38] "GET /v5 HTTP/1.1" 200 -
+2026-05-01 09:44:38,862 [INFO] 127.0.0.1 - - [01/May/2026 09:44:38] "GET / HTTP/1.1" 200 -
+2026-05-01 09:50:22,940 [INFO] 127.0.0.1 - - [01/May/2026 09:50:22] "GET /v5 HTTP/1.1" 200 -
+2026-05-01 09:51:22,881 [INFO] 127.0.0.1 - - [01/May/2026 09:51:22] "GET /v5 HTTP/1.1" 200 -
+2026-05-01 09:53:16,626 [INFO] 127.0.0.1 - - [01/May/2026 09:53:16] "GET /v5 HTTP/1.0" 200 -
