@@ -16,8 +16,8 @@ from typing import Dict, List, Optional, Any
 try:
     from smartapi import SmartApi
     import pyotp # Import pyotp for TOTP handling
-except ImportError:
-    print("Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available.")
+except ImportError as e:
+    print(f"Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available. Error: {e}")
     # Define a placeholder if SmartApi is not found, to avoid NameError
     class SmartApi:
         def __init__(self, *args, **kwargs):
@@ -60,16 +60,23 @@ class Broker:
         global _is_api_connected # Ensure we modify the global flag
 
         # --- Angel One SmartAPI Credentials ---
-        self.ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
-        self.ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
-        self.ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
-        self.ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+        try:
+            self.ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
+            self.ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
+            self.ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
+            self.ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+        except Exception as e:
+            print(f"Error retrieving environment variables: {e}")
+            self.ANGEL_API_KEY = None
+            self.ANGEL_CLIENT_ID = None
+            self.ANGEL_PASSWORD = None
+            self.ANGEL_TOTP_KEY = None
 
         self.smart_api_instance = None
         self._is_api_connected = False
 
-        if self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY:
-            try:
+        try:
+            if self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY:
                 self.smart_api_instance = SmartApi(
                     self.ANGEL_API_KEY,
                     self.ANGEL_CLIENT_ID,
@@ -77,12 +84,12 @@ class Broker:
                     self.ANGEL_TOTP_KEY
                 )
                 print("Angel One SmartAPI instance created.")
-            except Exception as e:
-                print(f"Error creating SmartApi instance: {e}")
+            else:
+                print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
                 self.smart_api_instance = SmartApi() # Fallback to placeholder
-        else:
-            print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
-            self.smart_api_instance = SmartApi()
+        except Exception as e:
+            print(f"Error creating SmartApi instance: {e}")
+            self.smart_api_instance = SmartApi() # Fallback to placeholder
 
         # --- Subscription Management Data ---
         self._initialize_subscription_tiers()
@@ -92,9 +99,13 @@ class Broker:
         try:
             from config.subscriptions import PREDEFINED_TIERS
             self.SUBSCRIPTION_TIERS = PREDEFINED_TIERS.copy()
-        except ImportError:
-            print("Warning: config.subscriptions module not found. Using empty subscription tiers.")
+        except ImportError as e:
+            print(f"Warning: config.subscriptions module not found. Using empty subscription tiers. Error: {e}")
             self.SUBSCRIPTION_TIERS = {}
+        except Exception as e:
+            print(f"Error initializing subscription tiers: {e}")
+            self.SUBSCRIPTION_TIERS = {}
+
 
     def get_smart_api_instance(self) -> SmartApi:
         """
@@ -239,46 +250,68 @@ class Broker:
     # --- Subscription Management Functions ---
     def get_tier_data(self, tier_name: str) -> Optional[Dict[str, Any]]:
         """Retrieves the data for a specific subscription tier."""
-        return self.SUBSCRIPTION_TIERS.get(tier_name)
+        try:
+            return self.SUBSCRIPTION_TIERS.get(tier_name)
+        except Exception as e:
+            print(f"Error retrieving tier data for '{tier_name}': {e}")
+            return None
 
     def has_feature(self, tier_name: str, feature_name: str) -> bool:
         """Checks if a given tier has a specific feature."""
-        tier_data = self.get_tier_data(tier_name)
-        if tier_data is None:
+        try:
+            tier_data = self.get_tier_data(tier_name)
+            if tier_data is None:
+                return False
+            return feature_name in tier_data.get("features", [])
+        except Exception as e:
+            print(f"Error checking feature '{feature_name}' for tier '{tier_name}': {e}")
             return False
-        return feature_name in tier_data.get("features", [])
 
     def check_feature_access(self, role: str, feature: str) -> bool:
         """Checks if a given role (tier) has access to a specific feature."""
-        return self.has_feature(role, feature)
+        try:
+            return self.has_feature(role, feature)
+        except Exception as e:
+            print(f"Error checking feature access for role '{role}' and feature '{feature}': {e}")
+            return False
 
     def days_remaining(self, created_at: datetime.datetime, role: str) -> Optional[int]:
         """Calculates the number of days remaining for a given role (tier)."""
-        tier_data = self.get_tier_data(role)
-        if tier_data is None:
-            return None
+        try:
+            tier_data = self.get_tier_data(role)
+            if tier_data is None:
+                return None
 
-        expiry_days = tier_data.get("expiry_days")
-        if expiry_days is None:
-            return None
+            expiry_days = tier_data.get("expiry_days")
+            if expiry_days is None:
+                return None
 
-        expiry_date = created_at + datetime.timedelta(days=expiry_days)
-        days_left = (expiry_date - datetime.datetime.now()).days
-        return max(0, days_left)
+            expiry_date = created_at + datetime.timedelta(days=expiry_days)
+            days_left = (expiry_date - datetime.datetime.now()).days
+            return max(0, days_left)
+        except Exception as e:
+            print(f"Error calculating days remaining for role '{role}' created at {created_at}: {e}")
+            return None
 
     def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
         """Adds or updates a subscription tier."""
-        if tier_name in self.SUBSCRIPTION_TIERS:
-            print(f"Info: Tier '{tier_name}' already exists. Updating.")
-        self.SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
+        try:
+            if tier_name in self.SUBSCRIPTION_TIERS:
+                print(f"Info: Tier '{tier_name}' already exists. Updating.")
+            self.SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
+        except Exception as e:
+            print(f"Error adding or updating tier '{tier_name}': {e}")
 
     def remove_tier(self, tier_name: str):
         """Removes a subscription tier."""
-        if tier_name in self.SUBSCRIPTION_TIERS:
-            del self.SUBSCRIPTION_TIERS[tier_name]
-            print(f"Info: Tier '{tier_name}' removed.")
-        else:
-            print(f"Warning: Tier '{tier_name}' not found for removal.")
+        try:
+            if tier_name in self.SUBSCRIPTION_TIERS:
+                del self.SUBSCRIPTION_TIERS[tier_name]
+                print(f"Info: Tier '{tier_name}' removed.")
+            else:
+                print(f"Warning: Tier '{tier_name}' not found for removal.")
+        except Exception as e:
+            print(f"Error removing tier '{tier_name}': {e}")
 
 def get_broker_instance() -> Broker:
     """
@@ -286,54 +319,91 @@ def get_broker_instance() -> Broker:
     Creates it if it doesn't exist.
     """
     global _broker_instance
-    if _broker_instance is None:
-        _broker_instance = Broker()
-    return _broker_instance
+    try:
+        if _broker_instance is None:
+            _broker_instance = Broker()
+        return _broker_instance
+    except Exception as e:
+        print(f"Error getting broker instance: {e}")
+        # In a critical failure, you might want to re-raise or return a mock/None
+        # For now, we'll print and return None, which will cause subsequent calls to fail gracefully.
+        return None
 
 # --- Global accessors for convenience ---
 # These functions delegate to the singleton broker instance.
 
-def get_smart_api_instance_global() -> SmartApi:
+def get_smart_api_instance_global() -> Optional[SmartApi]:
     """Global accessor for the SmartApi instance."""
-    return get_broker_instance().get_smart_api_instance()
+    broker = get_broker_instance()
+    if broker:
+        return broker.get_smart_api_instance()
+    return None
 
 def connect_global() -> bool:
     """Global accessor to connect the broker."""
-    return get_broker_instance().connect()
+    broker = get_broker_instance()
+    if broker:
+        return broker.connect()
+    return False
 
 def is_connected_global() -> bool:
     """Global accessor to check broker connection status."""
-    return get_broker_instance().is_connected()
+    broker = get_broker_instance()
+    if broker:
+        return broker.is_connected()
+    return False
 
 def get_ltp_global(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
     """Global accessor to get LTP."""
-    return get_broker_instance().get_ltp(exchange, symbol, token)
+    broker = get_broker_instance()
+    if broker:
+        return broker.get_ltp(exchange, symbol, token)
+    return None
 
 def get_candles_global(token: str, exchange: str, interval: str, fromdate: datetime.date, todate: datetime.date) -> Optional[List[Dict[str, Any]]]:
     """Global accessor to get candles."""
-    return get_broker_instance().get_candles(token, exchange, interval, fromdate, todate)
+    broker = get_broker_instance()
+    if broker:
+        return broker.get_candles(token, exchange, interval, fromdate, todate)
+    return None
 
 # Subscription Management Global Accessors
 def get_subscription_tier_data_global(tier_name: str) -> Optional[Dict[str, Any]]:
     """Global accessor for subscription tier data."""
-    return get_broker_instance().get_tier_data(tier_name)
+    broker = get_broker_instance()
+    if broker:
+        return broker.get_tier_data(tier_name)
+    return None
 
 def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
     """Global accessor to check if a tier has a feature."""
-    return get_broker_instance().has_feature(tier_name, feature_name)
+    broker = get_broker_instance()
+    if broker:
+        return broker.has_feature(tier_name, feature_name)
+    return False
 
 def check_user_feature_access_global(role: str, feature: str) -> bool:
     """Global accessor to check user feature access."""
-    return get_broker_instance().check_feature_access(role, feature)
+    broker = get_broker_instance()
+    if broker:
+        return broker.check_feature_access(role, feature)
+    return False
 
 def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str) -> Optional[int]:
     """Global accessor to get remaining days for a tier."""
-    return get_broker_instance().days_remaining(created_at, role)
+    broker = get_broker_instance()
+    if broker:
+        return broker.days_remaining(created_at, role)
+    return None
 
 def add_or_update_subscription_tier_global(tier_name: str, expiry_days: Optional[int], features: List[str]):
     """Global accessor to add or update a subscription tier."""
-    get_broker_instance().add_or_update_tier(tier_name, expiry_days, features)
+    broker = get_broker_instance()
+    if broker:
+        broker.add_or_update_tier(tier_name, expiry_days, features)
 
 def remove_subscription_tier_global(tier_name: str):
     """Global accessor to remove a subscription tier."""
-    get_broker_instance().remove_tier(tier_name)
+    broker = get_broker_instance()
+    if broker:
+        broker.remove_tier(tier_name)
