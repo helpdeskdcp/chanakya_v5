@@ -228,7 +228,7 @@ async function api(path, method, body) {
   try {
     var opts = {method:method||"GET", headers:{"Content-Type":"application/json","X-Auth-Token":TOKEN}};
     if(body) opts.body = JSON.stringify(body);
-    var r = await fetch("/api"+path, opts);
+    var r = await fetch("/v5/api"+path, opts);
     return await r.json();
   } catch(e) { return {success:false,error:String(e)}; }
 }
