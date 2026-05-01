@@ -3,13 +3,59 @@
 import datetime
 
 class SubscriptionTier:
-    def __init__(self, expiry, features):
-        self.features = features  # features is now a list of strings
-        self.expiry = datetime.timedelta(days=expiry) if isinstance(expiry, int) else None
+    """Represents a subscription tier with an expiry duration and a list of features."""
+    def __init__(self, expiry_days: int, features: list[str]):
+        """
+        Initializes a SubscriptionTier.
+
+        Args:
+            expiry_days: The number of days until the tier expires.
+            features: A list of strings, where each string is a feature name.
+        """
+        self.features = features
+        self.expiry = datetime.timedelta(days=expiry_days)
 
 class SubscriptionSystem:
+    """Manages different subscription tiers."""
     def __init__(self):
-        self.tiers = {}  # Use a normal dictionary
+        """Initializes the SubscriptionSystem with an empty dictionary of tiers."""
+        self.tiers: dict[str, SubscriptionTier] = {}
 
-    def add_tier(self, tier_name, expiry, features):
-        self.tiers[tier_name] = SubscriptionTier(expiry, features)
+    def add_tier(self, tier_name: str, expiry_days: int, features: list[str]):
+        """
+        Adds a new subscription tier to the system.
+
+        Args:
+            tier_name: The name of the tier (e.g., 'free', 'premium').
+            expiry_days: The number of days until the tier expires.
+            features: A list of strings representing the features included in this tier.
+        """
+        if tier_name in self.tiers:
+            print(f"Warning: Tier '{tier_name}' already exists. Overwriting.")
+        self.tiers[tier_name] = SubscriptionTier(expiry_days, features)
+
+    def get_tier(self, tier_name: str) -> SubscriptionTier | None:
+        """
+        Retrieves a subscription tier by its name.
+
+        Args:
+            tier_name: The name of the tier to retrieve.
+
+        Returns:
+            The SubscriptionTier object if found, otherwise None.
+        """
+        return self.tiers.get(tier_name)
+
+    def has_feature(self, tier_name: str, feature_name: str) -> bool:
+        """
+        Checks if a given tier has a specific feature.
+
+        Args:
+            tier_name: The name of the tier to check.
+            feature_name: The name of the feature to look for.
+
+        Returns:
+            True if the tier exists and has the feature, False otherwise.
+        """
+        tier = self.get_tier(tier_name)
+        return tier is not None and feature_name in tier.features
