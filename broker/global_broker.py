@@ -14,7 +14,8 @@ def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], feature
 def get_ltp_global(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
     try:
         # Your code to get LTP global
-        return ltp
+        ltp_value = 123.45  # Replace with actual value
+        return ltp_value
     except Exception as e:
         print(f"Error getting LTP global: {e}")
         return None
