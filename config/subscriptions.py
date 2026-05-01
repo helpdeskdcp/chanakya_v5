@@ -82,3 +82,16 @@ class SubscriptionSystem:
         """
         tier = self.get_tier(tier_name)
         return tier is not None and feature_name in tier.features
+
+    def check_feature_access(self, role: str, feature: str) -> bool:
+        """
+        Checks if a given role (tier) has access to a specific feature.
+
+        Args:
+            role: The name of the subscription tier (e.g., 'premium', 'free').
+            feature: The name of the feature to check access for.
+
+        Returns:
+            True if the role has access to the feature, False otherwise.
+        """
+        return self.has_feature(role, feature)
