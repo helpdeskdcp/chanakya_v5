@@ -33,6 +33,7 @@ class SubscriptionSystem:
 
         # Define the tiers
         self.add_tier("developer", None, all_features)  # No expiry, all features
+        self.add_tier("administrator", None, all_features) # No expiry, all features
         self.add_tier("free", 30, ["basic_analytics", "email_support"])
         self.add_tier("basic", 30, ["basic_analytics", "email_support", "api_access"])
         self.add_tier("standard", 30, ["advanced_analytics", "email_support", "api_access", "custom_branding"])
