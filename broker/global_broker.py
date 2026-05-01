@@ -1,7 +1,7 @@
 """
-Global Broker for Angel One SmartAPI and Subscription Management.
+Angel One SmartAPI Broker Connection.
 
-This module provides a singleton ``Broker`` class that encapsulates:
+This module provides a singleton ``AngelOneBroker`` class that encapsulates:
 * Connection handling to the Angel One SmartAPI (login via TOTP).
 * Helper methods to fetch LTP and historical candle data.
 * Subscription tier management using the data defined in ``config.subscriptions``.
@@ -83,22 +83,22 @@ except Exception as import_err:  # pragma: no cover
 
 
 # --------------------------------------------------------------------------- #
-# Broker singleton implementation
+# AngelOneBroker singleton implementation
 # --------------------------------------------------------------------------- #
-class Broker:
+class AngelOneBroker:
     """
     Singleton class that manages the SmartAPI connection and subscription tiers.
 
-    The first call to ``Broker()`` creates the instance; subsequent calls return
-    the same object.  The class lazily loads subscription data from
+    The first call to ``AngelOneBroker()`` creates the instance; subsequent calls
+    return the same object.  The class lazily loads subscription data from
     ``config.subscriptions`` and provides a small API for the rest of the
     application.
     """
 
-    _instance: Optional["Broker"] = None
+    _instance: Optional["AngelOneBroker"] = None
     _initialized: bool = False
 
-    def __new__(cls) -> "Broker":
+    def __new__(cls) -> "AngelOneBroker":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -334,9 +334,9 @@ class Broker:
 # --------------------------------------------------------------------------- #
 # Global accessor helpers – thin wrappers around the singleton instance.
 # --------------------------------------------------------------------------- #
-def _broker() -> Broker:
-    """Internal helper to obtain the singleton Broker instance."""
-    return Broker()
+def _broker() -> AngelOneBroker:
+    """Internal helper to obtain the singleton AngelOneBroker instance."""
+    return AngelOneBroker()
 
 
 def get_smart_api_instance_global() -> Optional[SmartApi]:
@@ -360,7 +360,7 @@ def is_connected_global() -> bool:
 def get_ltp_global(
     exchange: str, symbol: str, token: Optional[str] = None
 ) -> Optional[float]:
-    """Global shortcut for ``Broker.get_ltp``."""
+    """Global shortcut for ``AngelOneBroker.get_ltp``."""
     return _broker().get_ltp(exchange, symbol, token)
 
 
@@ -371,7 +371,7 @@ def get_candles_global(
     fromdate: datetime.date,
     todate: datetime.date,
 ) -> Optional[List[Dict[str, Any]]]:
-    """Global shortcut for ``Broker.get_candles``."""
+    """Global shortcut for ``AngelOneBroker.get_candles``."""
     return _broker().get_candles(token, exchange, interval, fromdate, todate)
 
 
