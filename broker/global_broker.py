@@ -54,3 +54,13 @@ def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str)
     except Exception as e:
         print(f"Error calculating days remaining: {e}")
         return None
+
+def remove_subscription_tier_global(self, tier_name: str):
+    try:
+        if tier_name in config.subscriptions:
+            del config.subscriptions[tier_name]
+            print(f"Info: Tier '{tier_name}' removed.")
+        else:
+            print(f"Warning: Tier '{tier_name}' not found for removal.")
+    except Exception as e:
+        print(f"Error removing tier: {e}")
