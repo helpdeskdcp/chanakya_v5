@@ -25,3 +25,981 @@
 2026-05-01 09:50:22,940 [INFO] 127.0.0.1 - - [01/May/2026 09:50:22] "GET /v5 HTTP/1.1" 200 -
 2026-05-01 09:51:22,881 [INFO] 127.0.0.1 - - [01/May/2026 09:51:22] "GET /v5 HTTP/1.1" 200 -
 2026-05-01 09:53:16,626 [INFO] 127.0.0.1 - - [01/May/2026 09:53:16] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 09:57:49,505 [INFO] 127.0.0.1 - - [01/May/2026 09:57:49] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 09:58:54,617 [INFO] 127.0.0.1 - - [01/May/2026 09:58:54] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 09:59:46,782 [INFO] 127.0.0.1 - - [01/May/2026 09:59:46] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 09:59:46,830 [INFO] 127.0.0.1 - - [01/May/2026 09:59:46] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 10:00:27,753 [INFO] 127.0.0.1 - - [01/May/2026 10:00:27] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 10:01:02,377 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 10:01:02,384 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 10:01:02,385 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 10:01:47,476 [INFO] 127.0.0.1 - - [01/May/2026 10:01:47] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 10:01:49,731 [INFO] 127.0.0.1 - - [01/May/2026 10:01:49] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:18:07,920 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 11:18:07,925 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 11:18:07,926 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 11:18:12,844 [INFO] 127.0.0.1 - - [01/May/2026 11:18:12] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:19:31,886 [INFO] 127.0.0.1 - - [01/May/2026 11:19:31] "GET / HTTP/1.0" 200 -
+2026-05-01 11:22:20,651 [INFO] 127.0.0.1 - - [01/May/2026 11:22:20] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:26:46,035 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 11:26:46,040 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 11:26:46,040 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 11:27:12,250 [INFO] 127.0.0.1 - - [01/May/2026 11:27:12] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:27:16,138 [INFO] 127.0.0.1 - - [01/May/2026 11:27:16] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:27:16,316 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:16,316 [INFO] 127.0.0.1 - - [01/May/2026 11:27:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:16,319 [INFO] 127.0.0.1 - - [01/May/2026 11:27:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:27:21,319 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:21,319 [INFO] 127.0.0.1 - - [01/May/2026 11:27:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:25,924 [ERROR] scan_all: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:25,924 [INFO] 127.0.0.1 - - [01/May/2026 11:27:25] "GET /api/signals HTTP/1.0" 200 -
+2026-05-01 11:27:26,328 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:26,329 [INFO] 127.0.0.1 - - [01/May/2026 11:27:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:31,354 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:31,354 [INFO] 127.0.0.1 - - [01/May/2026 11:27:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:31,412 [INFO] 127.0.0.1 - - [01/May/2026 11:27:31] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 11:27:33,597 [INFO] 127.0.0.1 - - [01/May/2026 11:27:33] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 11:27:36,112 [INFO] 127.0.0.1 - - [01/May/2026 11:27:36] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 11:27:36,311 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:36,312 [INFO] 127.0.0.1 - - [01/May/2026 11:27:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:41,316 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:41,316 [INFO] 127.0.0.1 - - [01/May/2026 11:27:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:46,301 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:46,301 [INFO] 127.0.0.1 - - [01/May/2026 11:27:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:46,314 [INFO] 127.0.0.1 - - [01/May/2026 11:27:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:27:48,215 [INFO] 127.0.0.1 - - [01/May/2026 11:27:48] "GET /api/admin/users HTTP/1.0" 200 -
+2026-05-01 11:27:51,319 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:51,319 [INFO] 127.0.0.1 - - [01/May/2026 11:27:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:27:56,320 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:27:56,320 [INFO] 127.0.0.1 - - [01/May/2026 11:27:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:01,310 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:01,310 [INFO] 127.0.0.1 - - [01/May/2026 11:28:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:06,334 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:06,335 [INFO] 127.0.0.1 - - [01/May/2026 11:28:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:12,009 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:12,009 [INFO] 127.0.0.1 - - [01/May/2026 11:28:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:16,317 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:16,317 [INFO] 127.0.0.1 - - [01/May/2026 11:28:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:16,319 [INFO] 127.0.0.1 - - [01/May/2026 11:28:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:28:21,359 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:21,360 [INFO] 127.0.0.1 - - [01/May/2026 11:28:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:26,330 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:26,330 [INFO] 127.0.0.1 - - [01/May/2026 11:28:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:31,329 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:31,330 [INFO] 127.0.0.1 - - [01/May/2026 11:28:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:36,333 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:36,334 [INFO] 127.0.0.1 - - [01/May/2026 11:28:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:41,324 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:41,325 [INFO] 127.0.0.1 - - [01/May/2026 11:28:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:46,342 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:46,342 [INFO] 127.0.0.1 - - [01/May/2026 11:28:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:46,343 [INFO] 127.0.0.1 - - [01/May/2026 11:28:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:28:51,329 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:51,329 [INFO] 127.0.0.1 - - [01/May/2026 11:28:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:28:56,319 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:28:56,320 [INFO] 127.0.0.1 - - [01/May/2026 11:28:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:01,334 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:01,335 [INFO] 127.0.0.1 - - [01/May/2026 11:29:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:06,320 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:06,321 [INFO] 127.0.0.1 - - [01/May/2026 11:29:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:11,320 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:11,321 [INFO] 127.0.0.1 - - [01/May/2026 11:29:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:16,305 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:16,305 [INFO] 127.0.0.1 - - [01/May/2026 11:29:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:16,306 [INFO] 127.0.0.1 - - [01/May/2026 11:29:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:29:21,359 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:21,359 [INFO] 127.0.0.1 - - [01/May/2026 11:29:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:26,334 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:26,334 [INFO] 127.0.0.1 - - [01/May/2026 11:29:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:31,309 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:31,309 [INFO] 127.0.0.1 - - [01/May/2026 11:29:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:36,325 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:36,325 [INFO] 127.0.0.1 - - [01/May/2026 11:29:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:41,324 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:41,324 [INFO] 127.0.0.1 - - [01/May/2026 11:29:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:46,320 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:46,321 [INFO] 127.0.0.1 - - [01/May/2026 11:29:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:46,322 [INFO] 127.0.0.1 - - [01/May/2026 11:29:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:29:51,370 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:29:51,370 [INFO] 127.0.0.1 - - [01/May/2026 11:29:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:29:54,119 [INFO] 127.0.0.1 - - [01/May/2026 11:29:54] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:29:54,360 [INFO] 127.0.0.1 - - [01/May/2026 11:29:54] "GET /api/status HTTP/1.0" 200 -
+2026-05-01 11:29:55,134 [INFO] 127.0.0.1 - - [01/May/2026 11:29:55] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:29:55,988 [INFO] 127.0.0.1 - - [01/May/2026 11:29:55] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:30:14,365 [INFO] 127.0.0.1 - - [01/May/2026 11:30:14] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:30:16,428 [INFO] 127.0.0.1 - - [01/May/2026 11:30:16] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:30:16,606 [INFO] 127.0.0.1 - - [01/May/2026 11:30:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:30:16,606 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:16,607 [INFO] 127.0.0.1 - - [01/May/2026 11:30:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:21,615 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:21,615 [INFO] 127.0.0.1 - - [01/May/2026 11:30:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:26,645 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:26,646 [INFO] 127.0.0.1 - - [01/May/2026 11:30:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:31,615 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:31,615 [INFO] 127.0.0.1 - - [01/May/2026 11:30:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:36,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:36,610 [INFO] 127.0.0.1 - - [01/May/2026 11:30:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:41,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:41,610 [INFO] 127.0.0.1 - - [01/May/2026 11:30:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:46,615 [INFO] 127.0.0.1 - - [01/May/2026 11:30:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:30:46,616 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:46,617 [INFO] 127.0.0.1 - - [01/May/2026 11:30:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:51,606 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:51,606 [INFO] 127.0.0.1 - - [01/May/2026 11:30:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:30:56,605 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:30:56,605 [INFO] 127.0.0.1 - - [01/May/2026 11:30:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:01,619 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:01,620 [INFO] 127.0.0.1 - - [01/May/2026 11:31:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:06,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:06,609 [INFO] 127.0.0.1 - - [01/May/2026 11:31:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:11,604 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:11,605 [INFO] 127.0.0.1 - - [01/May/2026 11:31:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:16,615 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:16,615 [INFO] 127.0.0.1 - - [01/May/2026 11:31:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:31:16,616 [INFO] 127.0.0.1 - - [01/May/2026 11:31:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:21,604 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:21,604 [INFO] 127.0.0.1 - - [01/May/2026 11:31:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:26,614 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:26,614 [INFO] 127.0.0.1 - - [01/May/2026 11:31:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:31,615 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:31,615 [INFO] 127.0.0.1 - - [01/May/2026 11:31:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:35,995 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:36,629 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:36,630 [INFO] 127.0.0.1 - - [01/May/2026 11:31:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:36,740 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:31:36,754 [INFO] 127.0.0.1 - - [01/May/2026 11:31:36] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:31:41,634 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:41,635 [INFO] 127.0.0.1 - - [01/May/2026 11:31:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:46,629 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:46,630 [INFO] 127.0.0.1 - - [01/May/2026 11:31:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:46,630 [INFO] 127.0.0.1 - - [01/May/2026 11:31:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:31:51,618 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:51,619 [INFO] 127.0.0.1 - - [01/May/2026 11:31:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:31:56,624 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:31:56,624 [INFO] 127.0.0.1 - - [01/May/2026 11:31:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:01,621 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:01,621 [INFO] 127.0.0.1 - - [01/May/2026 11:32:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:06,625 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:06,625 [INFO] 127.0.0.1 - - [01/May/2026 11:32:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:11,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:11,609 [INFO] 127.0.0.1 - - [01/May/2026 11:32:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:16,619 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:16,619 [INFO] 127.0.0.1 - - [01/May/2026 11:32:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:16,650 [INFO] 127.0.0.1 - - [01/May/2026 11:32:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:32:21,614 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:21,614 [INFO] 127.0.0.1 - - [01/May/2026 11:32:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:26,624 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:26,624 [INFO] 127.0.0.1 - - [01/May/2026 11:32:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:31,635 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:31,636 [INFO] 127.0.0.1 - - [01/May/2026 11:32:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:36,640 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:36,641 [INFO] 127.0.0.1 - - [01/May/2026 11:32:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:41,614 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:41,615 [INFO] 127.0.0.1 - - [01/May/2026 11:32:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:44,849 [ERROR] scan_all: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:44,850 [INFO] 127.0.0.1 - - [01/May/2026 11:32:44] "GET /api/signals HTTP/1.0" 200 -
+2026-05-01 11:32:46,604 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:46,605 [INFO] 127.0.0.1 - - [01/May/2026 11:32:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:32:46,605 [INFO] 127.0.0.1 - - [01/May/2026 11:32:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:48,073 [ERROR] scan_all: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:48,074 [INFO] 127.0.0.1 - - [01/May/2026 11:32:48] "GET /api/signals HTTP/1.0" 200 -
+2026-05-01 11:32:49,470 [INFO] 127.0.0.1 - - [01/May/2026 11:32:49] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 11:32:51,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:51,609 [INFO] 127.0.0.1 - - [01/May/2026 11:32:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:32:56,599 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:32:56,599 [INFO] 127.0.0.1 - - [01/May/2026 11:32:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:01,608 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:01,609 [INFO] 127.0.0.1 - - [01/May/2026 11:33:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:06,618 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:06,619 [INFO] 127.0.0.1 - - [01/May/2026 11:33:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:11,623 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:11,624 [INFO] 127.0.0.1 - - [01/May/2026 11:33:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:16,639 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:16,639 [INFO] 127.0.0.1 - - [01/May/2026 11:33:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:16,640 [INFO] 127.0.0.1 - - [01/May/2026 11:33:16] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:33:21,629 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:21,629 [INFO] 127.0.0.1 - - [01/May/2026 11:33:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:26,613 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:26,614 [INFO] 127.0.0.1 - - [01/May/2026 11:33:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:31,619 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:31,619 [INFO] 127.0.0.1 - - [01/May/2026 11:33:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:36,624 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:36,624 [INFO] 127.0.0.1 - - [01/May/2026 11:33:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:41,603 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:41,604 [INFO] 127.0.0.1 - - [01/May/2026 11:33:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:46,630 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:46,631 [INFO] 127.0.0.1 - - [01/May/2026 11:33:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:46,632 [INFO] 127.0.0.1 - - [01/May/2026 11:33:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:33:51,609 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:51,609 [INFO] 127.0.0.1 - - [01/May/2026 11:33:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:33:56,608 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:33:56,608 [INFO] 127.0.0.1 - - [01/May/2026 11:33:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:01,610 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:01,611 [INFO] 127.0.0.1 - - [01/May/2026 11:34:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:06,993 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:06,994 [INFO] 127.0.0.1 - - [01/May/2026 11:34:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:11,994 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:11,995 [INFO] 127.0.0.1 - - [01/May/2026 11:34:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:17,004 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:17,004 [INFO] 127.0.0.1 - - [01/May/2026 11:34:17] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:34:17,005 [INFO] 127.0.0.1 - - [01/May/2026 11:34:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:22,003 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:22,004 [INFO] 127.0.0.1 - - [01/May/2026 11:34:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:26,998 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:26,999 [INFO] 127.0.0.1 - - [01/May/2026 11:34:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:32,008 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:32,009 [INFO] 127.0.0.1 - - [01/May/2026 11:34:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:36,988 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:36,989 [INFO] 127.0.0.1 - - [01/May/2026 11:34:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:41,984 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:41,984 [INFO] 127.0.0.1 - - [01/May/2026 11:34:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:46,988 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:46,989 [INFO] 127.0.0.1 - - [01/May/2026 11:34:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:46,991 [INFO] 127.0.0.1 - - [01/May/2026 11:34:46] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:34:51,998 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:51,999 [INFO] 127.0.0.1 - - [01/May/2026 11:34:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:34:56,989 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:34:56,990 [INFO] 127.0.0.1 - - [01/May/2026 11:34:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:35:01,992 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:35:01,995 [INFO] 127.0.0.1 - - [01/May/2026 11:35:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:35:23,999 [INFO] 127.0.0.1 - - [01/May/2026 11:35:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:35:24,378 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:35:24,379 [INFO] 127.0.0.1 - - [01/May/2026 11:35:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:35:51,454 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 11:35:51,459 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 11:35:51,459 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 11:36:01,417 [INFO] 127.0.0.1 - - [01/May/2026 11:36:01] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:36:01,490 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:01,491 [INFO] 127.0.0.1 - - [01/May/2026 11:36:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:07,599 [INFO] 127.0.0.1 - - [01/May/2026 11:36:07] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:36:07,600 [INFO] 127.0.0.1 - - [01/May/2026 11:36:07] "[31m[1mGET /api/pnl HTTP/1.0[0m" 401 -
+2026-05-01 11:36:09,293 [INFO] 127.0.0.1 - - [01/May/2026 11:36:09] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:36:09,533 [INFO] 127.0.0.1 - - [01/May/2026 11:36:09] "[31m[1mGET /api/status HTTP/1.0[0m" 401 -
+2026-05-01 11:36:11,757 [INFO] 127.0.0.1 - - [01/May/2026 11:36:11] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:36:11,934 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:11,934 [INFO] 127.0.0.1 - - [01/May/2026 11:36:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:11,937 [INFO] 127.0.0.1 - - [01/May/2026 11:36:11] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:36:16,783 [INFO] 127.0.0.1 - - [01/May/2026 11:36:16] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 11:36:16,943 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:16,943 [INFO] 127.0.0.1 - - [01/May/2026 11:36:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:21,959 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:21,959 [INFO] 127.0.0.1 - - [01/May/2026 11:36:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:26,948 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:26,949 [INFO] 127.0.0.1 - - [01/May/2026 11:36:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:31,234 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:31,737 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:36:31,749 [INFO] 127.0.0.1 - - [01/May/2026 11:36:31] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:36:31,949 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:31,949 [INFO] 127.0.0.1 - - [01/May/2026 11:36:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:36,943 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:36,944 [INFO] 127.0.0.1 - - [01/May/2026 11:36:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:41,945 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:41,946 [INFO] 127.0.0.1 - - [01/May/2026 11:36:41] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:36:41,946 [INFO] 127.0.0.1 - - [01/May/2026 11:36:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:46,949 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:46,949 [INFO] 127.0.0.1 - - [01/May/2026 11:36:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:51,944 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:51,944 [INFO] 127.0.0.1 - - [01/May/2026 11:36:51] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:36:56,940 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:36:56,940 [INFO] 127.0.0.1 - - [01/May/2026 11:36:56] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:01,959 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:01,960 [INFO] 127.0.0.1 - - [01/May/2026 11:37:01] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:06,958 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:06,959 [INFO] 127.0.0.1 - - [01/May/2026 11:37:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:11,934 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:11,935 [INFO] 127.0.0.1 - - [01/May/2026 11:37:11] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:37:11,935 [INFO] 127.0.0.1 - - [01/May/2026 11:37:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:16,943 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:16,944 [INFO] 127.0.0.1 - - [01/May/2026 11:37:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:21,958 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:21,959 [INFO] 127.0.0.1 - - [01/May/2026 11:37:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:26,974 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:26,974 [INFO] 127.0.0.1 - - [01/May/2026 11:37:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:31,954 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:31,954 [INFO] 127.0.0.1 - - [01/May/2026 11:37:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:36,958 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:36,958 [INFO] 127.0.0.1 - - [01/May/2026 11:37:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:41,939 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:41,940 [INFO] 127.0.0.1 - - [01/May/2026 11:37:41] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:37:41,940 [INFO] 127.0.0.1 - - [01/May/2026 11:37:41] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:46,933 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:46,934 [INFO] 127.0.0.1 - - [01/May/2026 11:37:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:47,629 [INFO] 127.0.0.1 - - [01/May/2026 11:37:47] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:37:47,686 [ERROR] get_ltps: cannot import name 'get_broker' from 'broker.global_broker' (/root/chanakya_v5/broker/global_broker.py)
+2026-05-01 11:37:47,687 [INFO] 127.0.0.1 - - [01/May/2026 11:37:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:37:47,739 [INFO] 127.0.0.1 - - [01/May/2026 11:37:47] "GET /api/status HTTP/1.0" 200 -
+2026-05-01 11:37:51,948 [INFO] 127.0.0.1 - - [01/May/2026 11:37:51] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:37:56,953 [INFO] 127.0.0.1 - - [01/May/2026 11:37:56] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:01,939 [INFO] 127.0.0.1 - - [01/May/2026 11:38:01] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:06,949 [INFO] 127.0.0.1 - - [01/May/2026 11:38:06] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:11,934 [INFO] 127.0.0.1 - - [01/May/2026 11:38:11] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:11,934 [INFO] 127.0.0.1 - - [01/May/2026 11:38:11] "[31m[1mGET /api/pnl HTTP/1.0[0m" 401 -
+2026-05-01 11:38:16,963 [INFO] 127.0.0.1 - - [01/May/2026 11:38:16] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:21,937 [INFO] 127.0.0.1 - - [01/May/2026 11:38:21] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:26,933 [INFO] 127.0.0.1 - - [01/May/2026 11:38:26] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:31,952 [INFO] 127.0.0.1 - - [01/May/2026 11:38:31] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:36,954 [INFO] 127.0.0.1 - - [01/May/2026 11:38:36] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:41,948 [INFO] 127.0.0.1 - - [01/May/2026 11:38:41] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:41,951 [INFO] 127.0.0.1 - - [01/May/2026 11:38:41] "[31m[1mGET /api/pnl HTTP/1.0[0m" 401 -
+2026-05-01 11:38:46,944 [INFO] 127.0.0.1 - - [01/May/2026 11:38:46] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:51,958 [INFO] 127.0.0.1 - - [01/May/2026 11:38:51] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:38:56,954 [INFO] 127.0.0.1 - - [01/May/2026 11:38:56] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:01,935 [INFO] 127.0.0.1 - - [01/May/2026 11:39:01] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:06,948 [INFO] 127.0.0.1 - - [01/May/2026 11:39:06] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:11,950 [INFO] 127.0.0.1 - - [01/May/2026 11:39:11] "[31m[1mGET /api/pnl HTTP/1.0[0m" 401 -
+2026-05-01 11:39:11,950 [INFO] 127.0.0.1 - - [01/May/2026 11:39:11] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:16,969 [INFO] 127.0.0.1 - - [01/May/2026 11:39:16] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:21,953 [INFO] 127.0.0.1 - - [01/May/2026 11:39:21] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:26,948 [INFO] 127.0.0.1 - - [01/May/2026 11:39:26] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:31,928 [INFO] 127.0.0.1 - - [01/May/2026 11:39:31] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:36,940 [INFO] 127.0.0.1 - - [01/May/2026 11:39:36] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:41,959 [INFO] 127.0.0.1 - - [01/May/2026 11:39:41] "[31m[1mGET /api/pnl HTTP/1.0[0m" 401 -
+2026-05-01 11:39:41,959 [INFO] 127.0.0.1 - - [01/May/2026 11:39:41] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:46,052 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 11:39:46,057 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 11:39:46,057 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 11:39:46,951 [INFO] 127.0.0.1 - - [01/May/2026 11:39:46] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:51,963 [INFO] 127.0.0.1 - - [01/May/2026 11:39:51] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:39:56,953 [INFO] 127.0.0.1 - - [01/May/2026 11:39:56] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:40:00,991 [INFO] 127.0.0.1 - - [01/May/2026 11:40:00] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:40:01,975 [INFO] 127.0.0.1 - - [01/May/2026 11:40:01] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:40:05,919 [INFO] 127.0.0.1 - - [01/May/2026 11:40:05] "[31m[1mPOST /api/ai/chat HTTP/1.0[0m" 401 -
+2026-05-01 11:40:06,924 [INFO] 127.0.0.1 - - [01/May/2026 11:40:06] "[31m[1mGET /api/market HTTP/1.0[0m" 401 -
+2026-05-01 11:40:07,136 [INFO] Broker connected: R51882011
+2026-05-01 11:40:09,738 [INFO] 127.0.0.1 - - [01/May/2026 11:40:09] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 11:40:09,978 [INFO] 127.0.0.1 - - [01/May/2026 11:40:09] "[31m[1mGET /api/status HTTP/1.0[0m" 401 -
+2026-05-01 11:40:12,935 [INFO] 127.0.0.1 - - [01/May/2026 11:40:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:15,615 [INFO] 127.0.0.1 - - [01/May/2026 11:40:15] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 11:40:15,804 [INFO] 127.0.0.1 - - [01/May/2026 11:40:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:15,806 [INFO] 127.0.0.1 - - [01/May/2026 11:40:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:40:22,507 [INFO] 127.0.0.1 - - [01/May/2026 11:40:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:23,527 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:40:23,541 [INFO] 127.0.0.1 - - [01/May/2026 11:40:23] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:40:25,814 [INFO] 127.0.0.1 - - [01/May/2026 11:40:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:33,494 [INFO] 127.0.0.1 - - [01/May/2026 11:40:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:35,515 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:40:35,518 [INFO] 127.0.0.1 - - [01/May/2026 11:40:35] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:40:35,803 [INFO] 127.0.0.1 - - [01/May/2026 11:40:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:43,434 [INFO] 127.0.0.1 - - [01/May/2026 11:40:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:45,495 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:40:45,496 [INFO] 127.0.0.1 - - [01/May/2026 11:40:45] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:40:45,800 [INFO] 127.0.0.1 - - [01/May/2026 11:40:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:45,801 [INFO] 127.0.0.1 - - [01/May/2026 11:40:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:40:53,490 [INFO] 127.0.0.1 - - [01/May/2026 11:40:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:40:55,854 [INFO] 127.0.0.1 - - [01/May/2026 11:40:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:03,454 [INFO] 127.0.0.1 - - [01/May/2026 11:41:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:05,813 [INFO] 127.0.0.1 - - [01/May/2026 11:41:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:13,596 [INFO] 127.0.0.1 - - [01/May/2026 11:41:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:13,653 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:41:13,655 [INFO] 127.0.0.1 - - [01/May/2026 11:41:13] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:41:15,819 [INFO] 127.0.0.1 - - [01/May/2026 11:41:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:41:16,163 [INFO] 127.0.0.1 - - [01/May/2026 11:41:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:23,460 [INFO] 127.0.0.1 - - [01/May/2026 11:41:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:25,803 [INFO] 127.0.0.1 - - [01/May/2026 11:41:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:33,491 [INFO] 127.0.0.1 - - [01/May/2026 11:41:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:35,798 [INFO] 127.0.0.1 - - [01/May/2026 11:41:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:42,949 [INFO] 127.0.0.1 - - [01/May/2026 11:41:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:42,975 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-01 11:41:42,976 [INFO] 127.0.0.1 - - [01/May/2026 11:41:42] "POST /api/ai/chat HTTP/1.0" 200 -
+2026-05-01 11:41:45,798 [INFO] 127.0.0.1 - - [01/May/2026 11:41:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:45,803 [INFO] 127.0.0.1 - - [01/May/2026 11:41:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:41:53,164 [INFO] 127.0.0.1 - - [01/May/2026 11:41:53] "GET /api/admin/users HTTP/1.0" 200 -
+2026-05-01 11:41:54,565 [INFO] 127.0.0.1 - - [01/May/2026 11:41:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:41:55,799 [INFO] 127.0.0.1 - - [01/May/2026 11:41:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:03,608 [INFO] 127.0.0.1 - - [01/May/2026 11:42:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:05,814 [INFO] 127.0.0.1 - - [01/May/2026 11:42:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:13,491 [INFO] 127.0.0.1 - - [01/May/2026 11:42:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:15,805 [INFO] 127.0.0.1 - - [01/May/2026 11:42:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:42:15,805 [INFO] 127.0.0.1 - - [01/May/2026 11:42:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:23,573 [INFO] 127.0.0.1 - - [01/May/2026 11:42:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:25,809 [INFO] 127.0.0.1 - - [01/May/2026 11:42:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:33,632 [INFO] 127.0.0.1 - - [01/May/2026 11:42:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:35,803 [INFO] 127.0.0.1 - - [01/May/2026 11:42:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:43,656 [INFO] 127.0.0.1 - - [01/May/2026 11:42:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:45,814 [INFO] 127.0.0.1 - - [01/May/2026 11:42:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:45,822 [INFO] 127.0.0.1 - - [01/May/2026 11:42:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:42:53,480 [INFO] 127.0.0.1 - - [01/May/2026 11:42:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:42:55,809 [INFO] 127.0.0.1 - - [01/May/2026 11:42:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:03,539 [INFO] 127.0.0.1 - - [01/May/2026 11:43:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:05,799 [INFO] 127.0.0.1 - - [01/May/2026 11:43:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:13,557 [INFO] 127.0.0.1 - - [01/May/2026 11:43:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:15,813 [INFO] 127.0.0.1 - - [01/May/2026 11:43:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:15,814 [INFO] 127.0.0.1 - - [01/May/2026 11:43:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:43:23,586 [INFO] 127.0.0.1 - - [01/May/2026 11:43:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:25,808 [INFO] 127.0.0.1 - - [01/May/2026 11:43:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:33,486 [INFO] 127.0.0.1 - - [01/May/2026 11:43:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:35,818 [INFO] 127.0.0.1 - - [01/May/2026 11:43:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:43,431 [INFO] 127.0.0.1 - - [01/May/2026 11:43:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:45,808 [INFO] 127.0.0.1 - - [01/May/2026 11:43:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:45,833 [INFO] 127.0.0.1 - - [01/May/2026 11:43:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:43:54,298 [INFO] 127.0.0.1 - - [01/May/2026 11:43:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:43:55,812 [INFO] 127.0.0.1 - - [01/May/2026 11:43:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:03,595 [INFO] 127.0.0.1 - - [01/May/2026 11:44:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:05,808 [INFO] 127.0.0.1 - - [01/May/2026 11:44:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:13,394 [INFO] 127.0.0.1 - - [01/May/2026 11:44:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:15,793 [INFO] 127.0.0.1 - - [01/May/2026 11:44:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:15,794 [INFO] 127.0.0.1 - - [01/May/2026 11:44:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:44:23,519 [INFO] 127.0.0.1 - - [01/May/2026 11:44:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:25,804 [INFO] 127.0.0.1 - - [01/May/2026 11:44:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:33,475 [INFO] 127.0.0.1 - - [01/May/2026 11:44:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:35,803 [INFO] 127.0.0.1 - - [01/May/2026 11:44:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:43,409 [INFO] 127.0.0.1 - - [01/May/2026 11:44:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:45,793 [INFO] 127.0.0.1 - - [01/May/2026 11:44:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:45,802 [INFO] 127.0.0.1 - - [01/May/2026 11:44:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:44:53,564 [INFO] 127.0.0.1 - - [01/May/2026 11:44:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:44:55,798 [INFO] 127.0.0.1 - - [01/May/2026 11:44:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:03,872 [INFO] 127.0.0.1 - - [01/May/2026 11:45:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:05,798 [INFO] 127.0.0.1 - - [01/May/2026 11:45:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:13,395 [INFO] 127.0.0.1 - - [01/May/2026 11:45:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:15,798 [INFO] 127.0.0.1 - - [01/May/2026 11:45:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:45:16,248 [INFO] 127.0.0.1 - - [01/May/2026 11:45:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:24,743 [INFO] 127.0.0.1 - - [01/May/2026 11:45:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:25,803 [INFO] 127.0.0.1 - - [01/May/2026 11:45:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:33,534 [INFO] 127.0.0.1 - - [01/May/2026 11:45:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:35,818 [INFO] 127.0.0.1 - - [01/May/2026 11:45:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:43,583 [INFO] 127.0.0.1 - - [01/May/2026 11:45:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:45,798 [INFO] 127.0.0.1 - - [01/May/2026 11:45:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:45,808 [INFO] 127.0.0.1 - - [01/May/2026 11:45:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:45:53,463 [INFO] 127.0.0.1 - - [01/May/2026 11:45:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:45:55,798 [INFO] 127.0.0.1 - - [01/May/2026 11:45:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:03,540 [INFO] 127.0.0.1 - - [01/May/2026 11:46:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:05,798 [INFO] 127.0.0.1 - - [01/May/2026 11:46:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:13,937 [INFO] 127.0.0.1 - - [01/May/2026 11:46:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:15,808 [INFO] 127.0.0.1 - - [01/May/2026 11:46:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:15,833 [INFO] 127.0.0.1 - - [01/May/2026 11:46:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:46:23,462 [INFO] 127.0.0.1 - - [01/May/2026 11:46:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:25,813 [INFO] 127.0.0.1 - - [01/May/2026 11:46:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:33,540 [INFO] 127.0.0.1 - - [01/May/2026 11:46:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:35,793 [INFO] 127.0.0.1 - - [01/May/2026 11:46:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:43,326 [INFO] 127.0.0.1 - - [01/May/2026 11:46:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:45,800 [INFO] 127.0.0.1 - - [01/May/2026 11:46:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:45,800 [INFO] 127.0.0.1 - - [01/May/2026 11:46:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:46:53,440 [INFO] 127.0.0.1 - - [01/May/2026 11:46:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:46:55,808 [INFO] 127.0.0.1 - - [01/May/2026 11:46:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:04,873 [INFO] 127.0.0.1 - - [01/May/2026 11:47:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:05,822 [INFO] 127.0.0.1 - - [01/May/2026 11:47:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:15,805 [INFO] 127.0.0.1 - - [01/May/2026 11:47:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:47:23,021 [INFO] 127.0.0.1 - - [01/May/2026 11:47:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:23,208 [INFO] 127.0.0.1 - - [01/May/2026 11:47:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:23,407 [INFO] 127.0.0.1 - - [01/May/2026 11:47:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:25,807 [INFO] 127.0.0.1 - - [01/May/2026 11:47:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:35,594 [INFO] 127.0.0.1 - - [01/May/2026 11:47:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:35,858 [INFO] 127.0.0.1 - - [01/May/2026 11:47:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:43,526 [INFO] 127.0.0.1 - - [01/May/2026 11:47:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:45,798 [INFO] 127.0.0.1 - - [01/May/2026 11:47:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:47:45,800 [INFO] 127.0.0.1 - - [01/May/2026 11:47:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:54,655 [INFO] 127.0.0.1 - - [01/May/2026 11:47:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:47:55,853 [INFO] 127.0.0.1 - - [01/May/2026 11:47:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:03,581 [INFO] 127.0.0.1 - - [01/May/2026 11:48:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:05,811 [INFO] 127.0.0.1 - - [01/May/2026 11:48:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:13,465 [INFO] 127.0.0.1 - - [01/May/2026 11:48:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:15,790 [INFO] 127.0.0.1 - - [01/May/2026 11:48:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:15,791 [INFO] 127.0.0.1 - - [01/May/2026 11:48:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:48:23,495 [INFO] 127.0.0.1 - - [01/May/2026 11:48:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:25,790 [INFO] 127.0.0.1 - - [01/May/2026 11:48:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:33,507 [INFO] 127.0.0.1 - - [01/May/2026 11:48:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:35,789 [INFO] 127.0.0.1 - - [01/May/2026 11:48:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:44,561 [INFO] 127.0.0.1 - - [01/May/2026 11:48:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:45,814 [INFO] 127.0.0.1 - - [01/May/2026 11:48:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:45,815 [INFO] 127.0.0.1 - - [01/May/2026 11:48:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:48:53,457 [INFO] 127.0.0.1 - - [01/May/2026 11:48:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:48:55,803 [INFO] 127.0.0.1 - - [01/May/2026 11:48:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:03,571 [INFO] 127.0.0.1 - - [01/May/2026 11:49:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:05,793 [INFO] 127.0.0.1 - - [01/May/2026 11:49:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:15,797 [INFO] 127.0.0.1 - - [01/May/2026 11:49:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:49:16,526 [INFO] 127.0.0.1 - - [01/May/2026 11:49:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:16,698 [INFO] 127.0.0.1 - - [01/May/2026 11:49:16] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:20,788 [INFO] 127.0.0.1 - - [01/May/2026 11:49:20] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:28,459 [INFO] 127.0.0.1 - - [01/May/2026 11:49:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:30,802 [INFO] 127.0.0.1 - - [01/May/2026 11:49:30] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:39,086 [INFO] 127.0.0.1 - - [01/May/2026 11:49:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:40,813 [INFO] 127.0.0.1 - - [01/May/2026 11:49:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:49:45,789 [INFO] 127.0.0.1 - - [01/May/2026 11:49:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:50:02,054 [INFO] 127.0.0.1 - - [01/May/2026 11:50:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:02,280 [INFO] 127.0.0.1 - - [01/May/2026 11:50:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:02,486 [INFO] 127.0.0.1 - - [01/May/2026 11:50:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:02,690 [INFO] 127.0.0.1 - - [01/May/2026 11:50:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:05,813 [INFO] 127.0.0.1 - - [01/May/2026 11:50:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:13,884 [INFO] 127.0.0.1 - - [01/May/2026 11:50:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:15,814 [INFO] 127.0.0.1 - - [01/May/2026 11:50:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:15,815 [INFO] 127.0.0.1 - - [01/May/2026 11:50:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:50:26,029 [INFO] 127.0.0.1 - - [01/May/2026 11:50:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:26,253 [INFO] 127.0.0.1 - - [01/May/2026 11:50:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:30,798 [INFO] 127.0.0.1 - - [01/May/2026 11:50:30] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:38,508 [INFO] 127.0.0.1 - - [01/May/2026 11:50:38] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:40,788 [INFO] 127.0.0.1 - - [01/May/2026 11:50:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:45,817 [INFO] 127.0.0.1 - - [01/May/2026 11:50:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:50:48,404 [INFO] 127.0.0.1 - - [01/May/2026 11:50:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:50,798 [INFO] 127.0.0.1 - - [01/May/2026 11:50:50] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:50:58,597 [INFO] 127.0.0.1 - - [01/May/2026 11:50:58] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:00,793 [INFO] 127.0.0.1 - - [01/May/2026 11:51:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:15,207 [INFO] 127.0.0.1 - - [01/May/2026 11:51:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:15,393 [INFO] 127.0.0.1 - - [01/May/2026 11:51:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:15,808 [INFO] 127.0.0.1 - - [01/May/2026 11:51:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:15,809 [INFO] 127.0.0.1 - - [01/May/2026 11:51:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:51:24,784 [INFO] 127.0.0.1 - - [01/May/2026 11:51:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:25,812 [INFO] 127.0.0.1 - - [01/May/2026 11:51:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:33,420 [INFO] 127.0.0.1 - - [01/May/2026 11:51:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:35,793 [INFO] 127.0.0.1 - - [01/May/2026 11:51:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:43,389 [INFO] 127.0.0.1 - - [01/May/2026 11:51:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:45,803 [INFO] 127.0.0.1 - - [01/May/2026 11:51:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:51:45,804 [INFO] 127.0.0.1 - - [01/May/2026 11:51:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:52:00,124 [INFO] 127.0.0.1 - - [01/May/2026 11:52:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:00,308 [INFO] 127.0.0.1 - - [01/May/2026 11:52:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:00,798 [INFO] 127.0.0.1 - - [01/May/2026 11:52:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:08,463 [INFO] 127.0.0.1 - - [01/May/2026 11:52:08] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:10,882 [INFO] 127.0.0.1 - - [01/May/2026 11:52:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:15,899 [INFO] 127.0.0.1 - - [01/May/2026 11:52:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:52:42,024 [INFO] 127.0.0.1 - - [01/May/2026 11:52:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:42,197 [INFO] 127.0.0.1 - - [01/May/2026 11:52:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:42,368 [INFO] 127.0.0.1 - - [01/May/2026 11:52:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:42,548 [INFO] 127.0.0.1 - - [01/May/2026 11:52:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:42,723 [INFO] 127.0.0.1 - - [01/May/2026 11:52:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:45,808 [INFO] 127.0.0.1 - - [01/May/2026 11:52:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:45,809 [INFO] 127.0.0.1 - - [01/May/2026 11:52:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:52:48,775 [INFO] 127.0.0.1 - - [01/May/2026 11:52:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:50,793 [INFO] 127.0.0.1 - - [01/May/2026 11:52:50] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:52:58,458 [INFO] 127.0.0.1 - - [01/May/2026 11:52:58] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:00,791 [INFO] 127.0.0.1 - - [01/May/2026 11:53:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:08,376 [INFO] 127.0.0.1 - - [01/May/2026 11:53:08] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:10,803 [INFO] 127.0.0.1 - - [01/May/2026 11:53:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:15,824 [INFO] 127.0.0.1 - - [01/May/2026 11:53:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:53:18,453 [INFO] 127.0.0.1 - - [01/May/2026 11:53:18] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:20,798 [INFO] 127.0.0.1 - - [01/May/2026 11:53:20] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:28,360 [INFO] 127.0.0.1 - - [01/May/2026 11:53:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:30,788 [INFO] 127.0.0.1 - - [01/May/2026 11:53:30] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:45,196 [INFO] 127.0.0.1 - - [01/May/2026 11:53:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:45,372 [INFO] 127.0.0.1 - - [01/May/2026 11:53:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:45,783 [INFO] 127.0.0.1 - - [01/May/2026 11:53:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:45,784 [INFO] 127.0.0.1 - - [01/May/2026 11:53:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:53:53,477 [INFO] 127.0.0.1 - - [01/May/2026 11:53:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:53:55,798 [INFO] 127.0.0.1 - - [01/May/2026 11:53:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:03,502 [INFO] 127.0.0.1 - - [01/May/2026 11:54:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:05,818 [INFO] 127.0.0.1 - - [01/May/2026 11:54:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:15,343 [INFO] 127.0.0.1 - - [01/May/2026 11:54:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:15,798 [INFO] 127.0.0.1 - - [01/May/2026 11:54:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:15,798 [INFO] 127.0.0.1 - - [01/May/2026 11:54:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:54:23,428 [INFO] 127.0.0.1 - - [01/May/2026 11:54:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:25,798 [INFO] 127.0.0.1 - - [01/May/2026 11:54:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:33,502 [INFO] 127.0.0.1 - - [01/May/2026 11:54:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:35,803 [INFO] 127.0.0.1 - - [01/May/2026 11:54:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:45,670 [INFO] 127.0.0.1 - - [01/May/2026 11:54:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:45,808 [INFO] 127.0.0.1 - - [01/May/2026 11:54:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:54:45,857 [INFO] 127.0.0.1 - - [01/May/2026 11:54:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:55,253 [INFO] 127.0.0.1 - - [01/May/2026 11:54:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:54:55,783 [INFO] 127.0.0.1 - - [01/May/2026 11:54:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:03,902 [INFO] 127.0.0.1 - - [01/May/2026 11:55:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:05,792 [INFO] 127.0.0.1 - - [01/May/2026 11:55:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:13,477 [INFO] 127.0.0.1 - - [01/May/2026 11:55:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:15,819 [INFO] 127.0.0.1 - - [01/May/2026 11:55:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:15,821 [INFO] 127.0.0.1 - - [01/May/2026 11:55:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:55:23,342 [INFO] 127.0.0.1 - - [01/May/2026 11:55:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:25,793 [INFO] 127.0.0.1 - - [01/May/2026 11:55:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:33,533 [INFO] 127.0.0.1 - - [01/May/2026 11:55:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:35,778 [INFO] 127.0.0.1 - - [01/May/2026 11:55:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:43,489 [INFO] 127.0.0.1 - - [01/May/2026 11:55:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:45,849 [INFO] 127.0.0.1 - - [01/May/2026 11:55:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:45,850 [INFO] 127.0.0.1 - - [01/May/2026 11:55:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:55:53,498 [INFO] 127.0.0.1 - - [01/May/2026 11:55:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:55:55,852 [INFO] 127.0.0.1 - - [01/May/2026 11:55:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:03,541 [INFO] 127.0.0.1 - - [01/May/2026 11:56:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:05,802 [INFO] 127.0.0.1 - - [01/May/2026 11:56:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:14,557 [INFO] 127.0.0.1 - - [01/May/2026 11:56:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:15,793 [INFO] 127.0.0.1 - - [01/May/2026 11:56:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:15,794 [INFO] 127.0.0.1 - - [01/May/2026 11:56:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:56:23,505 [INFO] 127.0.0.1 - - [01/May/2026 11:56:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:25,792 [INFO] 127.0.0.1 - - [01/May/2026 11:56:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:34,340 [INFO] 127.0.0.1 - - [01/May/2026 11:56:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:35,803 [INFO] 127.0.0.1 - - [01/May/2026 11:56:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:44,875 [INFO] 127.0.0.1 - - [01/May/2026 11:56:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:45,793 [INFO] 127.0.0.1 - - [01/May/2026 11:56:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:56:45,795 [INFO] 127.0.0.1 - - [01/May/2026 11:56:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:53,556 [INFO] 127.0.0.1 - - [01/May/2026 11:56:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:56:55,777 [INFO] 127.0.0.1 - - [01/May/2026 11:56:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:03,489 [INFO] 127.0.0.1 - - [01/May/2026 11:57:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:05,797 [INFO] 127.0.0.1 - - [01/May/2026 11:57:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:14,705 [INFO] 127.0.0.1 - - [01/May/2026 11:57:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:15,793 [INFO] 127.0.0.1 - - [01/May/2026 11:57:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:15,795 [INFO] 127.0.0.1 - - [01/May/2026 11:57:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:57:25,297 [INFO] 127.0.0.1 - - [01/May/2026 11:57:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:25,797 [INFO] 127.0.0.1 - - [01/May/2026 11:57:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:33,500 [INFO] 127.0.0.1 - - [01/May/2026 11:57:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:35,787 [INFO] 127.0.0.1 - - [01/May/2026 11:57:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:43,538 [INFO] 127.0.0.1 - - [01/May/2026 11:57:43] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:45,799 [INFO] 127.0.0.1 - - [01/May/2026 11:57:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:45,801 [INFO] 127.0.0.1 - - [01/May/2026 11:57:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:57:53,405 [INFO] 127.0.0.1 - - [01/May/2026 11:57:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:57:55,803 [INFO] 127.0.0.1 - - [01/May/2026 11:57:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:10,266 [INFO] 127.0.0.1 - - [01/May/2026 11:58:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:11,097 [INFO] 127.0.0.1 - - [01/May/2026 11:58:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:11,267 [INFO] 127.0.0.1 - - [01/May/2026 11:58:11] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:15,789 [INFO] 127.0.0.1 - - [01/May/2026 11:58:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:58:18,416 [INFO] 127.0.0.1 - - [01/May/2026 11:58:18] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:20,776 [INFO] 127.0.0.1 - - [01/May/2026 11:58:20] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:32,302 [INFO] 127.0.0.1 - - [01/May/2026 11:58:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:32,562 [INFO] 127.0.0.1 - - [01/May/2026 11:58:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:35,793 [INFO] 127.0.0.1 - - [01/May/2026 11:58:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:45,740 [INFO] 127.0.0.1 - - [01/May/2026 11:58:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:45,787 [INFO] 127.0.0.1 - - [01/May/2026 11:58:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:58:46,013 [INFO] 127.0.0.1 - - [01/May/2026 11:58:46] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:55,776 [INFO] 127.0.0.1 - - [01/May/2026 11:58:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:58:55,996 [INFO] 127.0.0.1 - - [01/May/2026 11:58:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:03,644 [INFO] 127.0.0.1 - - [01/May/2026 11:59:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:05,802 [INFO] 127.0.0.1 - - [01/May/2026 11:59:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:14,612 [INFO] 127.0.0.1 - - [01/May/2026 11:59:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:15,787 [INFO] 127.0.0.1 - - [01/May/2026 11:59:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:15,789 [INFO] 127.0.0.1 - - [01/May/2026 11:59:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:59:23,394 [INFO] 127.0.0.1 - - [01/May/2026 11:59:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:25,792 [INFO] 127.0.0.1 - - [01/May/2026 11:59:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:36,180 [INFO] 127.0.0.1 - - [01/May/2026 11:59:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:36,441 [INFO] 127.0.0.1 - - [01/May/2026 11:59:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:40,791 [INFO] 127.0.0.1 - - [01/May/2026 11:59:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:45,799 [INFO] 127.0.0.1 - - [01/May/2026 11:59:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 11:59:48,479 [INFO] 127.0.0.1 - - [01/May/2026 11:59:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:50,778 [INFO] 127.0.0.1 - - [01/May/2026 11:59:50] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 11:59:58,433 [INFO] 127.0.0.1 - - [01/May/2026 11:59:58] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:00,802 [INFO] 127.0.0.1 - - [01/May/2026 12:00:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:08,516 [INFO] 127.0.0.1 - - [01/May/2026 12:00:08] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:10,797 [INFO] 127.0.0.1 - - [01/May/2026 12:00:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:15,784 [INFO] 127.0.0.1 - - [01/May/2026 12:00:15] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:00:18,398 [INFO] 127.0.0.1 - - [01/May/2026 12:00:18] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:20,766 [INFO] 127.0.0.1 - - [01/May/2026 12:00:20] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:28,495 [INFO] 127.0.0.1 - - [01/May/2026 12:00:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:30,806 [INFO] 127.0.0.1 - - [01/May/2026 12:00:30] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:38,430 [INFO] 127.0.0.1 - - [01/May/2026 12:00:38] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:40,786 [INFO] 127.0.0.1 - - [01/May/2026 12:00:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:45,155 [INFO] 127.0.0.1 - - [01/May/2026 12:00:45] "POST /api/admin/users HTTP/1.0" 200 -
+2026-05-01 12:00:45,323 [INFO] 127.0.0.1 - - [01/May/2026 12:00:45] "GET /api/admin/users HTTP/1.0" 200 -
+2026-05-01 12:00:45,773 [INFO] 127.0.0.1 - - [01/May/2026 12:00:45] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:00:48,421 [INFO] 127.0.0.1 - - [01/May/2026 12:00:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:50,812 [INFO] 127.0.0.1 - - [01/May/2026 12:00:50] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:00:58,372 [INFO] 127.0.0.1 - - [01/May/2026 12:00:58] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:00,801 [INFO] 127.0.0.1 - - [01/May/2026 12:01:00] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:05,298 [INFO] 127.0.0.1 - - [01/May/2026 12:01:05] "POST /api/logout HTTP/1.0" 200 -
+2026-05-01 12:01:05,521 [INFO] 127.0.0.1 - - [01/May/2026 12:01:05] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 12:01:09,530 [INFO] 127.0.0.1 - - [01/May/2026 12:01:09] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 12:01:09,705 [INFO] 127.0.0.1 - - [01/May/2026 12:01:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:01:12,390 [INFO] 127.0.0.1 - - [01/May/2026 12:01:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:14,716 [INFO] 127.0.0.1 - - [01/May/2026 12:01:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:18,642 [INFO] 127.0.0.1 - - [01/May/2026 12:01:18] "GET /api/admin/users HTTP/1.0" 200 -
+2026-05-01 12:01:22,391 [INFO] 127.0.0.1 - - [01/May/2026 12:01:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:24,702 [INFO] 127.0.0.1 - - [01/May/2026 12:01:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:25,593 [INFO] 127.0.0.1 - - [01/May/2026 12:01:25] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 12:01:33,868 [INFO] 127.0.0.1 - - [01/May/2026 12:01:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:34,701 [INFO] 127.0.0.1 - - [01/May/2026 12:01:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:39,959 [INFO] 127.0.0.1 - - [01/May/2026 12:01:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:01:42,658 [INFO] 127.0.0.1 - - [01/May/2026 12:01:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:44,966 [INFO] 127.0.0.1 - - [01/May/2026 12:01:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:52,533 [INFO] 127.0.0.1 - - [01/May/2026 12:01:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:01:54,946 [INFO] 127.0.0.1 - - [01/May/2026 12:01:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:04,211 [INFO] 127.0.0.1 - - [01/May/2026 12:02:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:04,966 [INFO] 127.0.0.1 - - [01/May/2026 12:02:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:09,961 [INFO] 127.0.0.1 - - [01/May/2026 12:02:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:02:12,633 [INFO] 127.0.0.1 - - [01/May/2026 12:02:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:14,966 [INFO] 127.0.0.1 - - [01/May/2026 12:02:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:22,762 [INFO] 127.0.0.1 - - [01/May/2026 12:02:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:24,961 [INFO] 127.0.0.1 - - [01/May/2026 12:02:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:32,606 [INFO] 127.0.0.1 - - [01/May/2026 12:02:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:34,972 [INFO] 127.0.0.1 - - [01/May/2026 12:02:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:02:39,977 [INFO] 127.0.0.1 - - [01/May/2026 12:02:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:03:09,977 [INFO] 127.0.0.1 - - [01/May/2026 12:03:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:03:36,470 [INFO] 127.0.0.1 - - [01/May/2026 12:03:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:03:39,957 [INFO] 127.0.0.1 - - [01/May/2026 12:03:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:04:09,962 [INFO] 127.0.0.1 - - [01/May/2026 12:04:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:04:26,587 [INFO] 127.0.0.1 - - [01/May/2026 12:04:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:05:24,633 [INFO] 127.0.0.1 - - [01/May/2026 12:05:24] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:05:28,912 [INFO] 127.0.0.1 - - [01/May/2026 12:05:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:06:23,988 [INFO] 127.0.0.1 - - [01/May/2026 12:06:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:06:33,438 [INFO] 127.0.0.1 - - [01/May/2026 12:06:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:07:23,977 [INFO] 127.0.0.1 - - [01/May/2026 12:07:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:07:26,700 [INFO] 127.0.0.1 - - [01/May/2026 12:07:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:08:23,962 [INFO] 127.0.0.1 - - [01/May/2026 12:08:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:08:29,687 [INFO] 127.0.0.1 - - [01/May/2026 12:08:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:09:23,983 [INFO] 127.0.0.1 - - [01/May/2026 12:09:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:09:27,743 [INFO] 127.0.0.1 - - [01/May/2026 12:09:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:10:24,019 [INFO] 127.0.0.1 - - [01/May/2026 12:10:24] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:10:26,803 [INFO] 127.0.0.1 - - [01/May/2026 12:10:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:11:23,980 [INFO] 127.0.0.1 - - [01/May/2026 12:11:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:11:26,680 [INFO] 127.0.0.1 - - [01/May/2026 12:11:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:12:24,012 [INFO] 127.0.0.1 - - [01/May/2026 12:12:24] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:12:29,201 [INFO] 127.0.0.1 - - [01/May/2026 12:12:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:13:23,982 [INFO] 127.0.0.1 - - [01/May/2026 12:13:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:13:30,456 [INFO] 127.0.0.1 - - [01/May/2026 12:13:30] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:14:23,954 [INFO] 127.0.0.1 - - [01/May/2026 12:14:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:14:28,969 [INFO] 127.0.0.1 - - [01/May/2026 12:14:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:15:23,961 [INFO] 127.0.0.1 - - [01/May/2026 12:15:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:15:29,513 [INFO] 127.0.0.1 - - [01/May/2026 12:15:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:16:23,977 [INFO] 127.0.0.1 - - [01/May/2026 12:16:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:16:26,655 [INFO] 127.0.0.1 - - [01/May/2026 12:16:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:17:23,973 [INFO] 127.0.0.1 - - [01/May/2026 12:17:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:17:26,964 [INFO] 127.0.0.1 - - [01/May/2026 12:17:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:18:23,963 [INFO] 127.0.0.1 - - [01/May/2026 12:18:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:18:29,413 [INFO] 127.0.0.1 - - [01/May/2026 12:18:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:19:23,951 [INFO] 127.0.0.1 - - [01/May/2026 12:19:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:19:28,137 [INFO] 127.0.0.1 - - [01/May/2026 12:19:28] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:20:23,954 [INFO] 127.0.0.1 - - [01/May/2026 12:20:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:20:26,650 [INFO] 127.0.0.1 - - [01/May/2026 12:20:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:21:23,970 [INFO] 127.0.0.1 - - [01/May/2026 12:21:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:21:26,613 [INFO] 127.0.0.1 - - [01/May/2026 12:21:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:22:23,932 [INFO] 127.0.0.1 - - [01/May/2026 12:22:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:22:26,621 [INFO] 127.0.0.1 - - [01/May/2026 12:22:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:23:23,968 [INFO] 127.0.0.1 - - [01/May/2026 12:23:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:23:26,634 [INFO] 127.0.0.1 - - [01/May/2026 12:23:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:24:23,974 [INFO] 127.0.0.1 - - [01/May/2026 12:24:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:24:29,858 [INFO] 127.0.0.1 - - [01/May/2026 12:24:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:25:23,963 [INFO] 127.0.0.1 - - [01/May/2026 12:25:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:25:26,609 [INFO] 127.0.0.1 - - [01/May/2026 12:25:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:26:23,932 [INFO] 127.0.0.1 - - [01/May/2026 12:26:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:26:26,513 [INFO] 127.0.0.1 - - [01/May/2026 12:26:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:27:23,947 [INFO] 127.0.0.1 - - [01/May/2026 12:27:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:27:26,721 [INFO] 127.0.0.1 - - [01/May/2026 12:27:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:28:24,683 [INFO] 127.0.0.1 - - [01/May/2026 12:28:24] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:28:27,339 [INFO] 127.0.0.1 - - [01/May/2026 12:28:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:29:23,942 [INFO] 127.0.0.1 - - [01/May/2026 12:29:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:29:26,511 [INFO] 127.0.0.1 - - [01/May/2026 12:29:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:30:23,947 [INFO] 127.0.0.1 - - [01/May/2026 12:30:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:30:26,520 [INFO] 127.0.0.1 - - [01/May/2026 12:30:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:31:23,941 [INFO] 127.0.0.1 - - [01/May/2026 12:31:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:31:27,665 [INFO] 127.0.0.1 - - [01/May/2026 12:31:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:32:23,957 [INFO] 127.0.0.1 - - [01/May/2026 12:32:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:32:27,877 [INFO] 127.0.0.1 - - [01/May/2026 12:32:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:33:23,947 [INFO] 127.0.0.1 - - [01/May/2026 12:33:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:33:27,558 [INFO] 127.0.0.1 - - [01/May/2026 12:33:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:34:23,931 [INFO] 127.0.0.1 - - [01/May/2026 12:34:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:34:26,538 [INFO] 127.0.0.1 - - [01/May/2026 12:34:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:35:23,967 [INFO] 127.0.0.1 - - [01/May/2026 12:35:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:35:31,080 [INFO] 127.0.0.1 - - [01/May/2026 12:35:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:36:23,954 [INFO] 127.0.0.1 - - [01/May/2026 12:36:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:36:26,593 [INFO] 127.0.0.1 - - [01/May/2026 12:36:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:37:23,943 [INFO] 127.0.0.1 - - [01/May/2026 12:37:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:37:26,614 [INFO] 127.0.0.1 - - [01/May/2026 12:37:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:38:23,927 [INFO] 127.0.0.1 - - [01/May/2026 12:38:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:38:26,493 [INFO] 127.0.0.1 - - [01/May/2026 12:38:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:39:23,931 [INFO] 127.0.0.1 - - [01/May/2026 12:39:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:39:26,631 [INFO] 127.0.0.1 - - [01/May/2026 12:39:26] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:40:23,957 [INFO] 127.0.0.1 - - [01/May/2026 12:40:23] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:40:33,351 [INFO] 127.0.0.1 - - [01/May/2026 12:40:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:03,662 [INFO] 127.0.0.1 - - [01/May/2026 12:41:03] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:41:07,824 [INFO] 127.0.0.1 - - [01/May/2026 12:41:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:08,007 [INFO] 127.0.0.1 - - [01/May/2026 12:41:08] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:09,656 [INFO] 127.0.0.1 - - [01/May/2026 12:41:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:41:09,663 [INFO] 127.0.0.1 - - [01/May/2026 12:41:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:09,957 [INFO] 127.0.0.1 - - [01/May/2026 12:41:09] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-01 12:41:17,327 [INFO] 127.0.0.1 - - [01/May/2026 12:41:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:19,330 [INFO] 127.0.0.1 - - [01/May/2026 12:41:19] "GET /api/admin/users HTTP/1.0" 200 -
+2026-05-01 12:41:19,670 [INFO] 127.0.0.1 - - [01/May/2026 12:41:19] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:27,376 [INFO] 127.0.0.1 - - [01/May/2026 12:41:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:29,670 [INFO] 127.0.0.1 - - [01/May/2026 12:41:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:39,682 [INFO] 127.0.0.1 - - [01/May/2026 12:41:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:41:40,385 [INFO] 127.0.0.1 - - [01/May/2026 12:41:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:40,561 [INFO] 127.0.0.1 - - [01/May/2026 12:41:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:44,682 [INFO] 127.0.0.1 - - [01/May/2026 12:41:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:52,332 [INFO] 127.0.0.1 - - [01/May/2026 12:41:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:41:54,667 [INFO] 127.0.0.1 - - [01/May/2026 12:41:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:02,435 [INFO] 127.0.0.1 - - [01/May/2026 12:42:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:04,673 [INFO] 127.0.0.1 - - [01/May/2026 12:42:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:09,676 [INFO] 127.0.0.1 - - [01/May/2026 12:42:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:42:20,857 [INFO] 127.0.0.1 - - [01/May/2026 12:42:20] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:21,004 [INFO] 127.0.0.1 - - [01/May/2026 12:42:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:21,171 [INFO] 127.0.0.1 - - [01/May/2026 12:42:21] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:24,667 [INFO] 127.0.0.1 - - [01/May/2026 12:42:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:32,401 [INFO] 127.0.0.1 - - [01/May/2026 12:42:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:34,677 [INFO] 127.0.0.1 - - [01/May/2026 12:42:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:39,670 [INFO] 127.0.0.1 - - [01/May/2026 12:42:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:42:42,336 [INFO] 127.0.0.1 - - [01/May/2026 12:42:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:44,682 [INFO] 127.0.0.1 - - [01/May/2026 12:42:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:52,319 [INFO] 127.0.0.1 - - [01/May/2026 12:42:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:42:54,678 [INFO] 127.0.0.1 - - [01/May/2026 12:42:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:02,478 [INFO] 127.0.0.1 - - [01/May/2026 12:43:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:04,687 [INFO] 127.0.0.1 - - [01/May/2026 12:43:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:09,670 [INFO] 127.0.0.1 - - [01/May/2026 12:43:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:43:12,407 [INFO] 127.0.0.1 - - [01/May/2026 12:43:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:14,677 [INFO] 127.0.0.1 - - [01/May/2026 12:43:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:23,635 [INFO] 127.0.0.1 - - [01/May/2026 12:43:23] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:24,667 [INFO] 127.0.0.1 - - [01/May/2026 12:43:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:32,330 [INFO] 127.0.0.1 - - [01/May/2026 12:43:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:34,682 [INFO] 127.0.0.1 - - [01/May/2026 12:43:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:39,671 [INFO] 127.0.0.1 - - [01/May/2026 12:43:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:43:48,440 [INFO] 127.0.0.1 - - [01/May/2026 12:43:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:48,634 [INFO] 127.0.0.1 - - [01/May/2026 12:43:48] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:49,670 [INFO] 127.0.0.1 - - [01/May/2026 12:43:49] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:57,335 [INFO] 127.0.0.1 - - [01/May/2026 12:43:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:43:59,685 [INFO] 127.0.0.1 - - [01/May/2026 12:43:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:09,682 [INFO] 127.0.0.1 - - [01/May/2026 12:44:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:44:10,291 [INFO] 127.0.0.1 - - [01/May/2026 12:44:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:10,462 [INFO] 127.0.0.1 - - [01/May/2026 12:44:10] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:14,682 [INFO] 127.0.0.1 - - [01/May/2026 12:44:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:29,002 [INFO] 127.0.0.1 - - [01/May/2026 12:44:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:29,195 [INFO] 127.0.0.1 - - [01/May/2026 12:44:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:29,679 [INFO] 127.0.0.1 - - [01/May/2026 12:44:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:37,324 [INFO] 127.0.0.1 - - [01/May/2026 12:44:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:39,674 [INFO] 127.0.0.1 - - [01/May/2026 12:44:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:39,687 [INFO] 127.0.0.1 - - [01/May/2026 12:44:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:44:54,096 [INFO] 127.0.0.1 - - [01/May/2026 12:44:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:54,275 [INFO] 127.0.0.1 - - [01/May/2026 12:44:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:44:54,664 [INFO] 127.0.0.1 - - [01/May/2026 12:44:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:05,878 [INFO] 127.0.0.1 - - [01/May/2026 12:45:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:06,062 [INFO] 127.0.0.1 - - [01/May/2026 12:45:06] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:09,667 [INFO] 127.0.0.1 - - [01/May/2026 12:45:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:09,670 [INFO] 127.0.0.1 - - [01/May/2026 12:45:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:45:22,510 [INFO] 127.0.0.1 - - [01/May/2026 12:45:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:22,757 [INFO] 127.0.0.1 - - [01/May/2026 12:45:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:24,687 [INFO] 127.0.0.1 - - [01/May/2026 12:45:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:36,352 [INFO] 127.0.0.1 - - [01/May/2026 12:45:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:36,565 [INFO] 127.0.0.1 - - [01/May/2026 12:45:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:39,684 [INFO] 127.0.0.1 - - [01/May/2026 12:45:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:39,692 [INFO] 127.0.0.1 - - [01/May/2026 12:45:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:45:47,455 [INFO] 127.0.0.1 - - [01/May/2026 12:45:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:49,686 [INFO] 127.0.0.1 - - [01/May/2026 12:45:49] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:57,311 [INFO] 127.0.0.1 - - [01/May/2026 12:45:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:45:59,657 [INFO] 127.0.0.1 - - [01/May/2026 12:45:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:07,401 [INFO] 127.0.0.1 - - [01/May/2026 12:46:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:09,677 [INFO] 127.0.0.1 - - [01/May/2026 12:46:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:09,684 [INFO] 127.0.0.1 - - [01/May/2026 12:46:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:46:17,365 [INFO] 127.0.0.1 - - [01/May/2026 12:46:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:19,679 [INFO] 127.0.0.1 - - [01/May/2026 12:46:19] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:39,683 [INFO] 127.0.0.1 - - [01/May/2026 12:46:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:46:42,187 [INFO] 127.0.0.1 - - [01/May/2026 12:46:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:42,352 [INFO] 127.0.0.1 - - [01/May/2026 12:46:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:42,507 [INFO] 127.0.0.1 - - [01/May/2026 12:46:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:42,671 [INFO] 127.0.0.1 - - [01/May/2026 12:46:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:44,681 [INFO] 127.0.0.1 - - [01/May/2026 12:46:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:52,399 [INFO] 127.0.0.1 - - [01/May/2026 12:46:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:46:54,677 [INFO] 127.0.0.1 - - [01/May/2026 12:46:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:02,456 [INFO] 127.0.0.1 - - [01/May/2026 12:47:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:04,667 [INFO] 127.0.0.1 - - [01/May/2026 12:47:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:09,654 [INFO] 127.0.0.1 - - [01/May/2026 12:47:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:47:12,420 [INFO] 127.0.0.1 - - [01/May/2026 12:47:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:14,682 [INFO] 127.0.0.1 - - [01/May/2026 12:47:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:24,930 [INFO] 127.0.0.1 - - [01/May/2026 12:47:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:25,109 [INFO] 127.0.0.1 - - [01/May/2026 12:47:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:29,674 [INFO] 127.0.0.1 - - [01/May/2026 12:47:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:39,672 [INFO] 127.0.0.1 - - [01/May/2026 12:47:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:47:40,748 [INFO] 127.0.0.1 - - [01/May/2026 12:47:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:40,922 [INFO] 127.0.0.1 - - [01/May/2026 12:47:40] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:44,677 [INFO] 127.0.0.1 - - [01/May/2026 12:47:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:52,270 [INFO] 127.0.0.1 - - [01/May/2026 12:47:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:47:54,661 [INFO] 127.0.0.1 - - [01/May/2026 12:47:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:02,927 [INFO] 127.0.0.1 - - [01/May/2026 12:48:02] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:04,667 [INFO] 127.0.0.1 - - [01/May/2026 12:48:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:09,684 [INFO] 127.0.0.1 - - [01/May/2026 12:48:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:48:12,253 [INFO] 127.0.0.1 - - [01/May/2026 12:48:12] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:14,671 [INFO] 127.0.0.1 - - [01/May/2026 12:48:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:29,078 [INFO] 127.0.0.1 - - [01/May/2026 12:48:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:29,304 [INFO] 127.0.0.1 - - [01/May/2026 12:48:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:29,660 [INFO] 127.0.0.1 - - [01/May/2026 12:48:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:37,348 [INFO] 127.0.0.1 - - [01/May/2026 12:48:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:39,659 [INFO] 127.0.0.1 - - [01/May/2026 12:48:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:39,677 [INFO] 127.0.0.1 - - [01/May/2026 12:48:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:48:47,342 [INFO] 127.0.0.1 - - [01/May/2026 12:48:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:49,692 [INFO] 127.0.0.1 - - [01/May/2026 12:48:49] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:57,239 [INFO] 127.0.0.1 - - [01/May/2026 12:48:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:48:59,661 [INFO] 127.0.0.1 - - [01/May/2026 12:48:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:09,664 [INFO] 127.0.0.1 - - [01/May/2026 12:49:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:49:13,975 [INFO] 127.0.0.1 - - [01/May/2026 12:49:13] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:14,164 [INFO] 127.0.0.1 - - [01/May/2026 12:49:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:14,659 [INFO] 127.0.0.1 - - [01/May/2026 12:49:14] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:22,396 [INFO] 127.0.0.1 - - [01/May/2026 12:49:22] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:24,684 [INFO] 127.0.0.1 - - [01/May/2026 12:49:24] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:32,315 [INFO] 127.0.0.1 - - [01/May/2026 12:49:32] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:34,659 [INFO] 127.0.0.1 - - [01/May/2026 12:49:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:39,677 [INFO] 127.0.0.1 - - [01/May/2026 12:49:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:49:42,809 [INFO] 127.0.0.1 - - [01/May/2026 12:49:42] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:44,659 [INFO] 127.0.0.1 - - [01/May/2026 12:49:44] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:52,358 [INFO] 127.0.0.1 - - [01/May/2026 12:49:52] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:49:54,660 [INFO] 127.0.0.1 - - [01/May/2026 12:49:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:09,043 [INFO] 127.0.0.1 - - [01/May/2026 12:50:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:09,271 [INFO] 127.0.0.1 - - [01/May/2026 12:50:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:09,649 [INFO] 127.0.0.1 - - [01/May/2026 12:50:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:50:09,656 [INFO] 127.0.0.1 - - [01/May/2026 12:50:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:17,154 [INFO] 127.0.0.1 - - [01/May/2026 12:50:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:19,644 [INFO] 127.0.0.1 - - [01/May/2026 12:50:19] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:27,313 [INFO] 127.0.0.1 - - [01/May/2026 12:50:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:29,674 [INFO] 127.0.0.1 - - [01/May/2026 12:50:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:37,351 [INFO] 127.0.0.1 - - [01/May/2026 12:50:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:39,683 [INFO] 127.0.0.1 - - [01/May/2026 12:50:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:39,692 [INFO] 127.0.0.1 - - [01/May/2026 12:50:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:50:47,227 [INFO] 127.0.0.1 - - [01/May/2026 12:50:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:49,664 [INFO] 127.0.0.1 - - [01/May/2026 12:50:49] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:57,348 [INFO] 127.0.0.1 - - [01/May/2026 12:50:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:50:59,648 [INFO] 127.0.0.1 - - [01/May/2026 12:50:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:07,294 [INFO] 127.0.0.1 - - [01/May/2026 12:51:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:09,664 [INFO] 127.0.0.1 - - [01/May/2026 12:51:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:09,676 [INFO] 127.0.0.1 - - [01/May/2026 12:51:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:51:17,285 [INFO] 127.0.0.1 - - [01/May/2026 12:51:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:19,667 [INFO] 127.0.0.1 - - [01/May/2026 12:51:19] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:27,299 [INFO] 127.0.0.1 - - [01/May/2026 12:51:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:29,671 [INFO] 127.0.0.1 - - [01/May/2026 12:51:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:37,262 [INFO] 127.0.0.1 - - [01/May/2026 12:51:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:39,669 [INFO] 127.0.0.1 - - [01/May/2026 12:51:39] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:51:39,676 [INFO] 127.0.0.1 - - [01/May/2026 12:51:39] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:47,364 [INFO] 127.0.0.1 - - [01/May/2026 12:51:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:49,664 [INFO] 127.0.0.1 - - [01/May/2026 12:51:49] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:57,346 [INFO] 127.0.0.1 - - [01/May/2026 12:51:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:51:59,670 [INFO] 127.0.0.1 - - [01/May/2026 12:51:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:07,389 [INFO] 127.0.0.1 - - [01/May/2026 12:52:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:09,669 [INFO] 127.0.0.1 - - [01/May/2026 12:52:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:09,676 [INFO] 127.0.0.1 - - [01/May/2026 12:52:09] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 12:52:17,433 [INFO] 127.0.0.1 - - [01/May/2026 12:52:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:19,664 [INFO] 127.0.0.1 - - [01/May/2026 12:52:19] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:27,586 [INFO] 127.0.0.1 - - [01/May/2026 12:52:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:29,690 [INFO] 127.0.0.1 - - [01/May/2026 12:52:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 12:52:37,896 [INFO] 127.0.0.1 - - [01/May/2026 12:52:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:34:02,742 [INFO] 127.0.0.1 - - [01/May/2026 13:34:02] "GET / HTTP/1.0" 200 -
+2026-05-01 13:34:25,158 [INFO] 127.0.0.1 - - [01/May/2026 13:34:25] "GET /v5 HTTP/1.0" 200 -
+2026-05-01 13:34:28,741 [INFO] 127.0.0.1 - - [01/May/2026 13:34:28] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 13:34:28,904 [INFO] 127.0.0.1 - - [01/May/2026 13:34:28] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 13:34:31,620 [INFO] 127.0.0.1 - - [01/May/2026 13:34:31] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:34:33,959 [INFO] 127.0.0.1 - - [01/May/2026 13:34:33] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:34:45,881 [INFO] 127.0.0.1 - - [01/May/2026 13:34:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,422 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,452 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,519 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,616 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 13:51:03,628 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,678 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,763 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,784 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,790 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,837 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,908 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,946 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:03,956 [INFO] 127.0.0.1 - - [01/May/2026 13:51:03] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 13:51:04,096 [INFO] 127.0.0.1 - - [01/May/2026 13:51:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:04,127 [INFO] 127.0.0.1 - - [01/May/2026 13:51:04] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-01 13:51:04,256 [INFO] 127.0.0.1 - - [01/May/2026 13:51:04] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:07,573 [INFO] 127.0.0.1 - - [01/May/2026 13:51:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:08,816 [INFO] 127.0.0.1 - - [01/May/2026 13:51:08] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 13:51:09,170 [INFO] 127.0.0.1 - - [01/May/2026 13:51:09] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 14:09:20,649 [INFO] 127.0.0.1 - - [01/May/2026 14:09:20] "POST /api/login HTTP/1.0" 200 -
+2026-05-01 14:09:29,343 [INFO] 127.0.0.1 - - [01/May/2026 14:09:29] "GET /api/market HTTP/1.0" 200 -
+2026-05-01 14:09:29,411 [INFO] 127.0.0.1 - - [01/May/2026 14:09:29] "GET /api/status HTTP/1.0" 200 -
+2026-05-01 21:53:21,360 [INFO] 127.0.0.1 - - [01/May/2026 21:53:21] "POST /api/login HTTP/1.1" 200 -
+2026-05-01 21:53:21,413 [INFO] 127.0.0.1 - - [01/May/2026 21:53:21] "GET /api/status HTTP/1.1" 200 -
+2026-05-01 21:54:31,855 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-01 21:54:31,863 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-01 21:54:31,863 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-01 21:54:41,352 [INFO] 127.0.0.1 - - [01/May/2026 21:54:41] "POST /api/login HTTP/1.1" 200 -
+2026-05-01 21:54:42,636 [INFO] Broker connected: R51882011
+2026-05-01 21:54:42,636 [INFO] 127.0.0.1 - - [01/May/2026 21:54:42] "GET /api/status HTTP/1.1" 200 -
+2026-05-01 22:03:18,942 [INFO] 127.0.0.1 - - [01/May/2026 22:03:18] "POST /api/login HTTP/1.1" 200 -
+2026-05-01 22:03:28,328 [INFO] 127.0.0.1 - - [01/May/2026 22:03:28] "GET /api/market HTTP/1.1" 200 -
+2026-05-01 22:03:28,344 [INFO] 127.0.0.1 - - [01/May/2026 22:03:28] "GET /api/status HTTP/1.1" 200 -
