@@ -110,6 +110,64 @@ def connect() -> bool:
         print(f"An error occurred during Angel One SmartAPI connection: {e}")
         return False
 
+def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
+    """
+    Fetches the Last Traded Price (LTP) for a given symbol and exchange.
+
+    Args:
+        exchange: The exchange code (e.g., 'NSE', 'BSE', 'NFO', 'MCX').
+        symbol: The trading symbol (e.g., 'RELIANCE', 'INFY').
+        token: The unique token for the instrument (optional, but recommended for accuracy).
+
+    Returns:
+        The LTP as a float, or None if it cannot be fetched or an error occurs.
+    """
+    if not isinstance(smart_api_instance, SmartApi) or smart_api_instance.__class__.__name__ == 'SmartApi':
+        print("Error: SmartApi instance is not properly initialized or is a placeholder. Cannot fetch LTP.")
+        return None
+
+    try:
+        # The smartapi library's get_quotes method can fetch LTP.
+        # It typically requires a list of instruments.
+        # We'll construct the instrument format expected by the library.
+        # The format is usually {'exchange': 'EX', 'symboltoken': 'TOKEN'} or {'exchange': 'EX', 'symbol': 'SYM'}
+        
+        instrument = {
+            "exchange": exchange,
+            "symbol": symbol
+        }
+        if token:
+            instrument["symboltoken"] = token
+        else:
+            # If token is not provided, we might need to fetch it first or rely on symbol lookup.
+            # For simplicity here, we'll assume symbol is sufficient if token is missing,
+            # but a real implementation might need a token lookup.
+            print(f"Warning: Token not provided for {symbol} on {exchange}. LTP fetch might be less reliable.")
+
+        quotes = smart_api_instance.get_quotes([instrument])
+
+        if quotes and quotes.get("status") == "success":
+            # The response structure can vary, but typically it's a list of quote data.
+            # We expect one quote for our single instrument.
+            quote_data = quotes.get("data", [])
+            if quote_data:
+                ltp = quote_data[0].get("ltp")
+                if ltp is not None:
+                    return float(ltp)
+                else:
+                    print(f"LTP not found in quote data for {symbol} on {exchange}.")
+                    return None
+            else:
+                print(f"No quote data received for {symbol} on {exchange}.")
+                return None
+        else:
+            print(f"Failed to fetch quotes for {symbol} on {exchange}. Response: {quotes}")
+            return None
+    except Exception as e:
+        print(f"An error occurred while fetching LTP for {symbol} on {exchange}: {e}")
+        return None
+
+
 # --- Subscription Management Logic ---
 # Import the core subscription logic from the configuration module.
 try:
