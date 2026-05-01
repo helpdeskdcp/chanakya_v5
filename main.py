@@ -154,11 +154,27 @@ def ai_chat():
 def get_trades():
     try:
         from trading.paper_engine import get_open_trades, get_all_trades
+        from broker.global_broker import get_broker
         mode = request.args.get("mode","open")
         if mode == "open":
             trades = get_open_trades(request.username)
         else:
             trades = get_all_trades(request.username)
+        # Add live LTP to each trade
+        try:
+            broker = get_broker()
+            if broker and broker.is_connected():
+                for t in trades:
+                    ltp = broker.get_ltp(t.get("exchange","NSE"), t.get("symbol",""), t.get("token",""))
+                    if ltp:
+                        t["ltp"] = ltp
+                        qty = t.get("qty",1)
+                        entry = t.get("entry_price",0)
+                        if t.get("direction") == "BUY":
+                            t["live_pnl"] = round((ltp-entry)*qty, 2)
+                        else:
+                            t["live_pnl"] = round((entry-ltp)*qty, 2)
+        except: pass
         return jsonify({"success":True,"trades":trades,"total":len(trades)})
     except Exception as e:
         return jsonify({"success":False,"error":str(e),"trades":[]})
