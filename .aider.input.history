@@ -1,0 +1,1269 @@
+
+# 2026-05-01 00:01:41.431581
++Create config/settings.py with all configuration for Chanakya AI v5.0:
+
+# 2026-05-01 00:01:46.504578
++- Subscription tiers (developer, administrator, platinum, gold, silver, premium, demo)
+
+# 2026-05-01 00:01:48.159621
++- Feature access per tier
+
+# 2026-05-01 00:01:57.853507
++- Angel One broker config
+
+# 2026-05-01 00:02:31.150301
++- Flask settings port 5002
+
+# 2026-05-01 00:02:50.129471
++- File paths for SQLite, cache, logs
+
+# 2026-05-01 00:03:23.870215
++- Rate limiter settings
+
+# 2026-05-01 00:03:57.339189
++- All from .env file
+
+# 2026-05-01 00:05:19.608224
++Make it clean, professional, crash-proof with defaults
+
+# 2026-05-01 00:10:55.098283
++exit
+
+# 2026-05-01 00:11:49.353275
++Check config/settings.py and show me what's in it
+
+# 2026-05-01 00:13:12.464029
++Create config/subscriptions.py with complete subscription tier system:
+
+# 2026-05-01 00:13:13.806515
++- developer: no expiry, all features unlimited
+
+# 2026-05-01 00:13:33.497011
++- administrator: no expiry, all features, max 100 users
+
+# 2026-05-01 00:14:37.916210
++- platinum: 365 days, live+paper trading, AI chat, prediction, options chain, equity scanner, auto trade, telegram alerts, backtesting, advanced analytics
+
+# 2026-05-01 00:15:14.354588
++- gold: 180 days, live+paper trading, AI chat, prediction, equity scanner, telegram alerts
+
+# 2026-05-01 00:16:18.589946
++- silver: 90 days, paper trading only, AI chat, equity scanner, basic signals
+
+# 2026-05-01 00:17:22.846086
++- premium: 30 days, paper trading, basic signals, AI chat basic
+
+# 2026-05-01 00:18:27.092744
++- demo: 15 days, paper trading only, global broker only, basic signals
+
+# 2026-05-01 00:19:31.485135
++Include check_feature_access(role, feature) function that returns True/False
+
+# 2026-05-01 00:20:35.890438
++Include get_tier_info(role) function
+
+# 2026-05-01 00:21:40.115430
++Include days_remaining(created_at, role) function
+
+# 2026-05-01 00:22:44.348598
++Make it crash-proof with try/except
+
+# 2026-05-01 00:46:58.386708
++echo "output: aider ollama"
+
+# 2026-05-01 00:53:46.924892
++echo "output: ollama start"
+
+# 2026-05-01 01:04:39.252158
++Create config/subscriptions.py with 7 subscription tiers: developer(no expiry all features), administrator(no expiry all features), platinum(365 days all features), gold(180 days live+paper+ai), silver(90 days paper+ai), premium(30 days paper+basic), demo(15 days paper only). Include check_feature_access(role, feature) and days_remaining(created_at, role) functions. Keep it simple and crash-proof.
+
+# 2026-05-01 04:47:27.744934
++Fix config/subscriptions.py - remove subscription_system.add_tier(f) from SubscriptionSystem __init__ class. The SubscriptionTier class should just store expiry and features list. Make it simple without Feature class - just use plain strings for features list.
+
+# 2026-05-01 06:25:19.199091
++y
+
+# 2026-05-01 06:27:29.949730
++Fix config/subscriptions.py - remove subscription_system.add_tier(f) from SubscriptionSystem __init__ class. The SubscriptionTier class should just store expiry and features list. Make it simple without Feature class - just use plain strings for features list.
+
+# 2026-05-01 06:27:42.463666
++y
+
+# 2026-05-01 07:04:11.693198
++review
+
+# 2026-05-01 07:04:37.602132
++Y
+
+# 2026-05-01 07:06:41.842245
++/add .
+
+# 2026-05-01 07:07:06.526644
++Fix this project and make it a fully automated AI scalping bot with error handling and SmartAPI integration
+
+# 2026-05-01 07:07:35.721659
++YYES
+
+# 2026-05-01 07:07:44.646340
++Yes
+
+# 2026-05-01 07:08:13.321795
++Fix this project and make it a fully automated AI scalping bot with error handling and SmartAPI integration
+
+# 2026-05-01 07:08:38.181762
++Y /d
+
+# 2026-05-01 07:08:46.617266
++exit
+
+# 2026-05-01 07:10:01.098746
++Yes
+
+# 2026-05-01 07:26:53.917410
++Fix config/subscriptions.py - remove subscription_system.add_tier(f) from SubscriptionSystem __init__ class. The SubscriptionTier class should just store expiry and
+
+# 2026-05-01 07:26:53.940696
++> features list. Make it simple without Feature class - just use plain strings for features list.
+
+# 2026-05-01 07:27:05.092108
++Yes
+
+# 2026-05-01 07:29:31.457694
++y
+
+# 2026-05-01 07:38:17.748085
++Fix config/subscriptions.py - remove subscription_system.add_tier(f) from SubscriptionSystem __init__ c
+
+# 2026-05-01 07:38:31.334493
++lass. The SubscriptionTier class should just store expiry and features list. Make it simple without Feature class - just use plain strings for features list.
+
+# 2026-05-01 07:38:47.019757
++Y /D
+
+# 2026-05-01 07:38:51.574804
++Y
+
+# 2026-05-01 07:50:23.371628
++Remove Feature class usage completely. Use plain list of strings for features. Simplify SubscriptionTier accordingly and clean unused code.
+
+# 2026-05-01 07:51:15.706651
++Fix SubscriptionSystem to avoid using defaultdict since SubscriptionTier requires arguments. Use a normal dictionary instead.
+
+# 2026-05-01 07:55:23.245393
++Rewrite config/subscriptions.py cleanly.
+
+# 2026-05-01 07:55:26.592541
++7 tiers: developer(no expiry, all), 
+
+# 2026-05-01 07:55:30.500693
++administrator(no expiry, all),
+
+# 2026-05-01 07:55:34.918334
++platinum(365 days), gold(180 days),
+
+# 2026-05-01 07:55:38.508411
++silver(90 days), premium(30 days), 
+
+# 2026-05-01 07:55:42.178963
++demo(15 days).
+
+# 2026-05-01 07:55:46.673573
++Functions: check_feature_access(role, feature),
+
+# 2026-05-01 07:55:51.912896
++days_remaining(created_at, role).
+
+# 2026-05-01 08:01:30.827674
++Simple, no classes, just dicts and functions.
+
+# 2026-05-01 08:02:25.949430
++Create broker/global_broker.py.
+
+# 2026-05-01 08:02:28.675035
++Angel One SmartAPI connection.
+
+# 2026-05-01 08:02:28.839981
++Read from .env: ANGEL_API_KEY, 
+
+# 2026-05-01 08:02:28.852828
++ANGEL_CLIENT_ID, ANGEL_PASSWORD, 
+
+# 2026-05-01 08:02:28.861934
++ANGEL_TOTP_KEY.
+
+# 2026-05-01 08:02:28.880688
++Functions: connect(), get_ltp(symbol, token, exchange),
+
+# 2026-05-01 08:02:28.896177
++get_candles(token, exchange, interval, days),
+
+# 2026-05-01 08:02:28.905667
++is_connected().
+
+# 2026-05-01 08:02:52.951624
++Singleton pattern. Crash-proof try/except. Yes
+
+# 2026-05-01 08:02:56.252366
++y
+
+# 2026-05-01 08:05:00.771904
++Rewrite broker/global_broker.py completely.
+
+# 2026-05-01 08:05:06.286480
++This should be Angel One SmartAPI broker connection.
+
+# 2026-05-01 08:05:09.890124
++Import SmartApi from smartapi.
+
+# 2026-05-01 08:05:14.781849
++Read ANGEL_API_KEY, ANGEL_CLIENT_ID, ANGEL_PASSWORD, ANGEL_TOTP_KEY from os.environ.
+
+# 2026-05-01 08:05:21.535920
++Add connect() function that logs in with pyotp TOTP.
+
+# 2026-05-01 08:05:30.765629
++Add get_ltp(exchange, symbol, token) function.
+
+# 2026-05-01 08:05:38.748242
++Add get_candles(token, exchange, interval, fromdate, todate) function.
+
+# 2026-05-01 08:05:48.409425
++Add is_connected() function.
+
+# 2026-05-01 08:05:58.632014
++Use singleton pattern with _broker global variable.
+
+# 2026-05-01 08:06:32.817220
++Add try/except everywhere.
+
+# 2026-05-01 08:11:52.720190
++Rewrite broker/global_broker.py completely.
+
+# 2026-05-01 08:13:52.689099
++This should be Angel One SmartAPI broker connection.
+
+# 2026-05-01 08:14:16.757890
++Import SmartApi from smartapi.
+
+# 2026-05-01 08:14:40.328675
++Read ANGEL_API_KEY, ANGEL_CLIENT_ID, ANGEL_PASSWORD, ANGEL_TOTP_KEY from os.environ.
+
+# 2026-05-01 08:15:02.890105
++Add connect() function that logs in with pyotp TOTP.
+
+# 2026-05-01 08:15:23.307421
++Add get_ltp(exchange, symbol, token) function.
+
+# 2026-05-01 08:15:49.382353
++Add get_candles(token, exchange, interval, fromdate, todate) function.
+
+# 2026-05-01 08:16:27.661499
++Add is_connected() function.
+
+# 2026-05-01 08:16:51.063966
++Use singleton pattern with _broker global variable.
+
+# 2026-05-01 08:26:36.500036
++Add try/except everywhere.
+
+# 2026-05-01 08:30:44.603014
++y
+
+# 2026-05-01 08:30:56.327810
++review
+
+# 2026-05-01 08:31:19.727760
++hi
+
+# 2026-05-01 08:32:22.478419
++retry
+
+# 2026-05-01 08:36:16.104499
++───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# 2026-05-01 08:36:17.277093
++broker/global_broker.py config/subscriptions.py
+
+# 2026-05-01 08:36:17.288244
++> Add try/except everywhere.
+
+# 2026-05-01 08:36:17.320520
++I understand. You want to add try...except blocks around all operations in broker/global_broker.py that could potentially raise exceptions, such as API calls or
+
+# 2026-05-01 08:36:17.346162
++credential retrieval. This is a good practice for making the code more robust.
+
+# 2026-05-01 08:36:19.679809
++I will wrap the following sections in try...except blocks:
+
+# 2026-05-01 08:37:08.231424
++ 1 SmartApi Instance Initialization: To catch errors during the creation of the SmartApi object.
+
+# 2026-05-01 08:37:17.062780
++ 2 connect() method: To catch errors during login attempts.
+
+# 2026-05-01 08:37:39.212790
++ 3 get_ltp() method: To catch errors during get_quotes calls.
+
+# 2026-05-01 08:37:49.373442
++ 4 get_candles() method: To catch errors during get_candles calls.
+
+# 2026-05-01 08:37:49.398520
++ 5 Subscription Tier Initialization: To catch errors if config.subscriptions is missing or malformed.
+
+# 2026-05-01 08:38:27.687539
++Here is the updated broker/global_broker.py file:
+
+# 2026-05-01 08:38:30.622341
++broker/global_broker.py
+
+# 2026-05-01 08:38:45.117125
++@@ -2,5 +2,6 @@
+
+# 2026-05-01 08:38:49.659311
++ Global Broker for Subscription Management and Angel One SmartAPI Connection (Singleton Pattern).
+
+# 2026-05-01 08:38:49.679153
++ # Import SmartApi for potential broker connection functionalities
+
+# 2026-05-01 08:38:49.687517
++ try:
+
+# 2026-05-01 08:38:49.697122
++     from smartapi import SmartApi
+
+# 2026-05-01 08:38:49.709724
++     import pyotp # Import pyotp for TOTP handling
+
+# 2026-05-01 08:38:49.718549
++-except ImportError:
+
+# 2026-05-01 08:38:49.741992
++-    print("Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available.")
+
+# 2026-05-01 08:38:49.755994
+++except ImportError as e:
+
+# 2026-05-01 08:38:49.780538
+++    print(f"Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available. Error: {e}")
+
+# 2026-05-01 08:38:49.799384
++     # Define a placeholder if SmartApi is not found, to avoid NameError
+
+# 2026-05-01 08:38:49.809118
++     class SmartApi:
+
+# 2026-05-01 08:38:49.822420
++         def __init__(self, *args, **kwargs):
+
+# 2026-05-01 08:38:49.839877
++             print("SmartApi placeholder initialized. Actual API connection not available.")
+
+# 2026-05-01 08:38:49.857148
++             self._is_connected = False # Placeholder for connection status
+
+# 2026-05-01 08:38:49.868576
++@@ -28,5 +28,6 @@
+
+# 2026-05-01 08:38:49.884484
++             print("SmartApi.login placeholder called.")
+
+# 2026-05-01 08:38:49.901835
++             if not self._is_connected: return {"status": "error", "data": []}
+
+# 2026-05-01 08:38:49.920649
++         global _is_api_connected # Ensure we modify the global flag
+
+# 2026-05-01 08:38:51.617381
++         # --- Angel One SmartAPI Credentials ---
+
+# 2026-05-01 08:38:51.676198
++-        self.ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
+
+# 2026-05-01 08:38:51.695533
++-        self.ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
+
+# 2026-05-01 08:38:51.710906
++-        self.ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
+
+# 2026-05-01 08:38:51.725976
++-        self.ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+
+# 2026-05-01 08:38:51.732421
++-
+
+# 2026-05-01 08:38:51.742278
++-        self.smart_api_instance = None
+
+# 2026-05-01 08:38:51.753685
++-        self._is_api_connected = False
+
+# 2026-05-01 08:38:51.759268
++-
+
+# 2026-05-01 08:38:51.777728
++-        if self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY:
+
+# 2026-05-01 08:38:51.787157
++-            try:
+
+# 2026-05-01 08:38:51.800880
++-                self.smart_api_instance = SmartApi(
+
+# 2026-05-01 08:38:51.813641
++-                    self.ANGEL_API_KEY,
+
+# 2026-05-01 08:38:51.825526
++-                    self.ANGEL_CLIENT_ID,
+
+# 2026-05-01 08:38:51.836973
++-                    self.ANGEL_PASSWORD,
+
+# 2026-05-01 08:38:51.848229
++-                    self.ANGEL_TOTP_KEY
+
+# 2026-05-01 08:38:51.858090
++-                )
+
+# 2026-05-01 08:38:51.872062
++-                print("Angel One SmartAPI instance created.")
+
+# 2026-05-01 08:38:51.882898
++-            except Exception as e:
+
+# 2026-05-01 08:38:51.897759
++-                print(f"Error creating SmartApi instance: {e}")
+
+# 2026-05-01 08:38:51.916085
++-                self.smart_api_instance = SmartApi() # Fallback to placeholder
+
+# 2026-05-01 08:38:51.923987
++-        else:
+
+# 2026-05-01 08:38:51.943929
++-            print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
+
+# 2026-05-01 08:38:51.957789
++-            self.smart_api_instance = SmartApi()
+
+# 2026-05-01 08:38:51.963967
++-
+
+# 2026-05-01 08:38:51.974767
++-        # --- Subscription Management Data ---
+
+# 2026-05-01 08:38:51.985727
++-        self._initialize_subscription_tiers()
+
+# 2026-05-01 08:38:51.991216
++-
+
+# 2026-05-01 08:38:52.001856
++-    def _initialize_subscription_tiers(self):
+
+# 2026-05-01 08:38:52.015613
++-        """Sets up the default subscription tiers."""
+
+# 2026-05-01 08:38:52.024611
++         try:
+
+# 2026-05-01 08:38:52.038803
++-            from config.subscriptions import PREDEFINED_TIERS
+
+# 2026-05-01 08:38:52.053049
++-            self.SUBSCRIPTION_TIERS = PREDEFINED_TIERS.copy()
+
+# 2026-05-01 08:38:52.063080
++-        except ImportError:
+
+# 2026-05-01 08:38:52.081633
++-            print("Warning: config.subscriptions module not found. Using empty subscription tiers.")
+
+# 2026-05-01 08:38:52.093599
++-            self.SUBSCRIPTION_TIERS = {}
+
+# 2026-05-01 08:38:52.099925
++-
+
+# 2026-05-01 08:38:52.112180
++-    def get_smart_api_instance(self) -> SmartApi:
+
+# 2026-05-01 08:38:52.119975
++-        """
+
+# 2026-05-01 08:38:52.131728
++-        Returns the Angel One SmartApi instance.
+
+# 2026-05-01 08:38:52.139361
++-        """
+
+# 2026-05-01 08:38:52.149328
++-        return self.smart_api_instance
+
+# 2026-05-01 08:38:52.156074
++-
+
+# 2026-05-01 08:38:52.165625
++-    def connect(self) -> bool:
+
+# 2026-05-01 08:38:52.172944
++-        """
+
+# 2026-05-01 08:38:52.185973
++-        Connects to the Angel One SmartAPI using TOTP.
+
+# 2026-05-01 08:38:52.192293
++-
+
+# 2026-05-01 08:38:52.209058
++-        Retrieves credentials from environment variables and attempts to log in.
+
+# 2026-05-01 08:38:52.221231
++-        Updates the connection status.
+
+# 2026-05-01 08:38:52.227927
++-
+
+# 2026-05-01 08:38:52.235588
++-        Returns:
+
+# 2026-05-01 08:38:52.250383
++-            True if the connection (login) is successful, False otherwise.
+
+# 2026-05-01 08:38:52.257894
++-        """
+
+# 2026-05-01 08:38:52.271352
++-        global _is_api_connected # Ensure we modify the global flag
+
+# 2026-05-01 08:38:52.277544
++-
+
+# 2026-05-01 08:38:52.299182
++-        if not isinstance(self.smart_api_instance, SmartApi) or self.smart_api_instance.__class__.__name__ == 'SmartApi':
+
+# 2026-05-01 08:38:52.320127
++-            print("Error: SmartApi instance is not properly initialized or is a placeholder.")
+
+# 2026-05-01 08:38:52.334619
++-            self._is_api_connected = False
+
+# 2026-05-01 08:38:52.346960
++-            _is_api_connected = False
+
+# 2026-05-01 08:38:52.356580
++-            return False
+
+# 2026-05-01 08:38:52.363115
++-
+
+# 2026-05-01 08:38:52.383549
++-        if not (self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY):
+
+# 2026-05-01 08:38:52.402874
++-            print("Error: Missing Angel One API credentials. Cannot connect.")
+
+# 2026-05-01 08:38:52.414328
++-            self._is_api_connected = False
+
+# 2026-05-01 08:38:52.424980
++-            _is_api_connected = False
+
+# 2026-05-01 08:38:52.433606
++-            return False
+
+# 2026-05-01 08:38:52.439684
++-
+
+# 2026-05-01 08:38:52.447407
++-        try:
+
+# 2026-05-01 08:38:52.461643
++-            totp = pyotp.TOTP(self.ANGEL_TOTP_KEY)
+
+# 2026-05-01 08:38:52.472389
++-            totp_value = totp.at()
+
+# 2026-05-01 08:38:52.478134
++-
+
+# 2026-05-01 08:38:52.491142
++-            print("Attempting to connect to Angel One SmartAPI...")
+
+# 2026-05-01 08:38:52.507786
++-            login_response = self.smart_api_instance.login(
+
+# 2026-05-01 08:38:52.519572
++-                self.ANGEL_CLIENT_ID,
+
+# 2026-05-01 08:38:52.531241
++-                self.ANGEL_PASSWORD,
+
+# 2026-05-01 08:38:52.541599
++-                totp_value
+
+# 2026-05-01 08:38:52.549946
++-            )
+
+# 2026-05-01 08:38:52.555392
++-
+
+# 2026-05-01 08:38:52.573743
++-            if login_response and login_response.get("status") == "success":
+
+# 2026-05-01 08:38:52.592702
++-                print("Successfully connected to Angel One SmartAPI.")
+
+# 2026-05-01 08:38:52.607009
++-                self._is_api_connected = True
+
+# 2026-05-01 08:38:52.619465
++-                _is_api_connected = True # Update global flag
+
+# 2026-05-01 08:38:52.631037
++-                return True
+
+# 2026-05-01 08:38:52.640635
++-            else:
+
+# 2026-05-01 08:38:52.660342
++-                print(f"Failed to connect to Angel One SmartAPI. Response: {login_response}")
+
+# 2026-05-01 08:38:52.673452
++-                self._is_api_connected = False
+
+# 2026-05-01 08:38:52.685290
++-                _is_api_connected = False
+
+# 2026-05-01 08:38:52.696294
++-                return False
+
+# 2026-05-01 08:38:52.713781
+++            self.ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
+
+# 2026-05-01 08:38:52.728492
+++            self.ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
+
+# 2026-05-01 08:38:52.741994
+++            self.ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
+
+# 2026-05-01 08:38:52.755472
+++            self.ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
+
+# 2026-05-01 08:38:56.602148
++     def check_feature_access(self, role: str, feature: str) -> bool:
+
+# 2026-05-01 08:38:56.669351
++         """Checks if a given role (tier) has access to a specific feature."""
+
+# 2026-05-01 08:38:56.685246
++-        return self.has_feature(role, feature)
+
+# 2026-05-01 08:38:56.693402
+++        try:
+
+# 2026-05-01 08:38:56.705093
+++            return self.has_feature(role, feature)
+
+# 2026-05-01 08:38:56.715102
+++        except Exception as e:
+
+# 2026-05-01 08:38:56.733397
+++            print(f"Error checking feature access for role '{role}' and feature '{feature}': {e}")
+
+# 2026-05-01 08:38:56.744626
+++            return False
+
+# 2026-05-01 08:39:11.948974
++     def days_remaining(self, created_at: datetime.datetime, role: str) -> Optional[int]:
+
+# 2026-05-01 08:39:17.013924
++         """Calculates the number of days remaining for a given role (tier)."""
+
+# 2026-05-01 08:39:17.028591
++-        tier_data = self.get_tier_data(role)
+
+# 2026-05-01 08:39:17.040021
++-        if tier_data is None:
+
+# 2026-05-01 08:39:17.050171
++-            return None
+
+# 2026-05-01 08:39:17.057148
++-
+
+# 2026-05-01 08:39:17.072446
++-        expiry_days = tier_data.get("expiry_days")
+
+# 2026-05-01 08:39:17.084887
++-        if expiry_days is None:
+
+# 2026-05-01 08:39:17.094876
++-            return None
+
+# 2026-05-01 08:39:17.102658
++-
+
+# 2026-05-01 08:39:17.125637
++-        expiry_date = created_at + datetime.timedelta(days=expiry_days)
+
+# 2026-05-01 08:39:17.147823
++-        days_left = (expiry_date - datetime.datetime.now()).days
+
+# 2026-05-01 08:39:17.163367
++-        return max(0, days_left)
+
+# 2026-05-01 08:39:17.171631
++-
+
+# 2026-05-01 08:39:17.181000
+++        try:
+
+# 2026-05-01 08:39:17.198009
+++            tier_data = self.get_tier_data(role)
+
+# 2026-05-01 08:39:17.212942
+++            if tier_data is None:
+
+# 2026-05-01 08:39:17.226534
+++                return None
+
+# 2026-05-01 08:39:17.235351
+++
+
+# 2026-05-01 08:39:17.251649
+++            expiry_days = tier_data.get("expiry_days")
+
+# 2026-05-01 08:39:17.264670
+++            if expiry_days is None:
+
+# 2026-05-01 08:39:17.275186
+++                return None
+
+# 2026-05-01 08:39:17.280823
+++
+
+# 2026-05-01 08:39:17.296533
+++            expiry_date = created_at + datetime.timedelta(days=expiry_days)
+
+# 2026-05-01 08:39:17.312961
+++            days_left = (expiry_date - datetime.datetime.now()).days
+
+# 2026-05-01 08:39:17.325512
+++            return max(0, days_left)
+
+# 2026-05-01 08:39:17.350042
+++            print(f"Error calculating days remaining for role '{role}' created at {created_at}: {e}")
+
+# 2026-05-01 08:39:17.361975
+++            return None
+
+# 2026-05-01 08:39:33.540199
++     def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
+
+# 2026-05-01 08:39:38.698343
++         """Adds or updates a subscription tier."""
+
+# 2026-05-01 08:39:38.709701
+++        try:
+
+# 2026-05-01 08:39:38.727050
++-            print(f"Info: Tier '{tier_name}' already exists. Updating.")
+
+# 2026-05-01 08:39:38.750304
++-        self.SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
+
+# 2026-05-01 08:39:38.760906
+++        try:
+
+# 2026-05-01 08:39:38.776770
+++            if tier_name in self.SUBSCRIPTION_TIERS:
+
+# 2026-05-01 08:39:38.798610
+++                print(f"Info: Tier '{tier_name}' already exists. Updating.")
+
+# 2026-05-01 08:39:38.818043
+++            self.SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
+
+# 2026-05-01 08:39:38.826448
+++        except Exception as e:
+
+# 2026-05-01 08:39:38.840721
+++            print(f"Error adding or updating tier '{tier_name}': {e}")
+
+# 2026-05-01 08:39:46.543527
++     def remove_tier(self, tier_name: str):
+
+# 2026-05-01 08:39:46.555749
++         """Removes a subscription tier."""
+
+# 2026-05-01 08:39:46.567270
++-        if tier_name in self.SUBSCRIPTION_TIERS:
+
+# 2026-05-01 08:39:46.578579
++-            del self.SUBSCRIPTION_TIERS[tier_name]
+
+# 2026-05-01 08:39:46.591111
++-            print(f"Info: Tier '{tier_name}' removed.")
+
+# 2026-05-01 08:39:46.598351
++-        else:
+
+# 2026-05-01 08:39:46.612931
++-            print(f"Warning: Tier '{tier_name}' not found for removal.")
+
+# 2026-05-01 08:39:46.618171
++-
+
+# 2026-05-01 08:39:46.624492
+++        try:
+
+# 2026-05-01 08:39:46.637209
+++            if tier_name in self.SUBSCRIPTION_TIERS:
+
+# 2026-05-01 08:39:46.651318
+++                del self.SUBSCRIPTION_TIERS[tier_name]
+
+# 2026-05-01 08:39:46.667100
+++                print(f"Info: Tier '{tier_name}' removed.")
+
+# 2026-05-01 08:39:46.675138
+++            else:
+
+# 2026-05-01 08:39:46.686034
+++        except Exception as e:
+
+# 2026-05-01 08:39:46.701813
+++            print(f"Error removing tier '{tier_name}': {e}")
+
+# 2026-05-01 08:39:50.832265
++ def get_broker_instance() -> Broker:
+
+# 2026-05-01 08:39:50.839727
++     """
+
+# 2026-05-01 08:39:50.850547
++     Returns the singleton instance of the Broker.
+
+# 2026-05-01 08:39:50.860453
++     Creates it if it doesn't exist.
+
+# 2026-05-01 08:39:50.867027
++     """
+
+# 2026-05-01 08:39:50.876821
++     global _broker_instance
+
+# 2026-05-01 08:39:50.883660
+++    try:
+
+# 2026-05-01 08:39:50.895369
+++        if _broker_instance is None:
+
+# 2026-05-01 08:39:50.907666
+++            _broker_instance = Broker()
+
+# 2026-05-01 08:39:50.918146
+++        return _broker_instance
+
+# 2026-05-01 08:39:50.927250
+++        if _broker_instance is None:
+
+# 2026-05-01 08:39:50.936643
+++            _broker_instance = Broker()
+
+# 2026-05-01 08:39:50.945690
+++        return _broker_instance
+
+# 2026-05-01 08:39:50.955068
+++    except Exception as e:
+
+# 2026-05-01 08:39:50.968417
+++        print(f"Error getting broker instance: {e}")
+
+# 2026-05-01 08:39:50.982883
+++        # In a critical failure, you might want to re-raise or return a mock/None
+
+# 2026-05-01 08:39:50.999833
+++        # For now, we'll print and return None, which will cause subsequent calls to fail gracefully.
+
+# 2026-05-01 08:39:51.007697
+++        return None
+
+# 2026-05-01 08:39:58.066688
++ # --- Global accessors for convenience ---
+
+# 2026-05-01 08:39:58.092591
++ # These functions delegate to the singleton broker instance.
+
+# 2026-05-01 08:40:00.978523
++-def get_smart_api_instance_global() -> SmartApi:
+
+# 2026-05-01 08:40:00.997582
+++def get_smart_api_instance_global() -> Optional[SmartApi]:
+
+# 2026-05-01 08:40:01.013370
++     """Global accessor for the SmartApi instance."""
+
+# 2026-05-01 08:40:01.030180
++-    return get_broker_instance().get_smart_api_instance()
+
+# 2026-05-01 08:40:01.043808
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:01.053779
+++    if broker:
+
+# 2026-05-01 08:40:01.068234
+++        return broker.get_smart_api_instance()
+
+# 2026-05-01 08:40:01.077525
+++    return None
+
+# 2026-05-01 08:40:05.764407
++ def connect_global() -> bool:
+
+# 2026-05-01 08:40:05.779505
++     """Global accessor to connect the broker."""
+
+# 2026-05-01 08:40:05.793323
++-    return get_broker_instance().connect()
+
+# 2026-05-01 08:40:05.800004
++-
+
+# 2026-05-01 08:40:05.811752
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:05.820566
+++        return broker.connect()
+
+# 2026-05-01 08:40:05.827093
+++    return False
+
+# 2026-05-01 08:40:08.351349
++ def is_connected_global() -> bool:
+
+# 2026-05-01 08:40:08.365255
++     """Global accessor to check broker connection status."""
+
+# 2026-05-01 08:40:08.377534
++-    return get_broker_instance().is_connected()
+
+# 2026-05-01 08:40:08.389387
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:08.397239
+++    if broker:
+
+# 2026-05-01 08:40:08.408496
+++        return broker.is_connected()
+
+# 2026-05-01 08:40:08.417398
+++    return False
+
+# 2026-05-01 08:40:16.429229
++ def get_ltp_global(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
+
+# 2026-05-01 08:40:21.339352
++     """Global accessor to get LTP."""
+
+# 2026-05-01 08:40:21.353937
++-    return get_broker_instance().get_ltp(exchange, symbol, token)
+
+# 2026-05-01 08:40:21.358207
++-
+
+# 2026-05-01 08:40:21.366036
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:21.376745
+++        return broker.get_ltp(exchange, symbol, token)
+
+# 2026-05-01 08:40:21.383505
+++    return None
+
+# 2026-05-01 08:40:32.605374
++ def get_candles_global(token: str, exchange: str, interval: str, fromdate: datetime.date, todate: datetime.date) -> Optional[List[Dict[str, Any]]]:
+
+# 2026-05-01 08:40:32.620186
++     """Global accessor to get candles."""
+
+# 2026-05-01 08:40:32.638604
++-    return get_broker_instance().get_candles(token, exchange, interval, fromdate, todate)
+
+# 2026-05-01 08:40:32.648404
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:32.655206
+++    if broker:
+
+# 2026-05-01 08:40:32.668557
+++        return broker.get_candles(token, exchange, interval, fromdate, todate)
+
+# 2026-05-01 08:40:32.675615
+++    return None
+
+# 2026-05-01 08:40:35.680240
++ # Subscription Management Global Accessors
+
+# 2026-05-01 08:40:35.696549
++ def get_subscription_tier_data_global(tier_name: str) -> Optional[Dict[str, Any]]:
+
+# 2026-05-01 08:40:35.708258
++     """Global accessor for subscription tier data."""
+
+# 2026-05-01 08:40:35.719739
++-    return get_broker_instance().get_tier_data(tier_name)
+
+# 2026-05-01 08:40:35.728613
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:35.734656
+++    if broker:
+
+# 2026-05-01 08:40:35.744058
+++        return broker.get_tier_data(tier_name)
+
+# 2026-05-01 08:40:35.749953
+++    return None
+
+# 2026-05-01 08:40:47.508084
++ def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
+
+# 2026-05-01 08:40:50.006004
++     """Global accessor to check if a tier has a feature."""
+
+# 2026-05-01 08:40:50.022722
++-    return get_broker_instance().has_feature(tier_name, feature_name)
+
+# 2026-05-01 08:40:50.032904
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:40:50.039535
+++    if broker:
+
+# 2026-05-01 08:40:50.051343
+++        return broker.has_feature(tier_name, feature_name)
+
+# 2026-05-01 08:40:50.058210
+++    return False
+
+# 2026-05-01 08:41:02.650566
++ def check_user_feature_access_global(role: str, feature: str) -> bool:
+
+# 2026-05-01 08:41:07.601024
++     """Global accessor to check user feature access."""
+
+# 2026-05-01 08:41:07.617985
++-    return get_broker_instance().check_feature_access(role, feature)
+
+# 2026-05-01 08:41:07.622874
++-
+
+# 2026-05-01 08:41:07.631329
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:41:07.644834
+++        return broker.check_feature_access(role, feature)
+
+# 2026-05-01 08:41:07.652458
+++    return False
+
+# 2026-05-01 08:41:23.491997
++ def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str) -> Optional[int]:
+
+# 2026-05-01 08:41:26.064835
++     """Global accessor to get remaining days for a tier."""
+
+# 2026-05-01 08:41:26.079453
++-    return get_broker_instance().days_remaining(created_at, role)
+
+# 2026-05-01 08:41:26.090663
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:41:26.096947
+++    if broker:
+
+# 2026-05-01 08:41:26.108928
+++        return broker.days_remaining(created_at, role)
+
+# 2026-05-01 08:41:26.115966
+++    return None
+
+# 2026-05-01 08:41:46.570075
++ def add_or_update_subscription_tier_global(tier_name: str, expiry_days: Optional[int], features: List[str]):
+
+# 2026-05-01 08:41:48.985409
++     """Global accessor to add or update a subscription tier."""
+
+# 2026-05-01 08:41:49.002170
++-    get_broker_instance().add_or_update_tier(tier_name, expiry_days, features)
+
+# 2026-05-01 08:41:49.013872
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:41:49.281664
+++    if broker:
+
+# 2026-05-01 08:41:49.299462
+++        broker.add_or_update_tier(tier_name, expiry_days, features)
+
+# 2026-05-01 08:41:57.427166
++ def remove_subscription_tier_global(tier_name: str):
+
+# 2026-05-01 08:42:03.427333
++     """Global accessor to remove a subscription tier."""
+
+# 2026-05-01 08:42:03.445406
++-    get_broker_instance().remove_tier(tier_name)
+
+# 2026-05-01 08:42:03.459569
+++    broker = get_broker_instance()
+
+# 2026-05-01 08:42:03.468203
+++    if broker:
+
+# 2026-05-01 08:42:03.481952
+++        broker.remove_tier(tier_name)
+
+# 2026-05-01 08:42:13.106619
++Tokens: 34k sent, 3.8k received.
+
+# 2026-05-01 08:42:21.628818
++Applied edit to broker/global_broker.py
+
+# 2026-05-01 08:42:21.651195
++Commit abde3f1 refactor: Add try/except blocks for robustness
+
+# 2026-05-01 08:42:21.669498
++You can use /undo to undo and discard each aider commit.
+
+# 2026-05-01 08:42:21.707839
++───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# 2026-05-01 08:42:21.726403
++broker/global_broker.py config/subscriptions.py
+
+# 2026-05-01 08:42:21.732423
++>
+
+# 2026-05-01 08:42:23.066201
++───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# 2026-05-01 09:07:15.104623
++broker/global_broker.py config/subscriptions.py
+
+# 2026-05-01 09:07:24.270750
++Yes
+
+# 2026-05-01 09:09:40.016186
++/drop config/subscriptions.py
+
+# 2026-05-01 09:09:50.342140
++/clear
+
+# 2026-05-01 09:10:42.331586
++Create data_stream/cache.py.
+
+# 2026-05-01 09:10:47.893449
++Memory cache with TTL.
+
+# 2026-05-01 09:10:47.905276
++Import os, json, time, threading.
+
+# 2026-05-01 09:10:47.920301
++_cache = {} and _lock = threading.Lock().
+
+# 2026-05-01 09:10:48.065765
++Functions:
+
+# 2026-05-01 09:10:48.080430
++set(key, value, ttl=60): _cache[key] = {"v":value,"exp":time.time()+ttl}
+
+# 2026-05-01 09:10:48.091082
++get(key): return value if not expired else None
+
+# 2026-05-01 09:10:48.098076
++delete(key): remove key
+
+# 2026-05-01 09:10:48.106613
++clear_expired(): remove expired keys
+
+# 2026-05-01 09:11:02.835958
++All try/except return None on error.Yes
+
+# 2026-05-01 09:11:16.420909
++Yes
+
+# 2026-05-01 09:11:22.951231
++Y
+
+# 2026-05-01 09:12:39.236586
++/clear
+
+# 2026-05-01 09:12:39.324533
++/drop broker/global_broker.py
+
+# 2026-05-01 09:12:43.736475
++/drop data_stream/cache.py
+
+# 2026-05-01 09:13:22.097075
++/add engine/indicators.py
+
+# 2026-05-01 09:13:28.737333
++Y
+
+# 2026-05-01 09:14:00.867083
++Create engine/indicators.py pure Python technical indicators.
+
+# 2026-05-01 09:14:08.617507
++No external libraries.
+
+# 2026-05-01 09:14:15.860366
++def ema(data, period): exponential moving average return float
+
+# 2026-05-01 09:14:19.511815
++def rsi(closes, period=14): RSI 0-100 return float
+
+# 2026-05-01 09:14:24.259227
++def macd(closes): return tuple (macd_line, histogram)
+
+# 2026-05-01 09:14:24.279475
++def vwap(candles): candles=list of [o,h,l,c,v], return float
+
+# 2026-05-01 09:14:24.296597
++def atr(candles, period=14): average true range return float
+
+# 2026-05-01 09:14:46.600835
++All try/except return 0 on error.
+
+# 2026-05-01 09:14:51.760819
++Y
+
+# 2026-05-01 09:16:21.375904
++Create engine/indicators.py pure Python technical indicators.
+
+# 2026-05-01 09:16:26.212903
++No external libraries.
+
+# 2026-05-01 09:16:41.185412
++def ema(data, period): exponential moving average return float
+
+# 2026-05-01 09:16:41.201552
++def rsi(closes, period=14): RSI 0-100 return float
+
+# 2026-05-01 09:16:41.215189
++def macd(closes): return tuple (macd_line, histogram)
+
+# 2026-05-01 09:16:41.374874
++def vwap(candles): candles list of [o,h,l,c,v] return float
+
+# 2026-05-01 09:16:41.390653
++def atr(candles, period=14): average true range return float
+
+# 2026-05-01 09:16:47.016700
++All try/except return 0 on error.
+
+# 2026-05-01 09:16:49.760856
++Y
