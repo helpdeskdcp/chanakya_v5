@@ -7,7 +7,7 @@ This module provides a singleton ``AngelOneBroker`` class that encapsulates:
 * Subscription tier management using the data defined in ``config.subscriptions``.
 * Convenience global accessor functions for easy use throughout the codebase.
 
-All potentially error‑prone operations are wrapped in ``try/except`` blocks to
+All potentially error-prone operations are wrapped in ``try/except`` blocks to
 ensure the broker never raises unexpected exceptions during normal operation.
 """
 
@@ -67,7 +67,8 @@ class AngelOneBroker:
 
     def get_tier_data(self, tier_name: str) -> Optional[Dict[str, Any]]:
         try:
-            return config.subscriptions[tier_name]
+            from config import subscriptions  # Import config here
+            return subscriptions[tier_name]
         except KeyError:
             return None
 
@@ -108,16 +109,18 @@ class AngelOneBroker:
 
     def add_or_update_tier(self, tier_name: str, expiry_days: int | None, features: list[str]):
         try:
-            if tier_name in config.subscriptions:
+            from config import subscriptions  # Import config here
+            if tier_name in subscriptions:
                 print(f"Info: Tier '{tier_name}' already exists. Updating.")
-            config.subscriptions[tier_name] = {"expiry_days": expiry_days, "features": features}
+            subscriptions[tier_name] = {"expiry_days": expiry_days, "features": features}
         except Exception as e:
             print(f"Error updating tier: {e}")
 
     def remove_tier(self, tier_name: str):
         try:
-            if tier_name in config.subscriptions:
-                del config.subscriptions[tier_name]
+            from config import subscriptions  # Import config here
+            if tier_name in subscriptions:
+                del subscriptions[tier_name]
                 print(f"Info: Tier '{tier_name}' removed.")
             else:
                 print(f"Warning: Tier '{tier_name}' not found for removal.")
