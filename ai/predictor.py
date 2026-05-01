@@ -120,6 +120,17 @@ def predict_symbol(symbol, token, exchange, broker):
                 verdict = r.choices[0].message.content.strip()
                 pass  # allow weak signals
         except: pass
+        # XGBoost confidence boost
+        ml_conf = 0.5
+        try:
+            from ai.ml_engine import predict_confidence
+            base_candles = broker.get_candles(token, exchange, "FIVE_MINUTE", 2)
+            if base_candles:
+                ml_conf = predict_confidence(base_candles)
+                # Blend MTF score with ML confidence
+                conf = int(conf * 0.6 + ml_conf * 100 * 0.4)
+                conf = max(30, min(95, conf))
+        except: pass
         return {"symbol":symbol,"exchange":exchange,"direction":direction,
                 "ltp":ltp,"entry":ltp,"sl":sl,"target":target,"rr":rr,
                 "confidence":conf,"overall":overall,"bull_tf":bull,"bear_tf":bear,
