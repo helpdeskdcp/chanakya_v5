@@ -42,6 +42,7 @@ class SubscriptionSystem:
         self.add_tier("gold", 180, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Gold tier
         self.add_tier("enterprise", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support", "dedicated_account_manager"])
         self.add_tier("trial", 7, ["basic_analytics", "email_support", "api_access"]) # Example trial tier
+        self.add_tier("demo", 15, ["basic_analytics", "email_support", "api_access"]) # Demo tier
 
     def add_tier(self, tier_name: str, expiry_days: int | None, features: list[str]):
         """
