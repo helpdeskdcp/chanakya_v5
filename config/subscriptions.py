@@ -1,125 +1,146 @@
-# Subscription Tier System
-
 import datetime
 
-class SubscriptionTier:
-    """Represents a subscription tier with an expiry duration and a list of features."""
-    def __init__(self, expiry_days: int | None, features: list[str]):
-        """
-        Initializes a SubscriptionTier.
+# --- Data Structure for Tiers ---
+# Tiers will be stored in a dictionary where:
+# key: tier_name (str)
+# value: dict with keys:
+#   'expiry_days': int | None (number of days until expiry, None for no expiry)
+#   'features': list[str] (list of feature names)
 
-        Args:
-            expiry_days: The number of days until the tier expires. If None, the tier does not expire.
-            features: A list of strings, where each string is a feature name.
-        """
-        self.features = features
-        self.expiry = datetime.timedelta(days=expiry_days) if expiry_days is not None else None
+# --- Predefined Tiers ---
+# This dictionary will be initialized when the module is loaded or when SubscriptionSystem is instantiated.
+# For simplicity and to avoid class instantiation, we'll define the initial tiers here.
+# In a real application, this might be loaded from a config file or database.
 
-class SubscriptionSystem:
-    """Manages different subscription tiers."""
-    def __init__(self):
-        """Initializes the SubscriptionSystem with predefined tiers."""
-        self.tiers: dict[str, SubscriptionTier] = {}
-        self._initialize_tiers()
+PREDEFINED_TIERS = {
+    "developer": {"expiry_days": None, "features": [
+        "basic_analytics", "advanced_analytics", "email_support",
+        "phone_support", "api_access", "custom_branding",
+        "unlimited_storage", "priority_support", "dedicated_account_manager"
+    ]},
+    "administrator": {"expiry_days": None, "features": [
+        "basic_analytics", "advanced_analytics", "email_support",
+        "phone_support", "api_access", "custom_branding",
+        "unlimited_storage", "priority_support", "dedicated_account_manager"
+    ]},
+    "free": {"expiry_days": 30, "features": ["basic_analytics", "email_support"]},
+    "basic": {"expiry_days": 30, "features": ["basic_analytics", "email_support", "api_access"]},
+    "silver": {"expiry_days": 90, "features": ["advanced_analytics", "email_support", "api_access", "custom_branding"]},
+    "premium": {"expiry_days": 30, "features": ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]},
+    "platinum": {"expiry_days": 365, "features": ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support"]},
+    "gold": {"expiry_days": 180, "features": ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]},
+    "enterprise": {"expiry_days": 365, "features": [
+        "advanced_analytics", "phone_support", "api_access", "custom_branding",
+        "unlimited_storage", "priority_support", "dedicated_account_manager"
+    ]},
+    "trial": {"expiry_days": 7, "features": ["basic_analytics", "email_support", "api_access"]},
+    "demo": {"expiry_days": 15, "features": ["basic_analytics", "email_support", "api_access"]},
+}
 
-    def _initialize_tiers(self):
-        """Sets up the default subscription tiers."""
-        # Define a comprehensive list of all possible features
-        all_features = [
-            "basic_analytics", "advanced_analytics", "email_support",
-            "phone_support", "api_access", "custom_branding",
-            "unlimited_storage", "priority_support", "dedicated_account_manager"
-        ]
+# --- Global state for tiers ---
+# In a system without classes, we might use a global dictionary to hold the tiers.
+# This mimics the behavior of SubscriptionSystem.tiers.
+# If you need to dynamically add/modify tiers, you'd need functions to manage this global dict.
+SUBSCRIPTION_TIERS = PREDEFINED_TIERS.copy()
 
-        # Define the tiers
-        self.add_tier("developer", None, all_features)  # No expiry, all features
-        self.add_tier("administrator", None, all_features) # No expiry, all features
-        self.add_tier("free", 30, ["basic_analytics", "email_support"])
-        self.add_tier("basic", 30, ["basic_analytics", "email_support", "api_access"])
-        self.add_tier("silver", 90, ["advanced_analytics", "email_support", "api_access", "custom_branding"]) # Silver tier
-        self.add_tier("premium", 30, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Premium tier
-        self.add_tier("platinum", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support"]) # Platinum tier
-        self.add_tier("gold", 180, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage"]) # Gold tier
-        self.add_tier("enterprise", 365, ["advanced_analytics", "phone_support", "api_access", "custom_branding", "unlimited_storage", "priority_support", "dedicated_account_manager"])
-        self.add_tier("trial", 7, ["basic_analytics", "email_support", "api_access"]) # Example trial tier
-        self.add_tier("demo", 15, ["basic_analytics", "email_support", "api_access"]) # Demo tier
+# --- Functions ---
 
-    def add_tier(self, tier_name: str, expiry_days: int | None, features: list[str]):
-        """
-        Adds or updates a subscription tier in the system.
+def get_tier_data(tier_name: str) -> dict | None:
+    """
+    Retrieves the data for a specific subscription tier.
 
-        Args:
-            tier_name: The name of the tier (e.g., 'free', 'premium').
-            expiry_days: The number of days until the tier expires. If None, the tier does not expire.
-            features: A list of strings representing the features included in this tier.
-        """
-        if tier_name in self.tiers:
-            print(f"Info: Tier '{tier_name}' already exists. Updating.")
-        self.tiers[tier_name] = SubscriptionTier(expiry_days, features)
+    Args:
+        tier_name: The name of the tier to retrieve.
 
-    def get_tier(self, tier_name: str) -> SubscriptionTier | None:
-        """
-        Retrieves a subscription tier by its name.
+    Returns:
+        A dictionary containing the tier's data (expiry_days, features) if found, otherwise None.
+    """
+    return SUBSCRIPTION_TIERS.get(tier_name)
 
-        Args:
-            tier_name: The name of the tier to retrieve.
+def has_feature(tier_name: str, feature_name: str) -> bool:
+    """
+    Checks if a given tier has a specific feature.
 
-        Returns:
-            The SubscriptionTier object if found, otherwise None.
-        """
-        return self.tiers.get(tier_name)
+    Args:
+        tier_name: The name of the tier to check.
+        feature_name: The name of the feature to look for.
 
-    def has_feature(self, tier_name: str, feature_name: str) -> bool:
-        """
-        Checks if a given tier has a specific feature.
+    Returns:
+        True if the tier exists and has the feature, False otherwise.
+    """
+    tier_data = get_tier_data(tier_name)
+    if tier_data is None:
+        return False
+    return feature_name in tier_data.get("features", [])
 
-        Args:
-            tier_name: The name of the tier to check.
-            feature_name: The name of the feature to look for.
+def check_feature_access(role: str, feature: str) -> bool:
+    """
+    Checks if a given role (tier) has access to a specific feature.
 
-        Returns:
-            True if the tier exists and has the feature, False otherwise.
-        """
-        tier = self.get_tier(tier_name)
-        return tier is not None and feature_name in tier.features
+    Args:
+        role: The name of the subscription tier (e.g., 'premium', 'free').
+        feature: The name of the feature to check access for.
 
-    def check_feature_access(self, role: str, feature: str) -> bool:
-        """
-        Checks if a given role (tier) has access to a specific feature.
+    Returns:
+        True if the role has access to the feature, False otherwise.
+    """
+    return has_feature(role, feature)
 
-        Args:
-            role: The name of the subscription tier (e.g., 'premium', 'free').
-            feature: The name of the feature to check access for.
+def days_remaining(created_at: datetime.datetime, role: str) -> int | None:
+    """
+    Calculates the number of days remaining for a given role (tier).
 
-        Returns:
-            True if the role has access to the feature, False otherwise.
-        """
-        return self.has_feature(role, feature)
+    Args:
+        created_at: The datetime when the role was created or assigned.
+        role: The name of the subscription tier (e.g., 'premium', 'free').
 
-    def days_remaining(self, created_at: datetime.datetime, role: str) -> int | None:
-        """
-        Calculates the number of days remaining for a given role (tier).
+    Returns:
+        The number of days remaining until the tier expires.
+        Returns None if the tier does not expire or if the tier is not found.
+    """
+    tier_data = get_tier_data(role)
+    if tier_data is None:
+        return None  # Tier not found
 
-        Args:
-            created_at: The datetime when the role was created or assigned.
-            role: The name of the subscription tier (e.g., 'premium', 'free').
+    expiry_days = tier_data.get("expiry_days")
+    if expiry_days is None:
+        return None  # Tier does not expire
 
-        Returns:
-            The number of days remaining until the tier expires.
-            Returns None if the tier does not expire or if the tier is not found.
-        """
-        tier = self.get_tier(role)
-        if tier is None:
-            return None  # Tier not found
+    # Calculate the expiry date
+    expiry_date = created_at + datetime.timedelta(days=expiry_days)
 
-        if tier.expiry is None:
-            return None  # Tier does not expire
+    # Calculate the difference in days
+    days_left = (expiry_date - datetime.datetime.now()).days
 
-        # Calculate the expiry date
-        expiry_date = created_at + tier.expiry
+    # Ensure we don't return a negative number of days if already expired
+    return max(0, days_left)
 
-        # Calculate the difference in days
-        days_left = (expiry_date - datetime.datetime.now()).days
+# --- Optional: Functions to manage tiers dynamically ---
+# If you need to add or modify tiers after initialization, you would add functions like these:
 
-        # Ensure we don't return a negative number of days if already expired
-        return max(0, days_left)
+def add_or_update_tier(tier_name: str, expiry_days: int | None, features: list[str]):
+    """
+    Adds or updates a subscription tier in the global SUBSCRIPTION_TIERS dictionary.
+
+    Args:
+        tier_name: The name of the tier (e.g., 'free', 'premium').
+        expiry_days: The number of days until the tier expires. If None, the tier does not expire.
+        features: A list of strings representing the features included in this tier.
+    """
+    if tier_name in SUBSCRIPTION_TIERS:
+        print(f"Info: Tier '{tier_name}' already exists. Updating.")
+    SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
+
+def remove_tier(tier_name: str):
+    """
+    Removes a subscription tier from the global SUBSCRIPTION_TIERS dictionary.
+
+    Args:
+        tier_name: The name of the tier to remove.
+    """
+    if tier_name in SUBSCRIPTION_TIERS:
+        del SUBSCRIPTION_TIERS[tier_name]
+        print(f"Info: Tier '{tier_name}' removed.")
+    else:
+        print(f"Warning: Tier '{tier_name}' not found for removal.")
+
