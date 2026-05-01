@@ -141,9 +141,9 @@ def ai_chat():
         msg = data.get("message","")
         if not msg: return jsonify({"success":False,"error":"No message"})
         from engine.scanner import get_live_ltps
-        from ai.groq_client import chat_with_context
-        ltps = get_live_ltps()
-        reply = chat_with_context(msg, ltps)
+        from ai.chat import smart_chat
+        from broker.global_broker import get_broker
+        reply = smart_chat(msg, get_broker())
         return jsonify({"success":True,"reply":reply})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
@@ -262,6 +262,40 @@ def create_user_admin():
         return jsonify({"success":False,"error":str(e)})
 
 # ── PnL ────────────────────────────────────────────────
+
+@app.route("/api/predictions")
+@require_auth
+def predictions():
+    try:
+        from data_stream.cache import get as cget, set as cset
+        from broker.global_broker import get_broker
+        force = request.args.get("force","0")=="1"
+        sigs = None if force else cget("predictions")
+        if not sigs:
+            import threading
+            from ai.predictor import run_scan
+            sigs = run_scan(get_broker())
+            if sigs: cset("predictions", sigs, ttl=300)
+        return jsonify({"success":True,"signals":sigs or [],"total":len(sigs or [])})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e),"signals":[]})
+
+@app.route("/api/predictions/scan", methods=["POST"])
+@require_auth
+def predictions_scan():
+    try:
+        import threading
+        from ai.predictor import run_scan
+        from broker.global_broker import get_broker
+        from data_stream.cache import set as cset
+        def _scan():
+            sigs = run_scan(get_broker())
+            if sigs: cset("predictions", sigs, ttl=300)
+        threading.Thread(target=_scan, daemon=True).start()
+        return jsonify({"success":True,"message":"Scan started"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/pnl")
 @require_auth
 def pnl():
