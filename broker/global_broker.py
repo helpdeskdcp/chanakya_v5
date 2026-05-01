@@ -1,409 +1,410 @@
 """
-Global Broker for Subscription Management and Angel One SmartAPI Connection (Singleton Pattern).
+Global Broker for Angel One SmartAPI and Subscription Management.
 
-This module acts as a central registry for subscription-related functions,
-allowing access to subscription tier data and operations without direct
-importing of the configuration module in every part of the application.
-It also handles the initialization and access to the Angel One SmartAPI broker connection.
-It follows a Singleton pattern for the broker instance.
+This module provides a singleton ``Broker`` class that encapsulates:
+* Connection handling to the Angel One SmartAPI (login via TOTP).
+* Helper methods to fetch LTP and historical candle data.
+* Subscription tier management using the data defined in ``config.subscriptions``.
+* Convenience global accessor functions for easy use throughout the codebase.
+
+All potentially error‑prone operations are wrapped in ``try/except`` blocks to
+ensure the broker never raises unexpected exceptions during normal operation.
 """
+
+from __future__ import annotations
 
 import datetime
 import os
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
-# Import SmartApi for potential broker connection functionalities
+# --------------------------------------------------------------------------- #
+# SmartApi import – fall back to a lightweight placeholder if the library is missing.
+# --------------------------------------------------------------------------- #
 try:
-    from smartapi import SmartApi
-    import pyotp # Import pyotp for TOTP handling
-except ImportError as e:
-    print(f"Warning: smartapi library or pyotp not found. SmartApi functionalities will not be available. Error: {e}")
-    # Define a placeholder if SmartApi is not found, to avoid NameError
-    class SmartApi:
-        def __init__(self, *args, **kwargs):
-            print("SmartApi placeholder initialized. Actual API connection not available.")
-            self._is_connected = False # Placeholder for connection status
-            pass
-        def login(self, client_id, password, totp):
-            print("SmartApi.login placeholder called.")
-            self._is_connected = True # Simulate connection
+    from smartapi import SmartApi  # type: ignore
+    import pyotp  # type: ignore
+except Exception as import_err:  # pragma: no cover
+    print(
+        f"Warning: smartapi or pyotp could not be imported ({import_err}). "
+        "A placeholder SmartApi implementation will be used."
+    )
+
+    class SmartApi:  # pylint: disable=too-few-public-methods
+        """Very small stub that mimics the real SmartApi interface."""
+
+        def __init__(self, *_, **__) -> None:
+            self._connected = False
+
+        def login(self, client_id: str, password: str, totp: str) -> Dict[str, Any]:
+            self._connected = True
             return {"status": "success"}
-        def get_quotes(self, instruments):
-            print("SmartApi.get_quotes placeholder called.")
-            if not self._is_connected: return {"status": "error", "data": []}
-            return {"status": "success", "data": [{"ltp": 100.0}]} # Mock LTP
-        def get_candles(self, token, exchange, interval, from_date, to_date):
-            print("SmartApi.get_candles placeholder called.")
-            if not self._is_connected: return {"status": "error", "data": []}
-            return {"status": "success", "data": [{"timestamp": "2023-01-01T09:15:00+05:30", "open": 100, "high": 105, "low": 98, "close": 102, "volume": 1000}]} # Mock candle
-    # Define a placeholder for pyotp if not found
-    class pyotp:
+
+        def get_quotes(self, instruments: List[Dict[str, str]]) -> Dict[str, Any]:
+            if not self._connected:
+                return {"status": "error", "data": []}
+            # Return a deterministic mock LTP for testing.
+            return {"status": "success", "data": [{"ltp": 100.0}]}
+
+        def get_candles(
+            self,
+            token: str,
+            exchange: str,
+            interval: str,
+            from_date: str,
+            to_date: str,
+        ) -> Dict[str, Any]:
+            if not self._connected:
+                return {"status": "error", "data": []}
+            # Return a single mock candle.
+            return {
+                "status": "success",
+                "data": [
+                    {
+                        "timestamp": f"{from_date}T09:15:00+05:30",
+                        "open": 100,
+                        "high": 105,
+                        "low": 98,
+                        "close": 102,
+                        "volume": 1000,
+                    }
+                ],
+            }
+
+    class pyotp:  # pragma: no cover
+        """Placeholder for the pyotp library."""
+
         class TOTP:
-            def __init__(self, key):
-                print("pyotp.TOTP placeholder initialized.")
+            def __init__(self, key: str) -> None:
                 self.key = key
-            def at(self, for_time=None):
-                print("pyotp.TOTP.at placeholder called.")
-                return "000000" # Default placeholder TOTP
 
-# --- Singleton Instance Management ---
-_broker_instance = None
-_is_api_connected = False # Global flag to track connection status
+            def at(self, for_time: Optional[int] = None) -> str:  # noqa: D401
+                """Return a deterministic 6‑digit code."""
+                return "000000"
 
+
+# --------------------------------------------------------------------------- #
+# Broker singleton implementation
+# --------------------------------------------------------------------------- #
 class Broker:
     """
-    The main Broker class implementing the Singleton pattern.
-    Manages Angel One SmartAPI connection and subscription logic.
+    Singleton class that manages the SmartAPI connection and subscription tiers.
+
+    The first call to ``Broker()`` creates the instance; subsequent calls return
+    the same object.  The class lazily loads subscription data from
+    ``config.subscriptions`` and provides a small API for the rest of the
+    application.
     """
-    def __init__(self):
-        """Initializes the Broker instance."""
-        global _is_api_connected # Ensure we modify the global flag
 
-        # --- Angel One SmartAPI Credentials ---
+    _instance: Optional["Broker"] = None
+    _initialized: bool = False
+
+    def __new__(cls) -> "Broker":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self) -> None:
+        if self.__class__._initialized:
+            return  # Avoid re‑initialisation on subsequent calls
+        self.__class__._initialized = True
+
+        # --------------------------------------------------------------- #
+        # Load environment variables for Angel One credentials
+        # --------------------------------------------------------------- #
+        self._api_key: Optional[str] = os.getenv("ANGEL_API_KEY")
+        self._client_id: Optional[str] = os.getenv("ANGEL_CLIENT_ID")
+        self._password: Optional[str] = os.getenv("ANGEL_PASSWORD")
+        self._totp_key: Optional[str] = os.getenv("ANGEL_TOTP_KEY")
+
+        # --------------------------------------------------------------- #
+        # Initialise the SmartApi client (placeholder if real lib missing)
+        # --------------------------------------------------------------- #
         try:
-            self.ANGEL_API_KEY = os.environ.get("ANGEL_API_KEY")
-            self.ANGEL_CLIENT_ID = os.environ.get("ANGEL_CLIENT_ID")
-            self.ANGEL_PASSWORD = os.environ.get("ANGEL_PASSWORD")
-            self.ANGEL_TOTP_KEY = os.environ.get("ANGEL_TOTP_KEY")
-        except Exception as e:
-            print(f"Error retrieving environment variables: {e}")
-            self.ANGEL_API_KEY = None
-            self.ANGEL_CLIENT_ID = None
-            self.ANGEL_PASSWORD = None
-            self.ANGEL_TOTP_KEY = None
-
-        self.smart_api_instance = None
-        self._is_api_connected = False
-
-        try:
-            if self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY:
-                self.smart_api_instance = SmartApi(
-                    self.ANGEL_API_KEY,
-                    self.ANGEL_CLIENT_ID,
-                    self.ANGEL_PASSWORD,
-                    self.ANGEL_TOTP_KEY
+            if all([self._api_key, self._client_id, self._password, self._totp_key]):
+                self._api = SmartApi(
+                    self._api_key,
+                    self._client_id,
+                    self._password,
+                    self._totp_key,
                 )
-                print("Angel One SmartAPI instance created.")
+                print("SmartApi instance created.")
             else:
-                print("Warning: Missing Angel One API credentials in environment variables. SmartApi will use placeholder.")
-                self.smart_api_instance = SmartApi() # Fallback to placeholder
-        except Exception as e:
-            print(f"Error creating SmartApi instance: {e}")
-            self.smart_api_instance = SmartApi() # Fallback to placeholder
+                print(
+                    "Warning: Incomplete Angel One credentials – using placeholder SmartApi."
+                )
+                self._api = SmartApi()
+        except Exception as exc:  # pragma: no cover
+            print(f"Error creating SmartApi instance: {exc}")
+            self._api = SmartApi()
 
-        # --- Subscription Management Data ---
-        self._initialize_subscription_tiers()
+        self._connected: bool = False
 
-    def _initialize_subscription_tiers(self):
-        """Sets up the default subscription tiers."""
+        # --------------------------------------------------------------- #
+        # Load subscription tier definitions
+        # --------------------------------------------------------------- #
         try:
             from config.subscriptions import PREDEFINED_TIERS
-            self.SUBSCRIPTION_TIERS = PREDEFINED_TIERS.copy()
-        except ImportError as e:
-            print(f"Warning: config.subscriptions module not found. Using empty subscription tiers. Error: {e}")
-            self.SUBSCRIPTION_TIERS = {}
-        except Exception as e:
-            print(f"Error initializing subscription tiers: {e}")
-            self.SUBSCRIPTION_TIERS = {}
 
+            self._tiers: Dict[str, Dict[str, Any]] = PREDEFINED_TIERS.copy()
+        except Exception as exc:  # pragma: no cover
+            print(f"Error loading subscription tiers: {exc}")
+            self._tiers = {}
 
-    def get_smart_api_instance(self) -> SmartApi:
-        """
-        Returns the Angel One SmartApi instance.
-        """
-        return self.smart_api_instance
-
+    # ------------------------------------------------------------------- #
+    # Connection handling
+    # ------------------------------------------------------------------- #
     def connect(self) -> bool:
         """
-        Connects to the Angel One SmartAPI using TOTP.
+        Perform a TOTP‑based login to Angel One.
 
-        Retrieves credentials from environment variables and attempts to log in.
-        Updates the connection status.
-
-        Returns:
-            True if the connection (login) is successful, False otherwise.
+        Returns ``True`` on successful login, ``False`` otherwise.
         """
-        global _is_api_connected # Ensure we modify the global flag
-
-        if not isinstance(self.smart_api_instance, SmartApi) or self.smart_api_instance.__class__.__name__ == 'SmartApi':
-            print("Error: SmartApi instance is not properly initialized or is a placeholder.")
-            self._is_api_connected = False
-            _is_api_connected = False
-            return False
-
-        if not (self.ANGEL_API_KEY and self.ANGEL_CLIENT_ID and self.ANGEL_PASSWORD and self.ANGEL_TOTP_KEY):
-            print("Error: Missing Angel One API credentials. Cannot connect.")
-            self._is_api_connected = False
-            _is_api_connected = False
+        if not all(
+            [
+                self._api_key,
+                self._client_id,
+                self._password,
+                self._totp_key,
+                isinstance(self._api, SmartApi),
+            ]
+        ):
+            print("Error: Missing credentials or invalid SmartApi instance.")
+            self._connected = False
             return False
 
         try:
-            totp = pyotp.TOTP(self.ANGEL_TOTP_KEY)
-            totp_value = totp.at()
-
-            print("Attempting to connect to Angel One SmartAPI...")
-            login_response = self.smart_api_instance.login(
-                self.ANGEL_CLIENT_ID,
-                self.ANGEL_PASSWORD,
-                totp_value
-            )
-
-            if login_response and login_response.get("status") == "success":
+            totp = pyotp.TOTP(self._totp_key)  # type: ignore
+            code = totp.at()
+            response = self._api.login(self._client_id, self._password, code)
+            if response.get("status") == "success":
+                self._connected = True
                 print("Successfully connected to Angel One SmartAPI.")
-                self._is_api_connected = True
-                _is_api_connected = True # Update global flag
                 return True
-            else:
-                print(f"Failed to connect to Angel One SmartAPI. Response: {login_response}")
-                self._is_api_connected = False
-                _is_api_connected = False
-                return False
-        except Exception as e:
-            print(f"An error occurred during Angel One SmartAPI connection: {e}")
-            self._is_api_connected = False
-            _is_api_connected = False
-            return False
+            print(f"Login failed: {response}")
+        except Exception as exc:  # pragma: no cover
+            print(f"Exception during SmartApi login: {exc}")
+
+        self._connected = False
+        return False
 
     def is_connected(self) -> bool:
-        """
-        Checks if the Angel One SmartAPI is currently connected.
+        """Return ``True`` if a successful login has been performed."""
+        return self._connected
 
-        Returns:
-            True if connected, False otherwise.
+    # ------------------------------------------------------------------- #
+    # Market data helpers
+    # ------------------------------------------------------------------- #
+    def get_ltp(
+        self, exchange: str, symbol: str, token: Optional[str] = None
+    ) -> Optional[float]:
         """
-        # If the instance is a placeholder, it's not truly connected.
-        if isinstance(self.smart_api_instance, SmartApi) and self.smart_api_instance.__class__.__name__ != 'SmartApi':
-            return self._is_api_connected
-        else:
-            return False
+        Retrieve the Last Traded Price (LTP) for a symbol.
 
-    def get_ltp(self, exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
-        """
-        Fetches the Last Traded Price (LTP) for a given symbol and exchange.
+        Returns ``None`` if the broker is not connected or the request fails.
         """
         if not self.is_connected():
-            print("Error: Not connected to Angel One SmartAPI. Cannot fetch LTP.")
+            print("Error: Not connected – cannot fetch LTP.")
             return None
 
         try:
-            instrument = {
-                "exchange": exchange,
-                "symbol": symbol
-            }
+            instrument: Dict[str, str] = {"exchange": exchange, "symbol": symbol}
             if token:
                 instrument["symboltoken"] = token
             else:
-                print(f"Warning: Token not provided for {symbol} on {exchange}. LTP fetch might be less reliable.")
+                print(
+                    f"Warning: No token supplied for {symbol}@{exchange}; result may be unreliable."
+                )
 
-            quotes = self.smart_api_instance.get_quotes([instrument])
-
-            if quotes and quotes.get("status") == "success":
-                quote_data = quotes.get("data", [])
-                if quote_data:
-                    ltp = quote_data[0].get("ltp")
-                    if ltp is not None:
-                        return float(ltp)
-                    else:
-                        print(f"LTP not found in quote data for {symbol} on {exchange}.")
-                        return None
-                else:
-                    print(f"No quote data received for {symbol} on {exchange}.")
-                    return None
-            else:
-                print(f"Failed to fetch quotes for {symbol} on {exchange}. Response: {quotes}")
+            resp = self._api.get_quotes([instrument])
+            if resp.get("status") != "success":
+                print(f"SmartApi get_quotes error: {resp}")
                 return None
-        except Exception as e:
-            print(f"An error occurred while fetching LTP for {symbol} on {exchange}: {e}")
+
+            data = resp.get("data", [])
+            if not data:
+                print(f"No quote data returned for {symbol}@{exchange}.")
+                return None
+
+            ltp = data[0].get("ltp")
+            return float(ltp) if ltp is not None else None
+        except Exception as exc:  # pragma: no cover
+            print(f"Exception in get_ltp: {exc}")
             return None
 
-    def get_candles(self, token: str, exchange: str, interval: str, fromdate: datetime.date, todate: datetime.date) -> Optional[List[Dict[str, Any]]]:
+    def get_candles(
+        self,
+        token: str,
+        exchange: str,
+        interval: str,
+        fromdate: datetime.date,
+        todate: datetime.date,
+    ) -> Optional[List[Dict[str, Any]]]:
         """
-        Fetches historical candle data (OHLCV) for a given instrument.
+        Retrieve historical OHLCV candles.
+
+        Returns a list of candle dictionaries or ``None`` on failure.
         """
         if not self.is_connected():
-            print("Error: Not connected to Angel One SmartAPI. Cannot fetch candles.")
+            print("Error: Not connected – cannot fetch candles.")
             return None
 
         try:
-            from_date_str = fromdate.strftime('%Y-%m-%d')
-            to_date_str = todate.strftime('%Y-%m-%d')
-
-            print(f"Fetching candles for token {token} on {exchange} ({interval}) from {from_date_str} to {to_date_str}...")
-            
-            candles_data = self.smart_api_instance.get_candles(
-                token,
-                exchange,
-                interval,
-                from_date_str,
-                to_date_str
-            )
-
-            if candles_data and candles_data.get("status") == "success":
-                return candles_data.get("data", [])
-            else:
-                print(f"Failed to fetch candles for token {token} on {exchange}. Response: {candles_data}")
+            from_str = fromdate.strftime("%Y-%m-%d")
+            to_str = todate.strftime("%Y-%m-%d")
+            resp = self._api.get_candles(token, exchange, interval, from_str, to_str)
+            if resp.get("status") != "success":
+                print(f"SmartApi get_candles error: {resp}")
                 return None
-        except Exception as e:
-            print(f"An error occurred while fetching candles for token {token} on {exchange}: {e}")
+            return resp.get("data", [])
+        except Exception as exc:  # pragma: no cover
+            print(f"Exception in get_candles: {exc}")
             return None
 
-    # --- Subscription Management Functions ---
+    # ------------------------------------------------------------------- #
+    # Subscription tier management
+    # ------------------------------------------------------------------- #
     def get_tier_data(self, tier_name: str) -> Optional[Dict[str, Any]]:
-        """Retrieves the data for a specific subscription tier."""
+        """Return the dictionary describing a tier, or ``None`` if unknown."""
         try:
-            return self.SUBSCRIPTION_TIERS.get(tier_name)
-        except Exception as e:
-            print(f"Error retrieving tier data for '{tier_name}': {e}")
+            return self._tiers.get(tier_name)
+        except Exception as exc:  # pragma: no cover
+            print(f"Error retrieving tier '{tier_name}': {exc}")
             return None
 
     def has_feature(self, tier_name: str, feature_name: str) -> bool:
-        """Checks if a given tier has a specific feature."""
+        """Return ``True`` if the tier includes the specified feature."""
         try:
-            tier_data = self.get_tier_data(tier_name)
-            if tier_data is None:
+            tier = self.get_tier_data(tier_name)
+            if not tier:
                 return False
-            return feature_name in tier_data.get("features", [])
-        except Exception as e:
-            print(f"Error checking feature '{feature_name}' for tier '{tier_name}': {e}")
+            return feature_name in tier.get("features", [])
+        except Exception as exc:  # pragma: no cover
+            print(f"Error checking feature '{feature_name}' for tier '{tier_name}': {exc}")
             return False
 
     def check_feature_access(self, role: str, feature: str) -> bool:
-        """Checks if a given role (tier) has access to a specific feature."""
+        """Alias for ``has_feature`` – kept for backward compatibility."""
+        return self.has_feature(role, feature)
+
+    def days_remaining(
+        self, created_at: datetime.datetime, role: str
+    ) -> Optional[int]:
+        """
+        Compute days left before a tier expires.
+
+        Returns ``None`` if the tier does not expire or is unknown.
+        """
         try:
-            return self.has_feature(role, feature)
-        except Exception as e:
-            print(f"Error checking feature access for role '{role}' and feature '{feature}': {e}")
-            return False
-
-    def days_remaining(self, created_at: datetime.datetime, role: str) -> Optional[int]:
-        """Calculates the number of days remaining for a given role (tier)."""
-        try:
-            tier_data = self.get_tier_data(role)
-            if tier_data is None:
+            tier = self.get_tier_data(role)
+            if not tier:
                 return None
-
-            expiry_days = tier_data.get("expiry_days")
-            if expiry_days is None:
+            expiry = tier.get("expiry_days")
+            if expiry is None:
                 return None
-
-            expiry_date = created_at + datetime.timedelta(days=expiry_days)
-            days_left = (expiry_date - datetime.datetime.now()).days
-            return max(0, days_left)
-        except Exception as e:
-            print(f"Error calculating days remaining for role '{role}' created at {created_at}: {e}")
+            expiry_date = created_at + datetime.timedelta(days=expiry)
+            remaining = (expiry_date - datetime.datetime.now()).days
+            return max(0, remaining)
+        except Exception as exc:  # pragma: no cover
+            print(f"Error calculating days remaining for role '{role}': {exc}")
             return None
 
-    def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
-        """Adds or updates a subscription tier."""
+    def add_or_update_tier(
+        self, tier_name: str, expiry_days: Optional[int], features: List[str]
+    ) -> None:
+        """Insert or replace a tier definition."""
         try:
-            if tier_name in self.SUBSCRIPTION_TIERS:
-                print(f"Info: Tier '{tier_name}' already exists. Updating.")
-            self.SUBSCRIPTION_TIERS[tier_name] = {"expiry_days": expiry_days, "features": features}
-        except Exception as e:
-            print(f"Error adding or updating tier '{tier_name}': {e}")
+            if tier_name in self._tiers:
+                print(f"Info: Updating existing tier '{tier_name}'.")
+            self._tiers[tier_name] = {"expiry_days": expiry_days, "features": features}
+        except Exception as exc:  # pragma: no cover
+            print(f"Error adding/updating tier '{tier_name}': {exc}")
 
-    def remove_tier(self, tier_name: str):
-        """Removes a subscription tier."""
+    def remove_tier(self, tier_name: str) -> None:
+        """Delete a tier from the internal dictionary."""
         try:
-            if tier_name in self.SUBSCRIPTION_TIERS:
-                del self.SUBSCRIPTION_TIERS[tier_name]
+            if tier_name in self._tiers:
+                del self._tiers[tier_name]
                 print(f"Info: Tier '{tier_name}' removed.")
             else:
-                print(f"Warning: Tier '{tier_name}' not found for removal.")
-        except Exception as e:
-            print(f"Error removing tier '{tier_name}': {e}")
+                print(f"Warning: Tier '{tier_name}' not found.")
+        except Exception as exc:  # pragma: no cover
+            print(f"Error removing tier '{tier_name}': {exc}")
 
-def get_broker_instance() -> Broker:
-    """
-    Returns the singleton instance of the Broker.
-    Creates it if it doesn't exist.
-    """
-    global _broker_instance
-    try:
-        if _broker_instance is None:
-            _broker_instance = Broker()
-        return _broker_instance
-    except Exception as e:
-        print(f"Error getting broker instance: {e}")
-        # In a critical failure, you might want to re-raise or return a mock/None
-        # For now, we'll print and return None, which will cause subsequent calls to fail gracefully.
-        return None
 
-# --- Global accessors for convenience ---
-# These functions delegate to the singleton broker instance.
+# --------------------------------------------------------------------------- #
+# Global accessor helpers – thin wrappers around the singleton instance.
+# --------------------------------------------------------------------------- #
+def _broker() -> Broker:
+    """Internal helper to obtain the singleton Broker instance."""
+    return Broker()
+
 
 def get_smart_api_instance_global() -> Optional[SmartApi]:
-    """Global accessor for the SmartApi instance."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.get_smart_api_instance()
-    return None
+    """Return the underlying SmartApi client (may be a placeholder)."""
+    try:
+        return _broker()._api
+    except Exception:  # pragma: no cover
+        return None
+
 
 def connect_global() -> bool:
-    """Global accessor to connect the broker."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.connect()
-    return False
+    """Convenient wrapper to trigger a login."""
+    return _broker().connect()
+
 
 def is_connected_global() -> bool:
-    """Global accessor to check broker connection status."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.is_connected()
-    return False
+    """Return the connection status."""
+    return _broker().is_connected()
 
-def get_ltp_global(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
-    """Global accessor to get LTP."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.get_ltp(exchange, symbol, token)
-    return None
 
-def get_candles_global(token: str, exchange: str, interval: str, fromdate: datetime.date, todate: datetime.date) -> Optional[List[Dict[str, Any]]]:
-    """Global accessor to get candles."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.get_candles(token, exchange, interval, fromdate, todate)
-    return None
+def get_ltp_global(
+    exchange: str, symbol: str, token: Optional[str] = None
+) -> Optional[float]:
+    """Global shortcut for ``Broker.get_ltp``."""
+    return _broker().get_ltp(exchange, symbol, token)
 
-# Subscription Management Global Accessors
+
+def get_candles_global(
+    token: str,
+    exchange: str,
+    interval: str,
+    fromdate: datetime.date,
+    todate: datetime.date,
+) -> Optional[List[Dict[str, Any]]]:
+    """Global shortcut for ``Broker.get_candles``."""
+    return _broker().get_candles(token, exchange, interval, fromdate, todate)
+
+
+# Subscription‑related global helpers
 def get_subscription_tier_data_global(tier_name: str) -> Optional[Dict[str, Any]]:
-    """Global accessor for subscription tier data."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.get_tier_data(tier_name)
-    return None
+    """Retrieve tier definition."""
+    return _broker().get_tier_data(tier_name)
+
 
 def does_tier_have_feature_global(tier_name: str, feature_name: str) -> bool:
-    """Global accessor to check if a tier has a feature."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.has_feature(tier_name, feature_name)
-    return False
+    """Check if a tier includes a feature."""
+    return _broker().has_feature(tier_name, feature_name)
+
 
 def check_user_feature_access_global(role: str, feature: str) -> bool:
-    """Global accessor to check user feature access."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.check_feature_access(role, feature)
-    return False
+    """Alias for ``does_tier_have_feature_global``."""
+    return _broker().check_feature_access(role, feature)
 
-def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str) -> Optional[int]:
-    """Global accessor to get remaining days for a tier."""
-    broker = get_broker_instance()
-    if broker:
-        return broker.days_remaining(created_at, role)
-    return None
 
-def add_or_update_subscription_tier_global(tier_name: str, expiry_days: Optional[int], features: List[str]):
-    """Global accessor to add or update a subscription tier."""
-    broker = get_broker_instance()
-    if broker:
-        broker.add_or_update_tier(tier_name, expiry_days, features)
+def get_days_remaining_for_tier_global(
+    created_at: datetime.datetime, role: str
+) -> Optional[int]:
+    """Calculate remaining days for a tier."""
+    return _broker().days_remaining(created_at, role)
 
-def remove_subscription_tier_global(tier_name: str):
-    """Global accessor to remove a subscription tier."""
-    broker = get_broker_instance()
-    if broker:
-        broker.remove_tier(tier_name)
+
+def add_or_update_subscription_tier_global(
+    tier_name: str, expiry_days: Optional[int], features: List[str]
+) -> None:
+    """Add or update a tier definition."""
+    _broker().add_or_update_tier(tier_name, expiry_days, features)
+
+
+def remove_subscription_tier_global(tier_name: str) -> None:
+    """Remove a tier definition."""
+    _broker().remove_tier(tier_name)
