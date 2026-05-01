@@ -360,7 +360,7 @@ def remove_subscription_tier_global(tier_name: str) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Top‑level convenience function
+# Top‑level convenience functions
 # --------------------------------------------------------------------------- #
 def connect() -> bool:
     """
@@ -370,3 +370,12 @@ def connect() -> bool:
     providing a simple function‑level API.
     """
     return _broker().connect()
+
+
+def get_ltp(exchange: str, symbol: str, token: Optional[str] = None) -> Optional[float]:
+    """
+    Top‑level convenience wrapper to fetch the Last Traded Price (LTP).
+
+    Delegates to the singleton broker's ``get_ltp`` method.
+    """
+    return _broker().get_ltp(exchange, symbol, token)
