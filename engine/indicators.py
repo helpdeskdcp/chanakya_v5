@@ -18,3 +18,11 @@ def moving_average_convergence_divergence(closes, short_window, long_window):
     short_ema = exponential_moving_average(closes, short_window)
     long_ema = exponential_moving_average(closes, long_window)
     return short_ema - long_ema
+
+def bollinger_bands(data, period, num_std):
+    mean = sum(data[-period:]) / period
+    variance = sum((x - mean) ** 2 for x in data[-period:]) / period
+    std_dev = variance ** 0.5
+    upper_band = mean + num_std * std_dev
+    lower_band = mean - num_std * std_dev
+    return upper_band, lower_band
