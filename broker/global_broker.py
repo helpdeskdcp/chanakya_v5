@@ -1,5 +1,6 @@
 from typing import Optional, List
 import config
+import datetime
 
 def add_or_update_tier(self, tier_name: str, expiry_days: Optional[int], features: List[str]):
     try:
@@ -39,3 +40,17 @@ def check_user_feature_access_global(role: str, feature: str) -> bool:
     except Exception as e:
         print(f"Error checking feature access: {e}")
         return False
+
+def get_days_remaining_for_tier_global(created_at: datetime.datetime, role: str) -> Optional[int]:
+    try:
+        tier_data = config.subscriptions.get(role)
+        if tier_data is None:
+            return None
+        expiry_days = tier_data.get("expiry_days")
+        if expiry_days is None:
+            return None
+        days_left = (datetime.datetime.now() - created_at).days
+        return max(0, expiry_days - days_left)
+    except Exception as e:
+        print(f"Error calculating days remaining: {e}")
+        return None
