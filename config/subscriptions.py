@@ -10,14 +10,14 @@ class Feature:
 
 class SubscriptionTier:
     def __init__(self, expiry, features):
-        for feature in features:
-            f = Feature(feature)  # Error here - 'subscription_system' is not defined yet! Should be removed as it was a mistake. subscription_system should not be used directly within the class scope without being an instance of SubscriptionSystem first.
-            subscription_system.add_tier(f)  # This line has errors, see above for context and explanation.
+        self.features = {}
+        for feature_name in features:
+            self.features[feature_name] = Feature(feature_name)
         self.expiry = datetime.timedelta(days=expiry) if isinstance(expiry, int) else None
 
 class SubscriptionSystem:
     def __init__(self):
         self.tiers = defaultdict(SubscriptionTier)  # Initialize with a dictionary of Tier objects for each tier name
 
-    def add_tier(self, tier):
-        self.tiers[tier.name] = tier
+    def add_tier(self, tier_name, expiry, features):
+        self.tiers[tier_name] = SubscriptionTier(expiry, features)
