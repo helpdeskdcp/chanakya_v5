@@ -148,6 +148,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
 
@@ -173,6 +174,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-label">Trading</div>
       <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
       <div class="nav-item" onclick="showPage('signals',this)">⚡ Signals</div>
+      <div class="nav-item" onclick="showPage('chart',this)">📊 Chart</div>
       <div class="nav-item" onclick="showPage('positions',this)">📈 Positions</div>
       <div class="nav-item" onclick="showPage('history',this)">📋 History</div>
       <div class="nav-item" onclick="showPage('prediction',this)">🔮 Predictions</div>
@@ -248,9 +250,10 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 
     <!-- CHART -->
     <div id="pg-chart" class="hidden">
-      <div class="card">
-        <div class="card-header">📊 Live Chart
-          <div style="display:flex;gap:6px;align-items:center">
+      <div class="card" style="padding:10px">
+        <div class="card-header" style="flex-wrap:wrap;gap:6px">
+          📊 Live Chart
+          <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <select id="chartSym" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
               <option value="NIFTY|99926000|NSE">NIFTY</option>
               <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
@@ -265,15 +268,21 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
               <option value="FIFTEEN_MINUTE">15m</option>
               <option value="ONE_HOUR">1hr</option>
             </select>
-            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 10px">Load</button>
+            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 8px">📊 Load</button>
+            <button class="btn btn-gold" onclick="loadChart(true)" style="font-size:10px;padding:4px 8px">🔄 Auto</button>
           </div>
         </div>
-        <div id="chartInfo" style="display:flex;gap:12px;padding:4px 0 8px;font-size:11px;flex-wrap:wrap"></div>
-        <canvas id="mainChart" style="width:100%;height:350px"></canvas>
-        <div style="margin-top:12px">
-          <div style="font-size:10px;color:#8090a8;margin-bottom:4px">RSI</div>
-          <canvas id="rsiChart" style="width:100%;height:80px"></canvas>
+        <!-- Indicator badges -->
+        <div id="chartInfo" style="display:flex;gap:6px;padding:6px 0;font-size:10px;flex-wrap:wrap"></div>
+        <!-- Main Candlestick Chart -->
+        <div id="chartContainer" style="width:100%;height:320px;border-radius:6px;overflow:hidden"></div>
+        <!-- RSI Chart -->
+        <div style="margin-top:6px">
+          <div style="font-size:9px;color:#8090a8;margin-bottom:2px">RSI(14)</div>
+          <div id="rsiContainer" style="width:100%;height:70px;border-radius:4px;overflow:hidden"></div>
         </div>
+        <!-- VWAP info -->
+        <div id="vwapInfo" style="display:flex;gap:12px;margin-top:8px;font-size:10px;flex-wrap:wrap"></div>
       </div>
     </div>
     <!-- POSITIONS -->
@@ -465,6 +474,7 @@ function showPage(id, el) {
   document.getElementById("pg-"+id).classList.remove("hidden");
   if(el) el.classList.add("active");
   if(id==="positions") loadPositions();
+  if(id==="chart") initChart();
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
   if(id==="settings") loadBrokerSettings();
@@ -624,6 +634,134 @@ async function saveBroker() {
     msg.textContent="❌ "+(d.error||"Save failed");
   }
   setTimeout(function(){msg.textContent=""},3000);
+}
+
+// ── CHART ─────────────────────────────────────────────
+var _chartInstance = null;
+var _rsiInstance = null;
+var _chartAutoTimer = null;
+var _chartSeries = null;
+var _rsiSeries = null;
+
+function initChart() {
+  if(!_chartInstance) {
+    // Main candlestick chart
+    _chartInstance = LightweightCharts.createChart(document.getElementById('chartContainer'), {
+      layout: { background:{color:'#0d1b2a'}, textColor:'#8090a8' },
+      grid: { vertLines:{color:'#1e3a5f33'}, horzLines:{color:'#1e3a5f33'} },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      rightPriceScale: { borderColor:'#1e3a5f' },
+      timeScale: { borderColor:'#1e3a5f', timeVisible:true, secondsVisible:false },
+      width: document.getElementById('chartContainer').clientWidth,
+      height: 320,
+    });
+    _chartSeries = _chartInstance.addCandlestickSeries({
+      upColor:'#00e676', downColor:'#ff5252',
+      borderUpColor:'#00e676', borderDownColor:'#ff5252',
+      wickUpColor:'#00e676', wickDownColor:'#ff5252',
+    });
+
+    // RSI chart
+    _rsiInstance = LightweightCharts.createChart(document.getElementById('rsiContainer'), {
+      layout: { background:{color:'#0d1b2a'}, textColor:'#8090a8' },
+      grid: { vertLines:{color:'#1e3a5f22'}, horzLines:{color:'#1e3a5f22'} },
+      rightPriceScale: { borderColor:'#1e3a5f', scaleMargins:{top:0.1,bottom:0.1} },
+      timeScale: { borderColor:'#1e3a5f', timeVisible:true, visible:false },
+      width: document.getElementById('rsiContainer').clientWidth,
+      height: 70,
+    });
+    _rsiSeries = _rsiInstance.addLineSeries({color:'#d4af37', lineWidth:1});
+
+    // Resize handler
+    window.addEventListener('resize', function(){
+      if(_chartInstance) _chartInstance.applyOptions({width: document.getElementById('chartContainer').clientWidth});
+      if(_rsiInstance) _rsiInstance.applyOptions({width: document.getElementById('rsiContainer').clientWidth});
+    });
+  }
+  loadChart();
+}
+
+async function loadChart(auto) {
+  var symVal = document.getElementById('chartSym').value.split('|');
+  var symbol = symVal[0], token = symVal[1], exchange = symVal[2];
+  var interval = document.getElementById('chartInt').value;
+
+  var d = await api('/chart?symbol='+symbol+'&token='+token+'&exchange='+exchange+'&interval='+interval+'&days=2');
+  if(!d.success){
+    document.getElementById('chartInfo').innerHTML = "<span style='color:#ff5252'>❌ "+d.error+"</span>";
+    return;
+  }
+
+  var candles = d.candles||[];
+  if(!candles.length) return;
+
+  // Candlestick data
+  var cData = candles.map(function(c){
+    var t = typeof c.t === 'string' ? Math.floor(new Date(c.t).getTime()/1000) : c.t;
+    return {time:t, open:c.o, high:c.h, low:c.l, close:c.c};
+  }).filter(function(c){return !isNaN(c.time)});
+
+  if(_chartSeries && cData.length) {
+    _chartSeries.setData(cData);
+
+    // EMA9 line
+    if(!_chartInstance._ema9) {
+      _chartInstance._ema9 = _chartInstance.addLineSeries({color:'#00c8ff',lineWidth:1,priceLineVisible:false});
+    }
+    var ind = d.indicators||{};
+    if(ind.ema9 && ind.ema9.length) {
+      var ema9Data = cData.map(function(c,i){ return {time:c.time, value:ind.ema9[i]}; }).filter(function(x){return x.value;});
+      _chartInstance._ema9.setData(ema9Data);
+    }
+
+    // EMA21 line
+    if(!_chartInstance._ema21) {
+      _chartInstance._ema21 = _chartInstance.addLineSeries({color:'#d4af37',lineWidth:1,priceLineVisible:false});
+    }
+    if(ind.ema21 && ind.ema21.length) {
+      var ema21Data = cData.map(function(c,i){ return {time:c.time, value:ind.ema21[i]}; }).filter(function(x){return x.value;});
+      _chartInstance._ema21.setData(ema21Data);
+    }
+
+    // VWAP line
+    if(ind.vwap) {
+      if(!_chartInstance._vwap) {
+        _chartInstance._vwap = _chartInstance.addLineSeries({color:'#ff9800',lineWidth:1,lineStyle:2,priceLineVisible:false});
+      }
+      var vwapData = cData.map(function(c){ return {time:c.time, value:ind.vwap}; });
+      _chartInstance._vwap.setData(vwapData);
+    }
+
+    _chartInstance.timeScale().fitContent();
+  }
+
+  // RSI
+  if(_rsiSeries && d.indicators && d.indicators.rsi) {
+    var rsiData = cData.map(function(c){ return {time:c.time, value:d.indicators.rsi}; });
+    _rsiSeries.setData(rsiData);
+  }
+
+  // LTP + indicators info
+  var ltp = d.ltp||0;
+  var ind = d.indicators||{};
+  var vwapBias = ltp > (ind.vwap||0) ? "🟢 Above VWAP" : "🔴 Below VWAP";
+  document.getElementById('chartInfo').innerHTML =
+    "<span style='color:#00c8ff;font-weight:700'>LTP: ₹"+ltp.toFixed(1)+"</span>"+
+    "<span style='color:#00c8ff'>EMA9: ₹"+(ind.ema9&&ind.ema9.length?ind.ema9[ind.ema9.length-1].toFixed(1):"-")+"</span>"+
+    "<span style='color:#d4af37'>EMA21: ₹"+(ind.ema21&&ind.ema21.length?ind.ema21[ind.ema21.length-1].toFixed(1):"-")+"</span>"+
+    "<span style='color:#ff9800'>VWAP: ₹"+(ind.vwap?ind.vwap.toFixed(1):"-")+"</span>"+
+    "<span>"+vwapBias+"</span>"+
+    "<span style='color:#8090a8'>RSI: "+(ind.rsi?ind.rsi.toFixed(1):"-")+"</span>"+
+    "<span style='color:#8090a8'>ATR: "+(ind.atr?ind.atr.toFixed(1):"-")+"</span>";
+
+  // Auto refresh
+  if(auto) {
+    if(_chartAutoTimer) clearInterval(_chartAutoTimer);
+    _chartAutoTimer = setInterval(function(){
+      if(!document.getElementById('pg-chart').classList.contains('hidden')) loadChart();
+    }, 10000); // 10 sec auto refresh
+    document.querySelector('[onclick="loadChart(true)"]').textContent = "🔄 Auto ON";
+  }
 }
 
 function setBottomNav(id) {
