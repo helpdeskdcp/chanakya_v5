@@ -71,6 +71,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 .chat-msg{padding:10px;border-radius:8px;font-size:12px;max-width:85%}
 .chat-user{background:#1e3a5f;align-self:flex-end}
 .chat-ai{background:#0d1b2a;border:1px solid var(--border);align-self:flex-start}
+.chat-ai.chart-msg{max-width:98%;width:98%;padding:8px}
 .chat-input{display:flex;gap:8px;margin-top:8px}
 .chat-input input{flex:1;background:#0a0f1a;border:1px solid var(--border);border-radius:6px;padding:8px;color:#e0e8f0;font-size:12px}
 .quick-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
@@ -912,7 +913,7 @@ async function renderChatChart(chartReq, containerId) {
     grid:{vertLines:{color:'#1e3a5f22'},horzLines:{color:'#1e3a5f22'}},
     rightPriceScale:{borderColor:'#1e3a5f',scaleMargins:{top:0.05,bottom:0.05}},
     timeScale:{borderColor:'#1e3a5f',timeVisible:true,secondsVisible:false},
-    width:el.clientWidth||screenW-40, height:chartH,
+    width:el.clientWidth||(screenW>600?screenW-220:screenW-24), height:chartH,
     handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true},
     handleScale:{mouseWheel:true,pinch:true},
   });
@@ -965,7 +966,7 @@ async function sendChat() {
     _chatChartId++;
     var cid = 'chatChart'+_chatChartId;
     var symName = chartReq.sym.split('|')[0];
-    msgs.innerHTML += "<div class='chat-msg chat-ai'>"+
+    msgs.innerHTML += "<div class='chat-msg chat-ai chart-msg'>"+
       "<div style='font-size:11px;color:#d4af37;margin-bottom:4px'>📊 "+symName+" Chart loading...</div>"+
       "<div id='"+cid+"_info' style='font-size:9px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;color:#8090a8'></div>"+
       "<div id='"+cid+"' style='width:100%;min-width:0;border-radius:6px;overflow:hidden;background:#0d1b2a;display:block'></div>"+
