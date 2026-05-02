@@ -206,6 +206,11 @@ def place_trade():
         else:
             from trading.paper_engine import place_trade as pt
             tid = pt(request.username,symbol,exchange,direction,entry,sl,target,qty=qty,token=token)
+            if tid:
+                try:
+                    from notifications.telegram import alert_trade_open
+                    alert_trade_open(request.username,symbol,direction,entry,sl,target,qty,'PAPER')
+                except: pass
             return jsonify({"success":bool(tid),"trade_id":tid,"mode":"PAPER"})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
@@ -216,8 +221,19 @@ def close_trade(tid):
     try:
         data = request.json or {}
         exit_price = float(data.get("exit_price",0))
-        from trading.paper_engine import close_trade as ct
+        from trading.paper_engine import close_trade as ct, get_trade_by_id
+        trade = get_trade_by_id(tid) or {}
         ok = ct(tid, exit_price, "manual")
+        if ok:
+            try:
+                from notifications.telegram import alert_trade_close
+                entry = trade.get("entry_price", 0)
+                direction = trade.get("direction", "BUY")
+                symbol = trade.get("symbol", "")
+                qty = trade.get("qty", 1)
+                pnl = (exit_price - entry) * qty if direction == "BUY" else (entry - exit_price) * qty
+                alert_trade_close(request.username, symbol, direction, entry, exit_price, pnl, "PAPER")
+            except: pass
         return jsonify({"success":ok})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
