@@ -67,7 +67,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 .sig-level .label{color:#8090a8}
 .sig-level .val{font-weight:600}
 /* CHAT */
-.chat-msgs{height:300px;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+.chat-msgs{height:420px;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 .chat-msg{padding:10px;border-radius:8px;font-size:12px;max-width:85%}
 .chat-user{background:#1e3a5f;align-self:flex-end}
 .chat-ai{background:#0d1b2a;border:1px solid var(--border);align-self:flex-start}
@@ -102,7 +102,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
   .tbl th,.tbl td{padding:5px 3px}
   .sig-levels{grid-template-columns:1fr 1fr 1fr 1fr;font-size:9px}
   .btn{font-size:11px;padding:6px 10px}
-  .chat-msgs{height:200px}
+  .chat-msgs{height:260px}
   /* Bottom Nav */
   #bottomNav{
     display:flex!important;
@@ -902,13 +902,19 @@ async function renderChatChart(chartReq, containerId) {
   var candles = d.candles||[];
   if(!candles.length) return;
   var el = document.getElementById(containerId);
-  el.style.height = '220px';
+  // Responsive height
+  var screenW = window.innerWidth;
+  var chartH = screenW < 480 ? 200 : screenW < 768 ? 240 : screenW < 1200 ? 280 : 320;
+  el.style.height = chartH+'px';
+  el.style.width = '100%';
   var chart = LightweightCharts.createChart(el, {
     layout:{background:{color:'#0d1b2a'},textColor:'#8090a8'},
     grid:{vertLines:{color:'#1e3a5f22'},horzLines:{color:'#1e3a5f22'}},
-    rightPriceScale:{borderColor:'#1e3a5f'},
+    rightPriceScale:{borderColor:'#1e3a5f',scaleMargins:{top:0.05,bottom:0.05}},
     timeScale:{borderColor:'#1e3a5f',timeVisible:true,secondsVisible:false},
-    width:el.clientWidth, height:220,
+    width:el.clientWidth||screenW-40, height:chartH,
+    handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true},
+    handleScale:{mouseWheel:true,pinch:true},
   });
   var cs = chart.addCandlestickSeries({
     upColor:'#00e676',downColor:'#ff5252',
@@ -940,7 +946,7 @@ async function renderChatChart(chartReq, containerId) {
     "<span style='color:#00c8ff'>LTP:₹"+ltp.toFixed(1)+"</span> "+
     "<span style='color:#00c8ff'>EMA9:₹"+(ind.ema9&&ind.ema9.length?ind.ema9[ind.ema9.length-1].toFixed(1):'-')+"</span> "+
     "<span style='color:#d4af37'>EMA21:₹"+(ind.ema21&&ind.ema21.length?ind.ema21[ind.ema21.length-1].toFixed(1):'-')+"</span> "+
-    "<span style='color:#ff9800'>VWAP:₹"+(ind.vwap?ind.vwap.toFixed(1):'-')+"</span> "+
+    "<span style='color:#ff9800'>VWAP:₹"+(ind.vwap&&ind.vwap>0?ind.vwap.toFixed(1):'N/A')+"</span> "+
     "<span>"+bias+"</span> "+
     "<span style='color:#8090a8'>RSI:"+(ind.rsi?ind.rsi.toFixed(1):'-')+"</span>";
 }
@@ -962,7 +968,7 @@ async function sendChat() {
     msgs.innerHTML += "<div class='chat-msg chat-ai'>"+
       "<div style='font-size:11px;color:#d4af37;margin-bottom:4px'>📊 "+symName+" Chart loading...</div>"+
       "<div id='"+cid+"_info' style='font-size:9px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;color:#8090a8'></div>"+
-      "<div id='"+cid+"' style='width:100%;border-radius:6px;overflow:hidden;background:#0d1b2a'></div>"+
+      "<div id='"+cid+"' style='width:100%;min-width:0;border-radius:6px;overflow:hidden;background:#0d1b2a;display:block'></div>"+
     "</div>";
     msgs.scrollTop = msgs.scrollHeight;
     setTimeout(function(){ renderChatChart(chartReq, cid); }, 100);
