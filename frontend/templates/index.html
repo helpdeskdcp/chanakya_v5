@@ -103,6 +103,10 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-item" onclick="showPage('prediction',this)">🔮 Predictions</div>
     </div>
     <div class="nav-group">
+      <div class="nav-label">Settings</div>
+      <div class="nav-item" onclick="showPage('settings',this)">⚙️ Broker</div>
+    </div>
+    <div class="nav-group">
       <div class="nav-label">AI</div>
       <div class="nav-item" onclick="showPage('aichat',this)">💬 AI Chat</div>
     </div>
@@ -224,6 +228,33 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       </div>
     </div>
 
+    <!-- SETTINGS -->
+    <div id="pg-settings" class="hidden">
+      <div class="card">
+        <div class="card-header">⚙️ Broker Settings <span style="font-size:10px;color:#8090a8">(Angel One)</span></div>
+        <div style="max-width:480px">
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">API Key</div>
+            <input class="inp" id="bApiKey" placeholder="Angel One API Key" style="margin:0">
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Client ID</div>
+            <input class="inp" id="bClientId" placeholder="Client ID (e.g. R51882011)" style="margin:0">
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Password</div>
+            <input class="inp" id="bPassword" placeholder="Trading Password" type="password" style="margin:0">
+          </div>
+          <div style="margin-bottom:16px">
+            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">TOTP Secret Key</div>
+            <input class="inp" id="bTotp" placeholder="TOTP Secret (not OTP)" style="margin:0">
+          </div>
+          <button class="btn btn-green" onclick="saveBroker()" style="width:100%;padding:12px;font-size:14px">💾 Save Broker Settings</button>
+          <div id="brokerMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
@@ -327,6 +358,7 @@ function showPage(id, el) {
   if(id==="positions") loadPositions();
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
+  if(id==="settings") loadBrokerSettings();
   if(id==="admin") loadUsers();
 }
 
@@ -452,6 +484,37 @@ async function closeTrade(tid, price) {
   var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
   if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
   else toast("❌ "+d.error,"#ff0000");
+}
+
+async function loadBrokerSettings() {
+  var d = await api("/settings/broker");
+  if(!d.success) return;
+  var b = d.broker||{};
+  document.getElementById("bApiKey").value    = b.api_key||"";
+  document.getElementById("bClientId").value  = b.client_id||"";
+  document.getElementById("bPassword").value  = b.password||"";
+  document.getElementById("bTotp").value      = b.totp||"";
+}
+
+async function saveBroker() {
+  var data = {
+    api_key:   document.getElementById("bApiKey").value.trim(),
+    client_id: document.getElementById("bClientId").value.trim(),
+    password:  document.getElementById("bPassword").value.trim(),
+    totp:      document.getElementById("bTotp").value.trim(),
+  };
+  if(!data.client_id){ toast("❌ Client ID required","#ff0000"); return; }
+  var d = await api("/settings/broker","POST",data);
+  var msg = document.getElementById("brokerMsg");
+  if(d.success){
+    msg.style.color="#00e676";
+    msg.textContent="✅ Broker settings saved!";
+    toast("✅ Broker settings saved","#1e3a5f");
+  } else {
+    msg.style.color="#ff5252";
+    msg.textContent="❌ "+(d.error||"Save failed");
+  }
+  setTimeout(function(){msg.textContent=""},3000);
 }
 
 var _predTimer = null;

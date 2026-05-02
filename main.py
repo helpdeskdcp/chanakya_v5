@@ -330,6 +330,30 @@ def options_chain():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+@app.route("/api/settings/broker", methods=["GET","POST"])
+@require_auth
+def broker_settings():
+    try:
+        from auth.user_manager import update_broker, get_user
+        if request.method == "GET":
+            user = get_user(request.username) or {}
+            return jsonify({"success":True,"broker":{
+                "api_key":    user.get("broker_api_key",""),
+                "client_id":  user.get("broker_client_id",""),
+                "password":   "●●●●" if user.get("broker_password") else "",
+                "totp":       "●●●●" if user.get("broker_totp") else "",
+            }})
+        data = request.json or {}
+        ok = update_broker(request.username,
+            data.get("api_key",""),
+            data.get("client_id",""),
+            data.get("password",""),
+            data.get("totp",""))
+        return jsonify({"success":ok})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/pnl")
 @require_auth
 def pnl():
