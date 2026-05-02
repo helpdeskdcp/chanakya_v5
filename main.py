@@ -364,6 +364,21 @@ def pnl():
         return jsonify({"success":False,"error":str(e)})
 
 # ── Frontend ───────────────────────────────────────────
+
+@app.route("/v5/static/<path:filename>")
+def static_files(filename):
+    return app.send_from_directory("frontend/static", filename)
+
+@app.route("/v5/manifest.json")
+def manifest():
+    return app.send_from_directory("frontend/static", "manifest.json")
+
+@app.route("/v5/sw.js")
+def service_worker():
+    from flask import Response
+    content = open("frontend/static/sw.js").read()
+    return Response(content, mimetype="application/javascript")
+
 @app.route("/")
 @app.route("/v5")
 @app.route("/v5/")

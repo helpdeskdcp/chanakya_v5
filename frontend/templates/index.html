@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chanakya AI v5.0</title>
+<link rel="manifest" href="/v5/manifest.json">
+<link rel="apple-touch-icon" href="/v5/static/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chanakya AI">
+<meta name="theme-color" content="#0a0f1a">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-height:100vh}
@@ -125,6 +131,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
     <!-- TOPBAR -->
     <div class="topbar" id="topbar">
       <span class="badge badge-green" id="brokerBadge">● Broker</span>
+      <button id="installBtn" class="btn btn-gold" onclick="installPWA()" style="display:none;font-size:10px;padding:4px 10px">📱 Install App</button>
     </div>
 
     <!-- DASHBOARD -->
@@ -688,6 +695,39 @@ async function createUser() {
     } else { TOKEN=""; localStorage.removeItem("ch_token"); }
   }
 })();
+</script>
+<script>
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/v5/sw.js')
+      .then(function(reg) { console.log('SW registered:', reg.scope); })
+      .catch(function(e) { console.log('SW error:', e); });
+  });
+}
+
+// PWA Install prompt
+var _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Install button दाखवूया
+  var btn = document.getElementById('installBtn');
+  if(btn) btn.style.display = 'block';
+});
+
+function installPWA() {
+  if(!_deferredPrompt) {
+    toast("Already installed or not supported","#1e3a5f");
+    return;
+  }
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(function(r) {
+    if(r.outcome === 'accepted') toast("✅ Chanakya AI installed!","#1e3a5f");
+    _deferredPrompt = null;
+    var btn = document.getElementById('installBtn');
+    if(btn) btn.style.display = 'none';
+  });
+}
 </script>
 </body>
 </html>
