@@ -313,6 +313,8 @@ async function startApp() {
   loadPnL();
   setInterval(loadMarket, 5000);
   setInterval(loadPnL, 30000);
+  // Auto refresh positions if on positions page
+  setInterval(function(){ if(!document.getElementById('pg-positions').classList.contains('hidden')) loadPositions(); }, 5000);
 }
 
 async function loadMarket() {
@@ -386,27 +388,40 @@ async function tradeSig(btn) {
   } else toast("❌ "+d.error,"#ff0000");
 }
 
+var _posLoading = false;
 async function loadPositions() {
-  var d = await api("/trades?mode=open");
-  var trades = d.trades||[];
-  var tb = document.getElementById("posTable");
-  if(!trades.length) {
-    tb.innerHTML="<tr><td colspan='7' style='text-align:center;color:#8090a8;padding:16px'>No open positions</td></tr>";
-    return;
+  if(_posLoading) return; // crash protection — concurrent calls block करा
+  _posLoading = true;
+  try {
+    var d = await api("/trades?mode=open");
+    if(!d.success) { _posLoading=false; return; } // API error — silently skip
+    var trades = d.trades||[];
+    var tb = document.getElementById("posTable");
+    if(!tb) { _posLoading=false; return; }
+    if(!trades.length) {
+      tb.innerHTML="<tr><td colspan='7' style='text-align:center;color:#8090a8;padding:16px'>No open positions</td></tr>";
+      _posLoading=false; return;
+    }
+    tb.innerHTML = trades.map(function(t){
+      var pnl = t.live_pnl||t.pnl||0;
+      var pnlClr = pnl>=0?"#00e676":"#ff5252";
+      var ltpClr = t.ltp ? (t.direction==="BUY" ? (t.ltp>=t.entry_price?"#00e676":"#ff5252") : (t.ltp<=t.entry_price?"#00e676":"#ff5252")) : "#00c8ff";
+      return "<tr>"+
+        "<td><b>"+t.symbol+"</b><br><span style='font-size:9px;color:#8090a8'>"+t.exchange+"</span></td>"+
+        "<td style='color:"+(t.direction==="BUY"?"#00e676":"#ff5252")+"'>"+t.direction+"</td>"+
+        "<td>₹"+t.entry_price+"</td>"+
+        "<td style='color:"+ltpClr+";font-weight:600'>"+(t.ltp?"₹"+t.ltp:"⏳")+"</td>"+
+        "<td style='color:#ff5252'>₹"+t.sl_price+"</td>"+
+        "<td style='color:#00e676'>₹"+t.target_price+"</td>"+
+        "<td style='color:"+pnlClr+";font-weight:700'>₹"+pnl.toFixed(0)+"</td>"+
+        "<td><button class='btn btn-red' onclick='closeTrade("+t.id+","+t.entry_price+")' style='font-size:10px;padding:4px 8px'>Exit</button></td>"+
+      "</tr>";
+    }).join("");
+  } catch(e) {
+    console.error("loadPositions error:", e); // UI crash नको
+  } finally {
+    _posLoading = false; // नेहमी unlock करा
   }
-  tb.innerHTML = trades.map(function(t){
-    var pnlClr = (t.pnl||0)>=0?"#00e676":"#ff5252";
-    return "<tr>"+
-      "<td><b>"+t.symbol+"</b><br><span style='font-size:9px;color:#8090a8'>"+t.exchange+"</span></td>"+
-      "<td style='color:"+(t.direction==="BUY"?"#00e676":"#ff5252")+"'>"+t.direction+"</td>"+
-      "<td>₹"+t.entry_price+"</td>"+
-      "<td style='color:#00c8ff;font-weight:600'>"+(t.ltp?"₹"+t.ltp:"-")+"</td>"+
-      "<td style='color:#ff5252'>₹"+t.sl_price+"</td>"+
-      "<td style='color:#00e676'>₹"+t.target_price+"</td>"+
-      "<td style='color:"+pnlClr+"'>₹"+(t.live_pnl||t.pnl||0).toFixed(0)+"</td>"+
-      "<td><button class='btn btn-red' onclick='closeTrade("+t.id+","+t.entry_price+")' style='font-size:10px;padding:4px 8px'>Exit</button></td>"+
-    "</tr>";
-  }).join("");
 }
 
 async function closeTrade(tid, price) {
