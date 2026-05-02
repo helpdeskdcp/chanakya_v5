@@ -353,11 +353,11 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
           <button class="btn btn-blue" onclick="sendChat()">Send</button>
         </div>
         <div class="quick-btns">
-          <span class="quick-btn" onclick="quickChat('NIFTY aaj signal dya')">NIFTY</span>
-          <span class="quick-btn" onclick="quickChat('BANKNIFTY analysis')">BANKNIFTY</span>
-          <span class="quick-btn" onclick="quickChat('CRUDEOIL MCX signal')">CRUDE</span>
-          <span class="quick-btn" onclick="quickChat('NATURALGAS live LTP')">NATGAS</span>
-          <span class="quick-btn" onclick="quickChat('Best strategy today?')">Strategy</span>
+          <span class="quick-btn" onclick="quickChat('NIFTY chart dakhva')">📊 NIFTY</span>
+          <span class="quick-btn" onclick="quickChat('BANKNIFTY chart 5m')">📊 BANK</span>
+          <span class="quick-btn" onclick="quickChat('CRUDEOIL chart MCX')">📊 CRUDE</span>
+          <span class="quick-btn" onclick="quickChat('NIFTY aaj signal dya')">⚡ Signal</span>
+          <span class="quick-btn" onclick="quickChat('Best strategy today?')">🎯 Strategy</span>
         </div>
       </div>
     </div>
@@ -859,6 +859,92 @@ async function loadHistory() {
   }).join("");
 }
 
+// Chart keywords detect करूया
+var CHART_KEYWORDS = ['chart','candle','candlestick','graph','technical','vwap','ema','rsi','चार्ट','कँडल'];
+var SYMBOL_MAP = {
+  'nifty':    'NIFTY|99926000|NSE',
+  'banknifty':'BANKNIFTY|99926009|NSE',
+  'bank nifty':'BANKNIFTY|99926009|NSE',
+  'finnifty': 'FINNIFTY|99926037|NSE',
+  'crudeoil': 'CRUDEOIL|488290|MCX',
+  'crude':    'CRUDEOIL|488290|MCX',
+  'naturalgas':'NATURALGAS|488505|MCX',
+  'natgas':   'NATURALGAS|488505|MCX',
+  'reliance': 'RELIANCE|2885|NSE',
+};
+var TF_MAP = {
+  '1m':'ONE_MINUTE','1min':'ONE_MINUTE',
+  '5m':'FIVE_MINUTE','5min':'FIVE_MINUTE',
+  '15m':'FIFTEEN_MINUTE','15min':'FIFTEEN_MINUTE',
+  '1h':'ONE_HOUR','1hr':'ONE_HOUR','1hour':'ONE_HOUR',
+};
+
+function detectChartRequest(msg) {
+  var lower = msg.toLowerCase();
+  var isChart = CHART_KEYWORDS.some(function(k){ return lower.includes(k); });
+  if(!isChart) return null;
+  var sym = 'NIFTY|99926000|NSE';
+  Object.keys(SYMBOL_MAP).forEach(function(k){ if(lower.includes(k)) sym = SYMBOL_MAP[k]; });
+  var tf = 'FIVE_MINUTE';
+  Object.keys(TF_MAP).forEach(function(k){ if(lower.includes(k)) tf = TF_MAP[k]; });
+  return {sym:sym, tf:tf};
+}
+
+var _chatChartId = 0;
+async function renderChatChart(chartReq, containerId) {
+  var symParts = chartReq.sym.split('|');
+  var symbol=symParts[0], token=symParts[1], exchange=symParts[2];
+  var d = await api('/chart?symbol='+symbol+'&token='+token+'&exchange='+exchange+'&interval='+chartReq.tf+'&days=2');
+  if(!d.success){
+    document.getElementById(containerId).innerHTML = "<div style='color:#ff5252;padding:8px'>❌ "+d.error+"</div>";
+    return;
+  }
+  var candles = d.candles||[];
+  if(!candles.length) return;
+  var el = document.getElementById(containerId);
+  el.style.height = '220px';
+  var chart = LightweightCharts.createChart(el, {
+    layout:{background:{color:'#0d1b2a'},textColor:'#8090a8'},
+    grid:{vertLines:{color:'#1e3a5f22'},horzLines:{color:'#1e3a5f22'}},
+    rightPriceScale:{borderColor:'#1e3a5f'},
+    timeScale:{borderColor:'#1e3a5f',timeVisible:true,secondsVisible:false},
+    width:el.clientWidth, height:220,
+  });
+  var cs = chart.addCandlestickSeries({
+    upColor:'#00e676',downColor:'#ff5252',
+    borderUpColor:'#00e676',borderDownColor:'#ff5252',
+    wickUpColor:'#00e676',wickDownColor:'#ff5252',
+  });
+  var cData = candles.map(function(c){
+    var t = typeof c.t==='string' ? Math.floor(new Date(c.t).getTime()/1000) : c.t;
+    return {time:t,open:c.o,high:c.h,low:c.l,close:c.c};
+  }).filter(function(c){return !isNaN(c.time)});
+  cs.setData(cData);
+  // EMA9
+  var e9 = chart.addLineSeries({color:'#00c8ff',lineWidth:1,priceLineVisible:false});
+  var ind = d.indicators||{};
+  if(ind.ema9) e9.setData(cData.map(function(c,i){return {time:c.time,value:ind.ema9[i]};}).filter(function(x){return x.value;}));
+  // EMA21
+  var e21 = chart.addLineSeries({color:'#d4af37',lineWidth:1,priceLineVisible:false});
+  if(ind.ema21) e21.setData(cData.map(function(c,i){return {time:c.time,value:ind.ema21[i]};}).filter(function(x){return x.value;}));
+  // VWAP
+  if(ind.vwap) {
+    var vw = chart.addLineSeries({color:'#ff9800',lineWidth:1,lineStyle:2,priceLineVisible:false});
+    vw.setData(cData.map(function(c){return {time:c.time,value:ind.vwap};}));
+  }
+  chart.timeScale().fitContent();
+  // Info bar
+  var ltp = d.ltp||0;
+  var bias = ltp>(ind.vwap||0)?'🟢 Above VWAP':'🔴 Below VWAP';
+  document.getElementById(containerId+'_info').innerHTML =
+    "<span style='color:#00c8ff'>LTP:₹"+ltp.toFixed(1)+"</span> "+
+    "<span style='color:#00c8ff'>EMA9:₹"+(ind.ema9&&ind.ema9.length?ind.ema9[ind.ema9.length-1].toFixed(1):'-')+"</span> "+
+    "<span style='color:#d4af37'>EMA21:₹"+(ind.ema21&&ind.ema21.length?ind.ema21[ind.ema21.length-1].toFixed(1):'-')+"</span> "+
+    "<span style='color:#ff9800'>VWAP:₹"+(ind.vwap?ind.vwap.toFixed(1):'-')+"</span> "+
+    "<span>"+bias+"</span> "+
+    "<span style='color:#8090a8'>RSI:"+(ind.rsi?ind.rsi.toFixed(1):'-')+"</span>";
+}
+
 async function sendChat() {
   var inp = document.getElementById("chatInp");
   var msg = inp.value.trim();
@@ -866,6 +952,23 @@ async function sendChat() {
   inp.value = "";
   var msgs = document.getElementById("chatMsgs");
   msgs.innerHTML += "<div class='chat-msg chat-user'>"+msg+"</div>";
+
+  // Chart request detect करूया
+  var chartReq = detectChartRequest(msg);
+  if(chartReq) {
+    _chatChartId++;
+    var cid = 'chatChart'+_chatChartId;
+    var symName = chartReq.sym.split('|')[0];
+    msgs.innerHTML += "<div class='chat-msg chat-ai'>"+
+      "<div style='font-size:11px;color:#d4af37;margin-bottom:4px'>📊 "+symName+" Chart loading...</div>"+
+      "<div id='"+cid+"_info' style='font-size:9px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;color:#8090a8'></div>"+
+      "<div id='"+cid+"' style='width:100%;border-radius:6px;overflow:hidden;background:#0d1b2a'></div>"+
+    "</div>";
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(function(){ renderChatChart(chartReq, cid); }, 100);
+    return;
+  }
+
   msgs.innerHTML += "<div class='chat-msg chat-ai' id='typing'>⏳ Thinking...</div>";
   msgs.scrollTop = msgs.scrollHeight;
   var d = await api("/ai/chat","POST",{message:msg});
