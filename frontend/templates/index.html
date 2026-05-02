@@ -1,1 +1,504 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chanakya AI v5.0</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-height:100vh}
+:root{--blue:#00c8ff;--green:#00e676;--red:#ff5252;--gold:#d4af37;--card:#0d1b2a;--border:#1e3a5f}
+.hidden{display:none!important}
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0a0f1a,#0d1b2a)}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;text-align:center}
+.login-box h1{color:var(--gold);font-size:24px;margin-bottom:4px}
+.login-box p{color:#8090a8;font-size:12px;margin-bottom:24px}
+.inp{width:100%;padding:10px 14px;background:#0a0f1a;border:1px solid var(--border);border-radius:8px;color:#e0e8f0;font-size:14px;margin-bottom:12px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-blue{background:#00c8ff22;color:var(--blue);border:1px solid var(--blue)}
+.btn-green{background:#00e67622;color:var(--green);border:1px solid var(--green)}
+.btn-red{background:#ff525222;color:var(--red);border:1px solid var(--red)}
+.btn-gold{background:#d4af3722;color:var(--gold);border:1px solid var(--gold);width:100%;padding:12px}
+/* MAIN */
+#mainApp{display:none;flex-direction:row;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--card);border-right:1px solid var(--border);padding:16px;flex-shrink:0}
+.logo{color:var(--gold);font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.nav-group{margin-bottom:16px}
+.nav-label{font-size:9px;color:#8090a8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.nav-item{padding:8px 10px;border-radius:6px;cursor:pointer;font-size:12px;color:#8090a8;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.nav-item:hover,.nav-item.active{background:#1e3a5f;color:#e0e8f0}
+.nav-item.active{color:var(--blue)}
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ticker{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px}
+.ticker span{color:var(--green);font-weight:600}
+.badge{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-green{background:#00e67622;color:var(--green)}
+.badge-red{background:#ff525222;color:var(--red)}
+.badge-gold{background:#d4af3722;color:var(--gold)}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.stat{text-align:center}
+.stat-val{font-size:22px;font-weight:700;color:var(--blue)}
+.stat-label{font-size:10px;color:#8090a8;margin-top:2px}
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{padding:8px;text-align:left;color:#8090a8;border-bottom:1px solid var(--border)}
+.tbl td{padding:8px;border-bottom:1px solid #0d1b2a}
+.tbl tr:hover td{background:#1e3a5f22}
+/* SIGNAL CARD */
+.sig-card{background:#0d1b2a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
+.sig-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sig-levels{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px;font-size:10px}
+.sig-level{text-align:center}
+.sig-level .label{color:#8090a8}
+.sig-level .val{font-weight:600}
+/* CHAT */
+.chat-msgs{height:300px;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{padding:10px;border-radius:8px;font-size:12px;max-width:85%}
+.chat-user{background:#1e3a5f;align-self:flex-end}
+.chat-ai{background:#0d1b2a;border:1px solid var(--border);align-self:flex-start}
+.chat-input{display:flex;gap:8px;margin-top:8px}
+.chat-input input{flex:1;background:#0a0f1a;border:1px solid var(--border);border-radius:6px;padding:8px;color:#e0e8f0;font-size:12px}
+.quick-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.quick-btn{background:#0a0f1a;border:1px solid var(--border);color:#8090a8;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer}
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:12px;z-index:9999;display:none;max-width:300px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <div style="font-size:32px;margin-bottom:8px">⚡</div>
+    <h1>Chanakya AI</h1>
+    <p>v5.0 — Professional Trading Platform</p>
+    <input class="inp" id="loginUser" placeholder="Username" type="text">
+    <input class="inp" id="loginPass" placeholder="Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-gold" onclick="doLogin()">Login →</button>
+    <div id="loginErr" style="color:#ff5252;font-size:11px;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">⚡ Chanakya AI</div>
+    <div class="nav-group">
+      <div class="nav-label">Trading</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
+      <div class="nav-item" onclick="showPage('signals',this)">⚡ Signals</div>
+      <div class="nav-item" onclick="showPage('positions',this)">📈 Positions</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">AI</div>
+      <div class="nav-item" onclick="showPage('aichat',this)">💬 AI Chat</div>
+    </div>
+    <div class="nav-group" id="adminNav" style="display:none">
+      <div class="nav-label">Admin</div>
+      <div class="nav-item" onclick="showPage('admin',this)">👑 Users</div>
+    </div>
+    <div style="position:absolute;bottom:16px;left:16px;right:16px">
+      <div style="font-size:10px;color:#8090a8;margin-bottom:6px" id="userInfo">-</div>
+      <button class="btn btn-red" style="width:100%;font-size:11px" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TOPBAR -->
+    <div class="topbar" id="topbar">
+      <span class="badge badge-green" id="brokerBadge">● Broker</span>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard">
+      <div class="grid3">
+        <div class="card"><div class="stat"><div class="stat-val" id="dNIFTY">-</div><div class="stat-label">NIFTY</div></div></div>
+        <div class="card"><div class="stat"><div class="stat-val" id="dBANK">-</div><div class="stat-label">BANKNIFTY</div></div></div>
+        <div class="card"><div class="stat"><div class="stat-val" id="dCRUDE">-</div><div class="stat-label">CRUDEOIL</div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header">📊 Today P&L</div>
+          <div class="stat"><div class="stat-val" id="dPnl">₹0</div><div class="stat-label">Paper Trading</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">🎯 Win Rate</div>
+          <div class="stat"><div class="stat-val" id="dWin">0%</div><div class="stat-label">All time</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">⚡ Recent Signals <button class="btn btn-blue" onclick="loadSignals()" style="font-size:10px;padding:4px 10px">Scan</button></div>
+        <div id="dashSignals"><div style="color:#8090a8;text-align:center;padding:20px">Click Scan to load signals</div></div>
+      </div>
+    </div>
+
+    <!-- SIGNALS -->
+    <div id="pg-signals" class="hidden">
+      <div class="card">
+        <div class="card-header">⚡ AI Signals <button class="btn btn-blue" onclick="loadSignals()" style="font-size:10px;padding:4px 10px">🔄 Scan Now</button></div>
+        <div id="sigList"><div style="color:#8090a8;text-align:center;padding:20px">Click Scan Now</div></div>
+      </div>
+    </div>
+
+
+    <div id="pg-prediction" class="hidden">
+      <div class="card">
+        <div class="card-header">🔮 AI Predictions
+          <button class="btn btn-blue" onclick="scanPredictions()" id="predBtn" style="font-size:10px;padding:4px 10px">⚡ Scan</button>
+        </div>
+        <div style="font-size:10px;color:#d4af37;padding:4px 0 8px">MTF 1m+5m+15m+30m+1hr + Groq AI verdict</div>
+        <div id="predList"><div style="color:#8090a8;text-align:center;padding:20px">Click Scan to start</div></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div id="pg-chart" class="hidden">
+      <div class="card">
+        <div class="card-header">📊 Live Chart
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="chartSym" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
+              <option value="NIFTY|99926000|NSE">NIFTY</option>
+              <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
+              <option value="CRUDEOIL|488290|MCX">CRUDEOIL</option>
+              <option value="NATURALGAS|488505|MCX">NATURALGAS</option>
+              <option value="RELIANCE|2885|NSE">RELIANCE</option>
+              <option value="WIPRO|3787|NSE">WIPRO</option>
+            </select>
+            <select id="chartInt" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
+              <option value="ONE_MINUTE">1m</option>
+              <option value="FIVE_MINUTE" selected>5m</option>
+              <option value="FIFTEEN_MINUTE">15m</option>
+              <option value="ONE_HOUR">1hr</option>
+            </select>
+            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 10px">Load</button>
+          </div>
+        </div>
+        <div id="chartInfo" style="display:flex;gap:12px;padding:4px 0 8px;font-size:11px;flex-wrap:wrap"></div>
+        <canvas id="mainChart" style="width:100%;height:350px"></canvas>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;color:#8090a8;margin-bottom:4px">RSI</div>
+          <canvas id="rsiChart" style="width:100%;height:80px"></canvas>
+        </div>
+      </div>
+    </div>
+    <!-- POSITIONS -->
+    <div id="pg-positions" class="hidden">
+      <div class="card">
+        <div class="card-header">📈 Open Positions <button class="btn btn-blue" onclick="loadPositions()" style="font-size:10px;padding:4px 10px">🔄 Refresh</button></div>
+        <table class="tbl">
+          <thead><tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>LTP</th><th>SL</th><th>Target</th><th>Live P&L</th><th>Action</th></tr></thead>
+          <tbody id="posTable"><tr><td colspan="7" style="text-align:center;color:#8090a8;padding:16px">No open positions</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AI CHAT -->
+    <div id="pg-aichat" class="hidden">
+      <div class="card">
+        <div class="card-header">💬 Chanakya AI Chat <span style="font-size:9px;color:#00e676">● LLaMA 3.3 70B</span></div>
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="chat-msg chat-ai">👋 Namaste! Chanakya AI here. NIFTY, BANKNIFTY, MCX signals saathi vicharaa!</div>
+        </div>
+        <div class="chat-input">
+          <input id="chatInp" placeholder="NIFTY signal dya..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-blue" onclick="sendChat()">Send</button>
+        </div>
+        <div class="quick-btns">
+          <span class="quick-btn" onclick="quickChat('NIFTY aaj signal dya')">NIFTY</span>
+          <span class="quick-btn" onclick="quickChat('BANKNIFTY analysis')">BANKNIFTY</span>
+          <span class="quick-btn" onclick="quickChat('CRUDEOIL MCX signal')">CRUDE</span>
+          <span class="quick-btn" onclick="quickChat('NATURALGAS live LTP')">NATGAS</span>
+          <span class="quick-btn" onclick="quickChat('Best strategy today?')">Strategy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="pg-admin" class="hidden">
+      <div class="card">
+        <div class="card-header">👑 User Management
+          <button class="btn btn-green" onclick="showAddUser()" style="font-size:10px;padding:4px 10px">+ Add User</button>
+        </div>
+        <div id="addUserForm" class="hidden" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px">
+          <input class="inp" id="nuUser" placeholder="Username" style="margin:0">
+          <input class="inp" id="nuPass" placeholder="Password" type="password" style="margin:0">
+          <select id="nuRole" class="inp" style="margin:0">
+            <option value="demo">Demo</option>
+            <option value="premium">Premium</option>
+            <option value="silver">Silver</option>
+            <option value="gold">Gold</option>
+            <option value="platinum">Platinum</option>
+            <option value="administrator">Administrator</option>
+          </select>
+          <button class="btn btn-green" onclick="createUser()">Add</button>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Action</th></tr></thead>
+          <tbody id="userTable"><tr><td colspan="5" style="text-align:center;color:#8090a8;padding:16px">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var TOKEN = localStorage.getItem("ch_token") || "";
+var USER_ROLE = "";
+
+function toast(msg, color) {
+  var t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  t.style.background = color||"#1e3a5f"; t.style.color = "#fff";
+  setTimeout(function(){t.style.display="none"},3000);
+}
+
+async function api(path, method, body) {
+  try {
+    var opts = {method:method||"GET", headers:{"Content-Type":"application/json","X-Auth-Token":TOKEN}};
+    if(body) opts.body = JSON.stringify(body);
+    var r = await fetch("/v5/api"+path, opts);
+    return await r.json();
+  } catch(e) { return {success:false,error:String(e)}; }
+}
+
+async function doLogin() {
+  var u = document.getElementById("loginUser").value.trim();
+  var p = document.getElementById("loginPass").value.trim();
+  if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
+  var d = await api("/login","POST",{username:u,password:p});
+  if(d.success) {
+    TOKEN = d.token; USER_ROLE = d.role;
+    localStorage.setItem("ch_token",TOKEN);
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("mainApp").style.display="flex";
+    document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
+    if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
+    startApp();
+  } else {
+    document.getElementById("loginErr").textContent = d.error||"Login failed";
+  }
+}
+
+async function doLogout() {
+  await api("/logout","POST");
+  TOKEN = ""; localStorage.removeItem("ch_token");
+  location.reload();
+}
+
+function showPage(id, el) {
+  document.querySelectorAll("[id^=pg-]").forEach(function(p){p.classList.add("hidden")});
+  document.querySelectorAll(".nav-item").forEach(function(n){n.classList.remove("active")});
+  document.getElementById("pg-"+id).classList.remove("hidden");
+  if(el) el.classList.add("active");
+  if(id==="positions") loadPositions();
+  if(id==="admin") loadUsers();
+}
+
+async function startApp() {
+  loadMarket();
+  loadPnL();
+  setInterval(loadMarket, 5000);
+  setInterval(loadPnL, 30000);
+}
+
+async function loadMarket() {
+  var d = await api("/market");
+  if(!d.success) return;
+  var data = d.data||{};
+  document.getElementById("dNIFTY").textContent = data.NIFTY ? "₹"+Math.round(data.NIFTY).toLocaleString() : "-";
+  document.getElementById("dBANK").textContent  = data.BANKNIFTY ? "₹"+Math.round(data.BANKNIFTY).toLocaleString() : "-";
+  document.getElementById("dCRUDE").textContent = data.CRUDEOIL ? "₹"+Math.round(data.CRUDEOIL) : "-";
+  var topbar = "<span class='badge badge-green' id='brokerBadge'>● Connected</span>";
+  Object.entries(data).slice(0,4).forEach(function(e){
+    topbar += "<span class='ticker'>"+e[0]+" <span>"+Math.round(e[1])+"</span></span>";
+  });
+  document.getElementById("topbar").innerHTML = topbar;
+}
+
+async function loadPnL() {
+  var d = await api("/pnl");
+  if(!d.success) return;
+  var pnl = d.pnl||{};
+  var pv = pnl.total_pnl||0;
+  document.getElementById("dPnl").textContent = (pv>=0?"+":"")+pv.toFixed(0);
+  document.getElementById("dPnl").style.color = pv>=0?"#00e676":"#ff5252";
+  document.getElementById("dWin").textContent = (pnl.win_rate||0).toFixed(1)+"%";
+}
+
+async function loadSignals() {
+  document.getElementById("sigList").innerHTML = "<div style='color:#d4af37;text-align:center;padding:20px'>⏳ Scanning...</div>";
+  var d = await api("/signals");
+  var sigs = d.signals||[];
+  if(!sigs.length) {
+    var html = "<div style='color:#8090a8;text-align:center;padding:20px'>No signals found</div>";
+    document.getElementById("sigList").innerHTML = html;
+    document.getElementById("dashSignals").innerHTML = html;
+    return;
+  }
+  var html = sigs.map(function(s){
+    var clr = s.direction==="BUY"?"#00e676":"#ff5252";
+    return "<div class='sig-card'>"+
+      "<div class='sig-header'>"+
+        "<span style='color:"+clr+";font-weight:700;font-size:13px'>"+s.direction+" "+s.symbol+"</span>"+
+        "<span class='badge badge-gold'>"+s.score+"%</span>"+
+      "</div>"+
+      "<div class='sig-levels'>"+
+        "<div class='sig-level'><div class='label'>Entry</div><div class='val'>₹"+s.entry+"</div></div>"+
+        "<div class='sig-level'><div class='label' style='color:#00e676'>Target</div><div class='val' style='color:#00e676'>₹"+s.target+"</div></div>"+
+        "<div class='sig-level'><div class='label' style='color:#ff5252'>SL</div><div class='val' style='color:#ff5252'>₹"+s.sl+"</div></div>"+
+        "<div class='sig-level'><div class='label'>RR</div><div class='val'>1:"+s.rr+"</div></div>"+
+      "</div>"+
+      "<div style='font-size:9px;color:#8090a8;margin-bottom:6px'>RSI="+s.rsi+" VWAP="+s.vwap_bias+" Vol="+s.vol_ratio+"x "+s.exchange+"</div>"+
+      "<button class='btn btn-blue' onclick='tradeSig(this)' style='width:100%;font-size:11px;padding:6px'"+
+        " data-sym='"+s.symbol+"' data-dir='"+s.direction+"' data-entry='"+s.entry+"'"+
+        " data-sl='"+s.sl+"' data-tgt='"+s.target+"' data-exch='"+s.exchange+"' data-tok='"+s.token+"'>"+
+        (s.direction==="BUY"?"📈":"📉")+" "+s.direction+" "+s.symbol+" (PAPER)</button>"+
+    "</div>";
+  }).join("");
+  document.getElementById("sigList").innerHTML = html;
+  document.getElementById("dashSignals").innerHTML = html.split("</div>")[0]+"</div>"+html.split("</div>")[1]+"</div></div>";
+}
+
+async function tradeSig(btn) {
+  var sym=btn.dataset.sym, dir=btn.dataset.dir, entry=btn.dataset.entry;
+  var sl=btn.dataset.sl, tgt=btn.dataset.tgt, exch=btn.dataset.exch, tok=btn.dataset.tok;
+  if(!confirm(dir+" "+sym+" @ ₹"+entry+" SL="+sl+" T="+tgt+"\nConfirm PAPER trade?")) return;
+  var d = await api("/trades","POST",{symbol:sym,exchange:exch,direction:dir,
+    entry:parseFloat(entry),sl:parseFloat(sl),target:parseFloat(tgt),qty:1,token:tok,mode:"PAPER"});
+  if(d.success) {
+    toast("✅ "+dir+" "+sym+" #"+d.trade_id+" placed!","#1e3a5f");
+    btn.textContent="✅ Placed #"+d.trade_id; btn.disabled=true;
+    loadPnL();
+  } else toast("❌ "+d.error,"#ff0000");
+}
+
+async function loadPositions() {
+  var d = await api("/trades?mode=open");
+  var trades = d.trades||[];
+  var tb = document.getElementById("posTable");
+  if(!trades.length) {
+    tb.innerHTML="<tr><td colspan='7' style='text-align:center;color:#8090a8;padding:16px'>No open positions</td></tr>";
+    return;
+  }
+  tb.innerHTML = trades.map(function(t){
+    var pnlClr = (t.pnl||0)>=0?"#00e676":"#ff5252";
+    return "<tr>"+
+      "<td><b>"+t.symbol+"</b><br><span style='font-size:9px;color:#8090a8'>"+t.exchange+"</span></td>"+
+      "<td style='color:"+(t.direction==="BUY"?"#00e676":"#ff5252")+"'>"+t.direction+"</td>"+
+      "<td>₹"+t.entry_price+"</td>"+
+      "<td style='color:#00c8ff;font-weight:600'>"+(t.ltp?"₹"+t.ltp:"-")+"</td>"+
+      "<td style='color:#ff5252'>₹"+t.sl_price+"</td>"+
+      "<td style='color:#00e676'>₹"+t.target_price+"</td>"+
+      "<td style='color:"+pnlClr+"'>₹"+(t.live_pnl||t.pnl||0).toFixed(0)+"</td>"+
+      "<td><button class='btn btn-red' onclick='closeTrade("+t.id+","+t.entry_price+")' style='font-size:10px;padding:4px 8px'>Exit</button></td>"+
+    "</tr>";
+  }).join("");
+}
+
+async function closeTrade(tid, price) {
+  var exit = prompt("Exit price:", price);
+  if(!exit) return;
+  var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
+  if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
+  else toast("❌ "+d.error,"#ff0000");
+}
+
+async function sendChat() {
+  var inp = document.getElementById("chatInp");
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = "";
+  var msgs = document.getElementById("chatMsgs");
+  msgs.innerHTML += "<div class='chat-msg chat-user'>"+msg+"</div>";
+  msgs.innerHTML += "<div class='chat-msg chat-ai' id='typing'>⏳ Thinking...</div>";
+  msgs.scrollTop = msgs.scrollHeight;
+  var d = await api("/ai/chat","POST",{message:msg});
+  document.getElementById("typing")?.remove();
+  var reply = d.success ? d.reply : "❌ "+d.error;
+  msgs.innerHTML += "<div class='chat-msg chat-ai'>🤖 "+reply+"</div>";
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function quickChat(msg) {
+  document.getElementById("chatInp").value = msg;
+  sendChat();
+}
+
+async function loadUsers() {
+  var d = await api("/admin/users");
+  var users = d.users||[];
+  var tb = document.getElementById("userTable");
+  tb.innerHTML = users.map(function(u){
+    var roleClr = {developer:"#d4af37",administrator:"#d4af37",platinum:"#00c8ff",gold:"#ffd700",silver:"#c0c0c0",premium:"#00e676",demo:"#8090a8"}[u.role]||"#8090a8";
+    return "<tr>"+
+      "<td><b>"+u.username+"</b></td>"+
+      "<td style='color:#8090a8'>"+( u.email||"-")+"</td>"+
+      "<td style='color:"+roleClr+"'>"+u.role.toUpperCase()+"</td>"+
+      "<td>"+(u.is_active?"✅":"❌")+"</td>"+
+      "<td>"+
+        "<select data-uname='"+(u.username||"")+"' onchange='changeRole(this.dataset.uname,this.value)' style='background:#0a0f1a;color:#e0e8f0;border:1px solid var(--border);border-radius:4px;font-size:10px;padding:2px'>"+
+          "<option>Action</option>"+
+          "<option value='demo'>→ Demo</option>"+
+          "<option value='premium'>→ Premium</option>"+
+          "<option value='silver'>→ Silver</option>"+
+          "<option value='gold'>→ Gold</option>"+
+          "<option value='platinum'>→ Platinum</option>"+
+        "</select>"+
+      "</td>"+
+    "</tr>";
+  }).join("");
+}
+
+async function changeRole(username, role) {
+  if(!role||role==="Action") return;
+  var d = await api("/admin/users/"+username+"/role","POST",{role:role});
+  if(d.success){toast("✅ "+username+" → "+role,"#1e3a5f");loadUsers();}
+  else toast("❌ "+d.error,"#ff0000");
+}
+
+function showAddUser() {
+  var f = document.getElementById("addUserForm");
+  f.classList.toggle("hidden");
+}
+
+async function createUser() {
+  var u=document.getElementById("nuUser").value.trim();
+  var p=document.getElementById("nuPass").value.trim();
+  var r=document.getElementById("nuRole").value;
+  if(!u||!p){toast("Fill all fields","#ff0000");return;}
+  var d = await api("/admin/users","POST",{username:u,password:p,role:r});
+  if(d.success){toast("✅ User "+u+" created","#1e3a5f");loadUsers();showAddUser();}
+  else toast("❌ "+d.error,"#ff0000");
+}
+
+// Auto login if token exists
+(async function(){
+  if(TOKEN) {
+    var d = await api("/status");
+    if(d.success) {
+      USER_ROLE = d.role;
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("mainApp").style.display="flex";
+      document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
+      if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
+      startApp();
+    } else { TOKEN=""; localStorage.removeItem("ch_token"); }
+  }
+})();
+</script>
+</body>
+</html>
