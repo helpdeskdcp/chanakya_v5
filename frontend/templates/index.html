@@ -100,6 +100,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-item" onclick="showPage('signals',this)">⚡ Signals</div>
       <div class="nav-item" onclick="showPage('positions',this)">📈 Positions</div>
       <div class="nav-item" onclick="showPage('history',this)">📋 History</div>
+      <div class="nav-item" onclick="showPage('prediction',this)">🔮 Predictions</div>
     </div>
     <div class="nav-group">
       <div class="nav-label">AI</div>
@@ -325,6 +326,7 @@ function showPage(id, el) {
   if(el) el.classList.add("active");
   if(id==="positions") loadPositions();
   if(id==="history") loadHistory();
+  if(id==="prediction") scanPredictions();
   if(id==="admin") loadUsers();
 }
 
@@ -450,6 +452,59 @@ async function closeTrade(tid, price) {
   var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
   if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
   else toast("❌ "+d.error,"#ff0000");
+}
+
+var _predTimer = null;
+
+async function scanPredictions() {
+  var btn = document.getElementById("predBtn");
+  var list = document.getElementById("predList");
+  if(!list) return;
+  if(btn){ btn.textContent="⏳ Scanning..."; btn.disabled=true; }
+  list.innerHTML = "<div style='color:#d4af37;text-align:center;padding:20px'>⏳ AI scanning... please wait</div>";
+
+  try {
+    var d = await api("/predictions");
+    if(!d.success){ 
+      list.innerHTML = "<div style='color:#ff5252;text-align:center;padding:20px'>❌ "+d.error+"</div>";
+      return;
+    }
+    var sigs = d.signals||[];
+    if(!sigs.length){
+      list.innerHTML = "<div style='color:#8090a8;text-align:center;padding:20px'>No predictions found</div>";
+      return;
+    }
+    list.innerHTML = sigs.map(function(s){
+      var clr = s.direction==="BUY"?"#00e676":"#ff5252";
+      var conf = s.confidence||s.score||0;
+      return "<div class='sig-card'>"+
+        "<div class='sig-header'>"+
+          "<span style='color:"+clr+";font-weight:700;font-size:13px'>"+(s.direction==="BUY"?"📈":"📉")+" "+s.direction+" "+s.symbol+"</span>"+
+          "<span class='badge badge-gold'>"+conf+"%</span>"+
+        "</div>"+
+        "<div class='sig-levels'>"+
+          "<div class='sig-level'><div class='label'>Entry</div><div class='val'>₹"+(s.entry||"-")+"</div></div>"+
+          "<div class='sig-level'><div class='label' style='color:#00e676'>Target</div><div class='val' style='color:#00e676'>₹"+(s.target||"-")+"</div></div>"+
+          "<div class='sig-level'><div class='label' style='color:#ff5252'>SL</div><div class='val' style='color:#ff5252'>₹"+(s.sl||"-")+"</div></div>"+
+          "<div class='sig-level'><div class='label'>TF</div><div class='val'>"+(s.timeframe||"MTF")+"</div></div>"+
+        "</div>"+
+        "<div style='font-size:9px;color:#8090a8'>"+( s.reason||s.strategy||"AI Signal")+"</div>"+
+      "</div>";
+    }).join("");
+
+    // Auto-refresh timer reset करूया
+    if(_predTimer) clearTimeout(_predTimer);
+    _predTimer = setTimeout(function(){
+      if(!document.getElementById('pg-prediction').classList.contains('hidden')){
+        scanPredictions();
+      }
+    }, 5*60*1000); // 5 minutes
+
+  } catch(e) {
+    list.innerHTML = "<div style='color:#ff5252;text-align:center;padding:20px'>❌ Error: "+e+"</div>";
+  } finally {
+    if(btn){ btn.textContent="⚡ Scan"; btn.disabled=false; }
+  }
 }
 
 async function loadHistory() {
