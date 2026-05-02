@@ -99,6 +99,7 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
       <div class="nav-item" onclick="showPage('signals',this)">⚡ Signals</div>
       <div class="nav-item" onclick="showPage('positions',this)">📈 Positions</div>
+      <div class="nav-item" onclick="showPage('history',this)">📋 History</div>
     </div>
     <div class="nav-group">
       <div class="nav-label">AI</div>
@@ -204,6 +205,24 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       </div>
     </div>
 
+    <!-- HISTORY -->
+    <div id="pg-history" class="hidden">
+      <div class="card">
+        <div class="card-header">📋 Trade History
+          <button class="btn btn-blue" onclick="loadHistory()" style="font-size:10px;padding:4px 10px">🔄 Refresh</button>
+        </div>
+        <div class="grid3" style="margin-bottom:12px">
+          <div class="card" style="margin:0"><div class="stat"><div class="stat-val" id="hTotalPnl">₹0</div><div class="stat-label">Total P&L</div></div></div>
+          <div class="card" style="margin:0"><div class="stat"><div class="stat-val" id="hWinRate">0%</div><div class="stat-label">Win Rate</div></div></div>
+          <div class="card" style="margin:0"><div class="stat"><div class="stat-val" id="hTotalTrades">0</div><div class="stat-label">Total Trades</div></div></div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="histTable"><tr><td colspan="8" style="text-align:center;color:#8090a8;padding:16px">Click Refresh to load</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
@@ -305,6 +324,7 @@ function showPage(id, el) {
   document.getElementById("pg-"+id).classList.remove("hidden");
   if(el) el.classList.add("active");
   if(id==="positions") loadPositions();
+  if(id==="history") loadHistory();
   if(id==="admin") loadUsers();
 }
 
@@ -430,6 +450,42 @@ async function closeTrade(tid, price) {
   var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
   if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
   else toast("❌ "+d.error,"#ff0000");
+}
+
+async function loadHistory() {
+  var d = await api("/trades?mode=all");
+  var trades = d.trades||[];
+  var tb = document.getElementById("histTable");
+  if(!trades.length) {
+    tb.innerHTML="<tr><td colspan='8' style='text-align:center;color:#8090a8;padding:16px'>No trades found</td></tr>";
+    return;
+  }
+  // Stats calculate करूया
+  var closed = trades.filter(function(t){return t.status==="CLOSED"});
+  var totalPnl = closed.reduce(function(s,t){return s+(t.pnl||0)},0);
+  var wins = closed.filter(function(t){return (t.pnl||0)>0}).length;
+  var winRate = closed.length ? (wins/closed.length*100) : 0;
+  document.getElementById("hTotalPnl").textContent = (totalPnl>=0?"+":"")+totalPnl.toFixed(0);
+  document.getElementById("hTotalPnl").style.color = totalPnl>=0?"#00e676":"#ff5252";
+  document.getElementById("hWinRate").textContent = winRate.toFixed(1)+"%";
+  document.getElementById("hWinRate").style.color = winRate>=50?"#00e676":"#ff5252";
+  document.getElementById("hTotalTrades").textContent = trades.length;
+  tb.innerHTML = trades.map(function(t){
+    var pnl = t.pnl||0;
+    var pnlClr = pnl>0?"#00e676":pnl<0?"#ff5252":"#8090a8";
+    var statusClr = t.status==="OPEN"?"#00c8ff":pnl>0?"#00e676":"#ff5252";
+    var date = (t.created_at||"").substring(0,16);
+    return "<tr>"+
+      "<td style='color:#8090a8'>"+t.id+"</td>"+
+      "<td><b>"+t.symbol+"</b><br><span style='font-size:9px;color:#8090a8'>"+t.exchange+"</span></td>"+
+      "<td style='color:"+(t.direction==="BUY"?"#00e676":"#ff5252")+"'>"+t.direction+"</td>"+
+      "<td>₹"+t.entry_price+"</td>"+
+      "<td>"+(t.exit_price?"₹"+t.exit_price:"-")+"</td>"+
+      "<td style='color:"+pnlClr+";font-weight:700'>"+(t.status==="OPEN"?"OPEN":"₹"+pnl.toFixed(0))+"</td>"+
+      "<td><span class='badge' style='background:"+statusClr+"22;color:"+statusClr+";border:1px solid "+statusClr+"33'>"+t.status+"</span></td>"+
+      "<td style='font-size:10px;color:#8090a8'>"+date+"</td>"+
+    "</tr>";
+  }).join("");
 }
 
 async function sendChat() {
