@@ -367,17 +367,25 @@ def pnl():
 
 @app.route("/v5/static/<path:filename>")
 def static_files(filename):
-    return app.send_from_directory("frontend/static", filename)
+    import os
+    from flask import send_from_directory
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "static")
+    return send_from_directory(static_dir, filename)
 
 @app.route("/v5/manifest.json")
 def manifest():
-    return app.send_from_directory("frontend/static", "manifest.json")
+    import os
+    from flask import send_from_directory
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "static")
+    return send_from_directory(static_dir, "manifest.json")
 
 @app.route("/v5/sw.js")
 def service_worker():
+    import os
     from flask import Response
-    content = open("frontend/static/sw.js").read()
-    return Response(content, mimetype="application/javascript")
+    sw_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "static", "sw.js")
+    content = open(sw_path).read()
+    return Response(content, mimetype="application/javascript", headers={"Service-Worker-Allowed": "/"})
 
 @app.route("/")
 @app.route("/v5")

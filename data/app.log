@@ -1661,3 +1661,125 @@
 2026-05-02 09:08:42,788 [INFO] 127.0.0.1 - - [02/May/2026 09:08:42] "GET /api/market HTTP/1.0" 200 -
 2026-05-02 09:12:35,522 [INFO] 127.0.0.1 - - [02/May/2026 09:12:35] "GET /api/pnl HTTP/1.0" 200 -
 2026-05-02 09:12:38,221 [INFO] 127.0.0.1 - - [02/May/2026 09:12:38] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:14:40,761 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-02 09:14:40,766 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-02 09:14:40,766 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-02 09:14:43,651 [INFO] 127.0.0.1 - - [02/May/2026 09:14:43] "GET /health HTTP/1.1" 200 -
+2026-05-02 09:15:15,517 [INFO] 127.0.0.1 - - [02/May/2026 09:15:15] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:15:16,737 [INFO] 127.0.0.1 - - [02/May/2026 09:15:16] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:15:30,299 [INFO] Broker connected: R51882011
+2026-05-02 09:15:34,135 [INFO] 127.0.0.1 - - [02/May/2026 09:15:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:34,359 [INFO] 127.0.0.1 - - [02/May/2026 09:15:34] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:15:34,518 [INFO] 127.0.0.1 - - [02/May/2026 09:15:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:34,682 [INFO] 127.0.0.1 - - [02/May/2026 09:15:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:34,857 [INFO] 127.0.0.1 - - [02/May/2026 09:15:34] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,018 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,178 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,318 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,332 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:15:35,477 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,481 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,638 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,642 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,818 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,819 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:35,957 [INFO] 127.0.0.1 - - [02/May/2026 09:15:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:36,058 [INFO] 127.0.0.1 - - [02/May/2026 09:15:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:36,059 [INFO] 127.0.0.1 - - [02/May/2026 09:15:36] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:15:36,574 [INFO] 127.0.0.1 - - [02/May/2026 09:15:36] "GET / HTTP/1.0" 200 -
+2026-05-02 09:15:36,857 [INFO] 127.0.0.1 - - [02/May/2026 09:15:36] "[33mGET /static/icons/icon-192.png HTTP/1.0[0m" 404 -
+2026-05-02 09:15:36,858 [INFO] 127.0.0.1 - - [02/May/2026 09:15:36] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:15:37,467 [INFO] 127.0.0.1 - - [02/May/2026 09:15:37] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:15:37,654 [INFO] 127.0.0.1 - - [02/May/2026 09:15:37] "GET /api/status HTTP/1.0" 200 -
+2026-05-02 09:15:37,890 [INFO] 127.0.0.1 - - [02/May/2026 09:15:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:37,902 [INFO] 127.0.0.1 - - [02/May/2026 09:15:37] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:15:45,632 [INFO] 127.0.0.1 - - [02/May/2026 09:15:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:47,918 [INFO] 127.0.0.1 - - [02/May/2026 09:15:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:55,565 [INFO] 127.0.0.1 - - [02/May/2026 09:15:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:57,917 [INFO] 127.0.0.1 - - [02/May/2026 09:15:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:15:58,677 [INFO] 127.0.0.1 - - [02/May/2026 09:15:58] "GET / HTTP/1.0" 200 -
+2026-05-02 09:15:58,908 [INFO] 127.0.0.1 - - [02/May/2026 09:15:58] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:15:58,915 [INFO] 127.0.0.1 - - [02/May/2026 09:15:58] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:15:58,917 [INFO] 127.0.0.1 - - [02/May/2026 09:15:58] "GET /api/status HTTP/1.0" 200 -
+2026-05-02 09:15:59,095 [INFO] 127.0.0.1 - - [02/May/2026 09:15:59] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:15:59,102 [INFO] 127.0.0.1 - - [02/May/2026 09:15:59] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:02,077 [INFO] 127.0.0.1 - - [02/May/2026 09:16:02] "GET / HTTP/1.0" 200 -
+2026-05-02 09:16:02,329 [INFO] 127.0.0.1 - - [02/May/2026 09:16:02] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:16:02,336 [INFO] 127.0.0.1 - - [02/May/2026 09:16:02] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:16:02,338 [INFO] 127.0.0.1 - - [02/May/2026 09:16:02] "GET /api/status HTTP/1.0" 200 -
+2026-05-02 09:16:02,538 [INFO] 127.0.0.1 - - [02/May/2026 09:16:02] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:16:05,293 [INFO] 127.0.0.1 - - [02/May/2026 09:16:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:35,807 [INFO] 127.0.0.1 - - [02/May/2026 09:16:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:36,025 [INFO] 127.0.0.1 - - [02/May/2026 09:16:36] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:16:36,221 [INFO] 127.0.0.1 - - [02/May/2026 09:16:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:36,441 [INFO] 127.0.0.1 - - [02/May/2026 09:16:36] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:37,542 [INFO] 127.0.0.1 - - [02/May/2026 09:16:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:53,621 [INFO] 127.0.0.1 - - [02/May/2026 09:16:53] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:54,009 [INFO] 127.0.0.1 - - [02/May/2026 09:16:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:54,180 [INFO] 127.0.0.1 - - [02/May/2026 09:16:54] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:16:57,552 [INFO] 127.0.0.1 - - [02/May/2026 09:16:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:00,516 [INFO] Scan done: 11 signals
+2026-05-02 09:17:00,517 [INFO] 127.0.0.1 - - [02/May/2026 09:17:00] "GET /api/signals HTTP/1.0" 200 -
+2026-05-02 09:17:00,728 [INFO] 127.0.0.1 - - [02/May/2026 09:17:00] "GET /api/signals HTTP/1.0" 200 -
+2026-05-02 09:17:02,574 [INFO] 127.0.0.1 - - [02/May/2026 09:17:02] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:17:05,042 [INFO] 127.0.0.1 - - [02/May/2026 09:17:05] "GET /api/signals HTTP/1.0" 200 -
+2026-05-02 09:17:05,196 [INFO] 127.0.0.1 - - [02/May/2026 09:17:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:07,548 [INFO] 127.0.0.1 - - [02/May/2026 09:17:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:13,319 [INFO] 127.0.0.1 - - [02/May/2026 09:17:13] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:15,217 [INFO] 127.0.0.1 - - [02/May/2026 09:17:15] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:15,459 [INFO] 127.0.0.1 - - [02/May/2026 09:17:15] "GET /api/trades?mode=all HTTP/1.0" 200 -
+2026-05-02 09:17:16,979 [INFO] 127.0.0.1 - - [02/May/2026 09:17:16] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:17,566 [INFO] 127.0.0.1 - - [02/May/2026 09:17:17] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:18,871 [INFO] 127.0.0.1 - - [02/May/2026 09:17:18] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:23,878 [INFO] 127.0.0.1 - - [02/May/2026 09:17:23] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:25,227 [INFO] 127.0.0.1 - - [02/May/2026 09:17:25] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:27,552 [INFO] 127.0.0.1 - - [02/May/2026 09:17:27] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:28,942 [INFO] 127.0.0.1 - - [02/May/2026 09:17:28] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:32,587 [INFO] 127.0.0.1 - - [02/May/2026 09:17:32] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:17:33,961 [INFO] 127.0.0.1 - - [02/May/2026 09:17:33] "GET /api/trades?mode=open HTTP/1.0" 200 -
+2026-05-02 09:17:35,260 [INFO] 127.0.0.1 - - [02/May/2026 09:17:35] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:37,548 [INFO] 127.0.0.1 - - [02/May/2026 09:17:37] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:45,209 [INFO] 127.0.0.1 - - [02/May/2026 09:17:45] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:47,565 [INFO] 127.0.0.1 - - [02/May/2026 09:17:47] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:55,238 [INFO] 127.0.0.1 - - [02/May/2026 09:17:55] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:57,547 [INFO] 127.0.0.1 - - [02/May/2026 09:17:57] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:17:59,434 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:02,541 [INFO] 127.0.0.1 - - [02/May/2026 09:18:02] "GET /api/pnl HTTP/1.0" 200 -
+2026-05-02 09:18:02,865 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:05,233 [INFO] 127.0.0.1 - - [02/May/2026 09:18:05] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:18:05,971 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:07,548 [INFO] 127.0.0.1 - - [02/May/2026 09:18:07] "GET /api/market HTTP/1.0" 200 -
+2026-05-02 09:18:08,928 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:11,935 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:14,918 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:18,011 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:20,912 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:23,952 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:29,066 [INFO] HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-02 09:18:29,516 [INFO] Prediction scan: 10 signals
+2026-05-02 09:18:29,517 [INFO] 127.0.0.1 - - [02/May/2026 09:18:29] "GET /api/predictions HTTP/1.0" 200 -
+2026-05-02 09:18:58,533 [INFO] Chanakya AI v5.0 starting on port 5002
+2026-05-02 09:18:58,539 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://72.62.28.36:5002
+2026-05-02 09:18:58,539 [INFO] [33mPress CTRL+C to quit[0m
+2026-05-02 09:19:01,420 [INFO] 127.0.0.1 - - [02/May/2026 09:19:01] "GET /health HTTP/1.1" 200 -
+2026-05-02 09:19:03,464 [INFO] 127.0.0.1 - - [02/May/2026 09:19:03] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:19:03,522 [INFO] 127.0.0.1 - - [02/May/2026 09:19:03] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:19:26,471 [INFO] 127.0.0.1 - - [02/May/2026 09:19:26] "GET /v5/manifest.json HTTP/1.1" 200 -
+2026-05-02 09:19:26,483 [INFO] 127.0.0.1 - - [02/May/2026 09:19:26] "GET /v5/sw.js HTTP/1.1" 200 -
+2026-05-02 09:23:17,874 [INFO] 127.0.0.1 - - [02/May/2026 09:23:17] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:23:17,918 [INFO] 127.0.0.1 - - [02/May/2026 09:23:17] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:23:45,983 [INFO] 127.0.0.1 - - [02/May/2026 09:23:45] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:24:05,319 [INFO] 127.0.0.1 - - [02/May/2026 09:24:05] "GET /v5/manifest.json HTTP/1.1" 200 -
+2026-05-02 09:24:06,194 [INFO] 127.0.0.1 - - [02/May/2026 09:24:06] "GET /v5/manifest.json HTTP/1.1" 200 -
+2026-05-02 09:24:53,970 [INFO] 127.0.0.1 - - [02/May/2026 09:24:53] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:26:12,160 [INFO] 127.0.0.1 - - [02/May/2026 09:26:12] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:26:34,785 [INFO] 127.0.0.1 - - [02/May/2026 09:26:34] "[33mGET /sw.js HTTP/1.0[0m" 404 -
+2026-05-02 09:26:36,621 [INFO] 127.0.0.1 - - [02/May/2026 09:26:36] "[33mGET /manifest.json HTTP/1.0[0m" 404 -
+2026-05-02 09:27:48,400 [INFO] 127.0.0.1 - - [02/May/2026 09:27:48] "GET /v5/manifest.json HTTP/1.0" 200 -
+2026-05-02 09:27:48,449 [INFO] 127.0.0.1 - - [02/May/2026 09:27:48] "GET /v5/sw.js HTTP/1.0" 200 -
