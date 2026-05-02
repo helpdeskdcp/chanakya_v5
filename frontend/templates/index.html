@@ -77,6 +77,56 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 .quick-btn{background:#0a0f1a;border:1px solid var(--border);color:#8090a8;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer}
 /* TOAST */
 #toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:12px;z-index:9999;display:none;max-width:300px}
+
+/* PWA Install Banner */
+#pwaBanner{display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#0d1b2a,#1e3a5f);border-top:1px solid var(--border);padding:12px 16px;z-index:8888;align-items:center;gap:12px}
+#pwaBanner .pwa-icon{font-size:28px}
+#pwaBanner .pwa-text{flex:1}
+#pwaBanner .pwa-text b{color:var(--gold);font-size:13px;display:block}
+#pwaBanner .pwa-text span{color:#8090a8;font-size:11px}
+
+/* ── MOBILE (≤768px) ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  #mainApp{flex-direction:column}
+  .content{padding:10px;padding-bottom:70px}
+  .grid2,.grid3{grid-template-columns:1fr 1fr}
+  .topbar{padding:6px 10px;gap:6px;overflow-x:auto;flex-wrap:nowrap}
+  .ticker{font-size:10px;padding:3px 8px}
+  .card{padding:12px;border-radius:8px}
+  .card-header{font-size:12px}
+  .stat-val{font-size:18px}
+  .tbl{font-size:10px}
+  .tbl th,.tbl td{padding:6px 4px}
+  .sig-levels{grid-template-columns:1fr 1fr 1fr 1fr;font-size:9px}
+  .btn{font-size:11px;padding:8px 12px}
+  /* Bottom Nav show */
+  #bottomNav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:500}
+  /* Chat */
+  .chat-msgs{height:220px}
+}
+
+/* ── FOLD PHONE (≤420px) ── */
+@media(max-width:420px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .stat-val{font-size:16px}
+  .sig-levels{grid-template-columns:1fr 1fr}
+  .tbl th:nth-child(5),.tbl td:nth-child(5),
+  .tbl th:nth-child(6),.tbl td:nth-child(6){display:none}
+}
+
+/* ── TABLET (769px–1024px) ── */
+@media(min-width:769px) and (max-width:1024px){
+  .sidebar{width:160px}
+  .nav-item{font-size:11px;padding:7px 8px}
+  .grid3{grid-template-columns:1fr 1fr 1fr}
+  .content{padding:12px}
+}
+
+/* ── DESKTOP (≥1025px) ── */
+@media(min-width:1025px){
+  #bottomNav{display:none!important}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -120,8 +170,9 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-label">Admin</div>
       <div class="nav-item" onclick="showPage('admin',this)">👑 Users</div>
     </div>
-    <div style="position:absolute;bottom:16px;left:16px;right:16px">
-      <div style="font-size:10px;color:#8090a8;margin-bottom:6px" id="userInfo">-</div>
+    <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;color:#8090a8;margin-bottom:8px;padding:6px;background:var(--bg);border-radius:6px;line-height:1.5" id="userInfo">-</div>
+      <button class="btn btn-blue" onclick="installPWA()" style="width:100%;font-size:11px;margin-bottom:6px" id="installBtnSidebar">📱 Install App</button>
       <button class="btn btn-red" style="width:100%;font-size:11px" onclick="doLogout()">Logout</button>
     </div>
   </div>
@@ -312,6 +363,38 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 </div>
 
 <div id="toast"></div>
+
+<!-- PWA Install Banner -->
+<div id="pwaBanner">
+  <div class="pwa-icon">⚡</div>
+  <div class="pwa-text">
+    <b>Install Chanakya AI</b>
+    <span>Home screen वर add करा — app सारखं वापरा</span>
+  </div>
+  <button class="btn btn-gold" onclick="installPWA()" style="font-size:11px;padding:8px 14px;flex-shrink:0">Install</button>
+  <button onclick="document.getElementById('pwaBanner').style.display='none'" style="background:none;border:none;color:#8090a8;font-size:18px;cursor:pointer;padding:4px">✕</button>
+</div>
+
+<!-- BOTTOM NAV (Mobile) -->
+<div id="bottomNav">
+  <div class="bnav-items">
+    <div class="bnav-item active" id="bn-dashboard" onclick="showPage('dashboard',null);setBottomNav('dashboard')">
+      <div class="icon">📊</div><div>Dashboard</div>
+    </div>
+    <div class="bnav-item" id="bn-signals" onclick="showPage('signals',null);setBottomNav('signals')">
+      <div class="icon">⚡</div><div>Signals</div>
+    </div>
+    <div class="bnav-item" id="bn-positions" onclick="showPage('positions',null);setBottomNav('positions')">
+      <div class="icon">📈</div><div>Positions</div>
+    </div>
+    <div class="bnav-item" id="bn-history" onclick="showPage('history',null);setBottomNav('history')">
+      <div class="icon">📋</div><div>History</div>
+    </div>
+    <div class="bnav-item" id="bn-aichat" onclick="showPage('aichat',null);setBottomNav('aichat')">
+      <div class="icon">💬</div><div>AI Chat</div>
+    </div>
+  </div>
+</div>
 
 <script>
 var TOKEN = localStorage.getItem("ch_token") || "";
@@ -524,6 +607,12 @@ async function saveBroker() {
   setTimeout(function(){msg.textContent=""},3000);
 }
 
+function setBottomNav(id) {
+  document.querySelectorAll(".bnav-item").forEach(function(b){b.classList.remove("active")});
+  var el = document.getElementById("bn-"+id);
+  if(el) el.classList.add("active");
+}
+
 var _predTimer = null;
 
 async function scanPredictions() {
@@ -710,9 +799,19 @@ var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   _deferredPrompt = e;
-  // Install button दाखवूया
+  // PWA Banner दाखवूया
+  var banner = document.getElementById('pwaBanner');
+  if(banner) banner.style.display = 'flex';
   var btn = document.getElementById('installBtn');
   if(btn) btn.style.display = 'block';
+  var btn2 = document.getElementById('installBtnSidebar');
+  if(btn2) btn2.style.display = 'block';
+});
+
+window.addEventListener('appinstalled', function() {
+  var banner = document.getElementById('pwaBanner');
+  if(banner) banner.style.display = 'none';
+  toast("✅ Chanakya AI installed successfully!","#1e3a5f");
 });
 
 function installPWA() {
