@@ -674,7 +674,7 @@ async function api(path, method, body) {
     var opts = {method:method||"GET", headers:{"Content-Type":"application/json","X-Auth-Token":TOKEN}};
     if(body) opts.body = JSON.stringify(body);
     var r = await fetch("/v5/api"+path, opts);
-    if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/login";return;}
+    if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/v5/login";return;}
     return await r.json();
   } catch(e) { return {success:false,error:String(e)}; }
 }
@@ -1622,8 +1622,8 @@ async function downloadPdfReport() {
     url += '&trade_id=' + tid;
   }
 
-  var token = localStorage.getItem('token') || '';
-  if(!token) { window.location.href='/login'; return; }
+  var token = localStorage.getItem('ch_token') || '';
+  if(!token) { window.location.href='/v5/login'; return; }
 
   btn.disabled    = true;
   btn.textContent = '⏳ Generating...';
