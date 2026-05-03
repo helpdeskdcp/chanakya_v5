@@ -152,6 +152,13 @@ def run_scan(broker=None):
             if sig: signals.append(sig)
         signals.sort(key=lambda x: -x["confidence"])
         logger.info("Prediction scan: %d signals", len(signals))
+        # Send top 3 signals to telegram
+        try:
+            from notifications.telegram import alert_signal
+            for s in signals[:3]:
+                if s["confidence"] >= 60:
+                    alert_signal(s["symbol"],s["direction"],s["entry"],s["sl"],s["target"],s["confidence"])
+        except: pass
         return signals
     except Exception as e:
         logger.error("run_scan: %s", e)
