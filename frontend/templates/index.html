@@ -823,14 +823,15 @@ var SETTINGS_GROUPS = {
 };
 
 var EXPIRY_CONFIG = [
-  {name:'NIFTY',    key:'nifty_expiry_day',     type:'weekly', color:'#00c8ff'},
-  {name:'BANKNIFTY',key:'banknifty_expiry_day',  type:'weekly', color:'#00e676'},
-  {name:'FINNIFTY', key:'finnifty_expiry_day',   type:'weekly', color:'#d4af37'},
-  {name:'SENSEX',   key:'sensex_expiry_day',     type:'weekly', color:'#ff9800'},
-  {name:'MIDCPNIFTY',key:'midcpnifty_expiry_day',type:'weekly', color:'#ff5252'},
-  {name:'CRUDEOIL', key:'mcx_crude_expiry',      type:'monthly',color:'#8090a8'},
-  {name:'GOLD',     key:'mcx_gold_expiry',       type:'monthly',color:'#ffd700'},
-  {name:'SILVER',   key:'mcx_silver_expiry',     type:'monthly',color:'#c0c0c0'},
+  {name:'NIFTY',     key:'nifty_expiry_day',      type:'weekly',  color:'#00c8ff', exchange:'NSE'},
+  {name:'BANKNIFTY', key:'banknifty_expiry_day',   type:'weekly',  color:'#00e676', exchange:'NSE'},
+  {name:'FINNIFTY',  key:'finnifty_expiry_day',    type:'weekly',  color:'#d4af37', exchange:'NSE'},
+  {name:'MIDCPNIFTY',key:'midcpnifty_expiry_day',  type:'weekly',  color:'#ff9800', exchange:'NSE'},
+  {name:'SENSEX',    key:'sensex_expiry_day',       type:'weekly',  color:'#ff5252', exchange:'BSE'},
+  {name:'BANKEX',    key:'bankex_expiry_day',       type:'monthly', color:'#a855f7', exchange:'BSE'},
+  {name:'CRUDEOIL',  key:'mcx_crude_expiry',        type:'monthly', color:'#8090a8', exchange:'MCX'},
+  {name:'GOLD',      key:'mcx_gold_expiry',         type:'monthly', color:'#ffd700', exchange:'MCX'},
+  {name:'SILVER',    key:'mcx_silver_expiry',       type:'monthly', color:'#c0c0c0', exchange:'MCX'},
 ];
 
 var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -865,7 +866,10 @@ function renderExpiryCards() {
     if(isToday) todayExpiries.push(cfg.name);
     return "<div style='background:#0a0f1a;border:1px solid "+(isToday?cfg.color:'var(--border)')+";border-radius:8px;padding:10px;text-align:center"+(isToday?';box-shadow:0 0 8px '+cfg.color+'44':'')+">"+
       "<div style='font-size:10px;color:"+cfg.color+";font-weight:700;margin-bottom:2px'>"+cfg.name+"</div>"+
-      "<div style='font-size:9px;color:#8090a8;margin-bottom:4px'>"+cfg.type.toUpperCase()+"</div>"+
+      "<div style='display:flex;gap:4px;justify-content:center;margin-bottom:4px'>"+
+        "<span style='font-size:8px;background:"+cfg.color+"22;color:"+cfg.color+";border-radius:3px;padding:1px 4px'>"+cfg.exchange+"</span>"+
+        "<span style='font-size:8px;background:#1e3a5f;color:#8090a8;border-radius:3px;padding:1px 4px'>"+cfg.type.toUpperCase()+"</span>"+
+      "</div>"+
       "<div style='font-size:"+(isToday?'13':'11')+"px;color:"+(isToday?cfg.color:'#e0e8f0')+";font-weight:"+(isToday?'700':'400')+"'>"+dateStr+"</div>"+
       "<div style='font-size:9px;color:#8090a8;margin-top:2px'>"+val+"</div>"+
     "</div>";
