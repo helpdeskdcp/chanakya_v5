@@ -575,6 +575,142 @@ def ml_status():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+# ── Auto Trader routes ─────────────────────────────────
+@app.route("/api/autotrader/status")
+@require_auth
+def autotrader_status():
+    try:
+        from trading.auto_trader import get_status
+        return jsonify({"success":True,"status":get_status()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/autotrader/start", methods=["POST"])
+@require_auth
+def autotrader_start():
+    try:
+        data = request.json or {}
+        mode = data.get("mode","PAPER")
+        auto = data.get("auto_trade", False)
+        from trading.auto_trader import start
+        result = start(mode=mode, auto_trade=auto)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/autotrader/stop", methods=["POST"])
+@require_auth
+def autotrader_stop():
+    try:
+        from trading.auto_trader import stop
+        return jsonify(stop())
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/autotrader/toggle", methods=["POST"])
+@require_auth
+def autotrader_toggle():
+    try:
+        data = request.json or {}
+        enabled = data.get("auto_trade", False)
+        mode = data.get("mode", None)
+        from trading.auto_trader import set_auto_trade
+        return jsonify(set_auto_trade(enabled, mode))
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+
+# ── Auto start position monitor on boot ───────────────
+try:
+    from trading.auto_trader import start as at_start
+    at_start(mode="PAPER", auto_trade=False)
+    logger.info("Auto Trader monitor started")
+except Exception as e:
+    logger.warning(f"Auto trader start failed: {e}")
+
+
+
+# ── PDF Report Routes ──────────────────────────────────
+@app.route("/api/report/pdf")
+@require_auth
+def download_pdf_report():
+    try:
+        from flask import send_file
+        from trading.pdf_report import generate_pdf
+        from datetime import date
+        import io as _io
+
+        rtype    = request.args.get("type", "daily")
+        date_val = request.args.get("date", str(date.today()))
+        dfrom    = request.args.get("from")
+        dto      = request.args.get("to")
+        month    = request.args.get("month")
+        tid      = request.args.get("trade_id")
+
+        if rtype == "daily" and not dfrom:
+            dfrom = dto = date_val
+
+        pdf_bytes = generate_pdf(
+            report_type = rtype,
+            username    = request.username,
+            date_from   = dfrom,
+            date_to     = dto,
+            trade_id    = int(tid) if tid else None,
+            month       = month,
+            all_users   = False,
+        )
+        filename = f"chanakya_{rtype}_{date.today()}.pdf"
+        return send_file(
+            _io.BytesIO(pdf_bytes),
+            mimetype      = "application/pdf",
+            as_attachment = True,
+            download_name = filename,
+        )
+    except Exception as e:
+        logger.error(f"PDF report error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/admin/report/pdf")
+@require_role("developer", "administrator")
+def admin_download_pdf_report():
+    try:
+        from flask import send_file
+        from trading.pdf_report import generate_pdf
+        from datetime import date
+        import io as _io
+
+        rtype  = request.args.get("type", "monthly")
+        dfrom  = request.args.get("from")
+        dto    = request.args.get("to")
+        month  = request.args.get("month")
+        tid    = request.args.get("trade_id")
+        user   = request.args.get("username")
+
+        if rtype == "daily" and not dfrom:
+            dfrom = dto = str(date.today())
+
+        pdf_bytes = generate_pdf(
+            report_type = rtype,
+            username    = user,
+            date_from   = dfrom,
+            date_to     = dto,
+            trade_id    = int(tid) if tid else None,
+            month       = month,
+            all_users   = not bool(user),
+        )
+        filename = f"chanakya_admin_{rtype}_{date.today()}.pdf"
+        return send_file(
+            _io.BytesIO(pdf_bytes),
+            mimetype      = "application/pdf",
+            as_attachment = True,
+            download_name = filename,
+        )
+    except Exception as e:
+        logger.error(f"Admin PDF report error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
