@@ -464,6 +464,40 @@ def admin_update_settings():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+@app.route("/api/news/sentiment")
+@require_auth
+def news_sentiment():
+    try:
+        from data_stream.cache import get as cget, set as cset
+        symbol = request.args.get("symbol", None)
+        force  = request.args.get("force", "0")=="1"
+        ckey = "news_sentiment_"+(symbol or "market")
+        data = None if force else cget(ckey)
+        if not data:
+            from ai.news_sentiment import get_market_sentiment
+            syms = [symbol] if symbol else ["NIFTY","BANKNIFTY","CRUDEOIL"]
+            data = get_market_sentiment(syms)
+            if data: cset(ckey, data, ttl=300)
+        return jsonify({"success":True, "data":data})
+    except Exception as e:
+        return jsonify({"success":False, "error":str(e)})
+
+@app.route("/api/news/headlines")
+@require_auth
+def news_headlines():
+    try:
+        from data_stream.cache import get as cget, set as cset
+        data = cget("news_headlines")
+        if not data:
+            from ai.news_sentiment import get_live_news
+            news = get_live_news()
+            data = news[:15]
+            if data: cset("news_headlines", data, ttl=300)
+        return jsonify({"success":True, "news":data or [], "total":len(data or [])})
+    except Exception as e:
+        return jsonify({"success":False, "error":str(e)})
+
 @app.route("/api/pnl")
 @require_auth
 def pnl():
