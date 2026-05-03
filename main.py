@@ -141,9 +141,9 @@ def ai_chat():
         msg = data.get("message","")
         if not msg: return jsonify({"success":False,"error":"No message"})
         from engine.scanner import get_live_ltps
-        from ai.chat import smart_chat
+        from ai.chanakya_brain import chanakya_chat
         from broker.global_broker import get_broker
-        reply = smart_chat(msg, get_broker())
+        reply = chanakya_chat(msg, get_broker())
         return jsonify({"success":True,"reply":reply})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
