@@ -414,12 +414,39 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 
     <!-- APP SETTINGS / ADMIN TOOLS -->
     <div id="pg-appsettings" class="hidden">
+      <!-- Today Expiry Alert -->
+      <div id="expiryAlert" style="display:none;background:linear-gradient(135deg,#d4af3722,#d4af3711);border:1px solid #d4af3744;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">⚡</span>
+        <div>
+          <div style="color:#d4af37;font-weight:700;font-size:12px" id="expiryAlertText">Today is Expiry Day!</div>
+          <div style="color:#8090a8;font-size:10px" id="expiryAlertSub"></div>
+        </div>
+      </div>
+
+      <!-- Index Expiry Card -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-header">📅 Index Expiry Calendar
+          <span id="todayDate" style="font-size:10px;color:#8090a8"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px" id="expiryCards">
+          <div style="color:#8090a8;text-align:center;padding:10px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Settings Groups -->
       <div class="card">
-        <div class="card-header">🔧 Admin Tools — App Settings
+        <div class="card-header">🔧 App Settings
           <button class="btn btn-green" onclick="saveAppSettings()" style="font-size:10px;padding:4px 10px">💾 Save All</button>
         </div>
-        <div id="settingsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="color:#8090a8;text-align:center;padding:20px;grid-column:1/-1">Loading...</div>
+        <!-- Tab buttons -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="showSettingsTab('trading')" id="stab-trading" style="font-size:10px;padding:4px 10px">📊 Trading</button>
+          <button class="btn" onclick="showSettingsTab('market')" id="stab-market" style="font-size:10px;padding:4px 10px;background:#0a0f1a;color:#8090a8;border:1px solid var(--border)">🕐 Market</button>
+          <button class="btn" onclick="showSettingsTab('alerts')" id="stab-alerts" style="font-size:10px;padding:4px 10px;background:#0a0f1a;color:#8090a8;border:1px solid var(--border)">🔔 Alerts</button>
+          <button class="btn" onclick="showSettingsTab('expiry')" id="stab-expiry" style="font-size:10px;padding:4px 10px;background:#0a0f1a;color:#8090a8;border:1px solid var(--border)">📅 Expiry</button>
+        </div>
+        <div id="settingsList">
+          <div style="color:#8090a8;text-align:center;padding:20px">Loading...</div>
         </div>
       </div>
     </div>
@@ -785,36 +812,129 @@ async function deleteSymbol(sid, name) {
 
 // ── APP SETTINGS ───────────────────────────────────────
 var _settingsData = {};
+var _currentSettingsTab = 'trading';
+
+// Settings groups define करूया
+var SETTINGS_GROUPS = {
+  trading: ['auto_scan','scan_interval','paper_trading','live_trading','max_open_trades','default_qty','vix_block','auto_expiry_detect'],
+  market:  ['market_open','market_close','mcx_market_open','mcx_market_close','mcx_evening_open'],
+  alerts:  ['telegram_alerts'],
+  expiry:  ['nifty_expiry_day','banknifty_expiry_day','finnifty_expiry_day','sensex_expiry_day','midcpnifty_expiry_day','nse_fo_expiry_day','mcx_crude_expiry','mcx_gold_expiry','mcx_silver_expiry'],
+};
+
+var EXPIRY_CONFIG = [
+  {name:'NIFTY',    key:'nifty_expiry_day',     type:'weekly', color:'#00c8ff'},
+  {name:'BANKNIFTY',key:'banknifty_expiry_day',  type:'weekly', color:'#00e676'},
+  {name:'FINNIFTY', key:'finnifty_expiry_day',   type:'weekly', color:'#d4af37'},
+  {name:'SENSEX',   key:'sensex_expiry_day',     type:'weekly', color:'#ff9800'},
+  {name:'MIDCPNIFTY',key:'midcpnifty_expiry_day',type:'weekly', color:'#ff5252'},
+  {name:'CRUDEOIL', key:'mcx_crude_expiry',      type:'monthly',color:'#8090a8'},
+  {name:'GOLD',     key:'mcx_gold_expiry',       type:'monthly',color:'#ffd700'},
+  {name:'SILVER',   key:'mcx_silver_expiry',     type:'monthly',color:'#c0c0c0'},
+];
+
+var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function getNextExpiry(dayName) {
+  var today = new Date();
+  var todayDay = today.getDay();
+  var targetDay = DAYS.indexOf(dayName);
+  if(targetDay < 0) return null;
+  var diff = (targetDay - todayDay + 7) % 7;
+  if(diff === 0) return {date: today, isToday: true};
+  var next = new Date(today);
+  next.setDate(today.getDate() + diff);
+  return {date: next, isToday: false};
+}
+
+function formatDate(d) {
+  return d.getDate()+'/'+(d.getMonth()+1);
+}
+
+function renderExpiryCards() {
+  var today = new Date();
+  document.getElementById('todayDate').textContent = 
+    DAYS[today.getDay()]+', '+today.getDate()+'/'+(today.getMonth()+1)+'/'+today.getFullYear();
+  
+  var todayExpiries = [];
+  var html = EXPIRY_CONFIG.map(function(cfg){
+    var val = (_settingsData[cfg.key]||{}).value||'-';
+    var expInfo = cfg.type==='weekly' ? getNextExpiry(val) : null;
+    var isToday = expInfo && expInfo.isToday;
+    var dateStr = expInfo ? (isToday ? '🔴 TODAY' : formatDate(expInfo.date)) : val;
+    if(isToday) todayExpiries.push(cfg.name);
+    return "<div style='background:#0a0f1a;border:1px solid "+(isToday?cfg.color:'var(--border)')+";border-radius:8px;padding:10px;text-align:center"+(isToday?';box-shadow:0 0 8px '+cfg.color+'44':'')+">"+
+      "<div style='font-size:10px;color:"+cfg.color+";font-weight:700;margin-bottom:2px'>"+cfg.name+"</div>"+
+      "<div style='font-size:9px;color:#8090a8;margin-bottom:4px'>"+cfg.type.toUpperCase()+"</div>"+
+      "<div style='font-size:"+(isToday?'13':'11')+"px;color:"+(isToday?cfg.color:'#e0e8f0')+";font-weight:"+(isToday?'700':'400')+"'>"+dateStr+"</div>"+
+      "<div style='font-size:9px;color:#8090a8;margin-top:2px'>"+val+"</div>"+
+    "</div>";
+  }).join('');
+  document.getElementById('expiryCards').innerHTML = html;
+  
+  // Today expiry alert
+  if(todayExpiries.length) {
+    var alert = document.getElementById('expiryAlert');
+    alert.style.display = 'flex';
+    document.getElementById('expiryAlertText').textContent = '⚡ Today Expiry: '+todayExpiries.join(', ');
+    document.getElementById('expiryAlertSub').textContent = 'Extra caution — volatility high. Check positions!';
+  }
+}
+
+function showSettingsTab(tab) {
+  _currentSettingsTab = tab;
+  // Tab buttons update
+  Object.keys(SETTINGS_GROUPS).forEach(function(t){
+    var btn = document.getElementById('stab-'+t);
+    if(!btn) return;
+    if(t===tab) {
+      btn.style.background='#00c8ff22'; btn.style.color='var(--blue)'; btn.style.border='1px solid var(--blue)';
+    } else {
+      btn.style.background='#0a0f1a'; btn.style.color='#8090a8'; btn.style.border='1px solid var(--border)';
+    }
+  });
+  // Filter settings for this tab
+  var keys = SETTINGS_GROUPS[tab]||[];
+  var html = keys.map(function(key){
+    var s = _settingsData[key];
+    if(!s) return '';
+    var isToggle = s.value==='true'||s.value==='false';
+    var inputHtml = isToggle ?
+      "<div style='display:flex;gap:12px'>"+
+        "<label style='font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer'>"+
+          "<input type='radio' name='set_"+key+"' value='true' "+(s.value==='true'?'checked':'')+"> <span style='color:#00e676'>● ON</span>"+
+        "</label>"+
+        "<label style='font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer'>"+
+          "<input type='radio' name='set_"+key+"' value='false' "+(s.value==='false'?'checked':'')+"> <span style='color:#ff5252'>● OFF</span>"+
+        "</label>"+
+      "</div>" :
+      "<input class='inp' id='set_"+key+"' value='"+s.value+"' style='margin:0;font-size:13px'>";
+    return "<div style='background:#0a0f1a;border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:12px'>"+
+      "<div style='flex:1'>"+
+        "<div style='font-size:11px;color:#d4af37;font-weight:600;margin-bottom:2px'>"+s.key.replace(/_/g,' ').toUpperCase()+"</div>"+
+        "<div style='font-size:10px;color:#8090a8'>"+s.description+"</div>"+
+      "</div>"+
+      "<div style='flex-shrink:0'>"+inputHtml+"</div>"+
+    "</div>";
+  }).filter(Boolean).join('');
+  document.getElementById('settingsList').innerHTML = html || "<div style='color:#8090a8;text-align:center;padding:20px'>No settings in this group</div>";
+}
+
 async function loadAppSettings() {
   var d = await api('/admin/settings');
   if(!d.success) return;
   _settingsData = {};
   d.settings.forEach(function(s){ _settingsData[s.key] = s; });
-  var html = d.settings.map(function(s){
-    var isToggle = s.value==='true'||s.value==='false';
-    var inputHtml = isToggle ?
-      "<div style='display:flex;gap:6px'>"+
-        "<label style='font-size:11px;display:flex;align-items:center;gap:4px'>"+
-          "<input type='radio' name='set_"+s.key+"' value='true' "+(s.value==='true'?'checked':'')+"> ON"+
-        "</label>"+
-        "<label style='font-size:11px;display:flex;align-items:center;gap:4px'>"+
-          "<input type='radio' name='set_"+s.key+"' value='false' "+(s.value==='false'?'checked':'')+"> OFF"+
-        "</label>"+
-      "</div>" :
-      "<input class='inp' id='set_"+s.key+"' value='"+s.value+"' style='margin:0;font-size:11px'>";
-    return "<div style='background:#0a0f1a;border:1px solid var(--border);border-radius:6px;padding:10px'>"+
-      "<div style='font-size:10px;color:#d4af37;font-weight:600;margin-bottom:2px'>"+s.key.replace(/_/g,' ').toUpperCase()+"</div>"+
-      "<div style='font-size:9px;color:#8090a8;margin-bottom:6px'>"+s.description+"</div>"+
-      inputHtml+
-    "</div>";
-  }).join('');
-  document.getElementById('settingsList').innerHTML = html;
+  renderExpiryCards();
+  showSettingsTab('trading');
 }
 
 async function saveAppSettings() {
   var data = {};
-  Object.keys(_settingsData).forEach(function(key){
+  var keys = SETTINGS_GROUPS[_currentSettingsTab]||[];
+  keys.forEach(function(key){
     var s = _settingsData[key];
+    if(!s) return;
     var isToggle = s.value==='true'||s.value==='false';
     if(isToggle) {
       var checked = document.querySelector('input[name="set_'+key+'"]:checked');
@@ -825,7 +945,7 @@ async function saveAppSettings() {
     }
   });
   var d = await api('/admin/settings','POST',data);
-  if(d.success) toast("✅ "+d.updated+" settings saved!","#1e3a5f");
+  if(d.success){ toast("✅ Settings saved!","#1e3a5f"); loadAppSettings(); }
   else toast("❌ "+d.error,"#ff0000");
 }
 
