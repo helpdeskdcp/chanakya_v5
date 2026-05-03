@@ -67,89 +67,18 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 .sig-level .label{color:#8090a8}
 .sig-level .val{font-weight:600}
 /* CHAT */
-.chat-msgs{height:420px;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+.chat-msgs{height:300px;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 .chat-msg{padding:10px;border-radius:8px;font-size:12px;max-width:85%}
 .chat-user{background:#1e3a5f;align-self:flex-end}
 .chat-ai{background:#0d1b2a;border:1px solid var(--border);align-self:flex-start}
-.chat-ai.chart-msg{max-width:98%;width:98%;padding:8px}
 .chat-input{display:flex;gap:8px;margin-top:8px}
 .chat-input input{flex:1;background:#0a0f1a;border:1px solid var(--border);border-radius:6px;padding:8px;color:#e0e8f0;font-size:12px}
 .quick-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .quick-btn{background:#0a0f1a;border:1px solid var(--border);color:#8090a8;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer}
 /* TOAST */
 #toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:12px;z-index:9999;display:none;max-width:300px}
-
-/* PWA Install Banner */
-#pwaBanner{display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#0d1b2a,#1e3a5f);border-top:1px solid var(--border);padding:12px 16px;z-index:8888;align-items:center;gap:12px}
-#pwaBanner .pwa-icon{font-size:28px}
-#pwaBanner .pwa-text{flex:1}
-#pwaBanner .pwa-text b{color:var(--gold);font-size:13px;display:block}
-#pwaBanner .pwa-text span{color:#8090a8;font-size:11px}
-
-/* ── MOBILE (≤768px) ── */
-@media(max-width:768px){
-  .sidebar{display:none!important}
-  #mainApp{flex-direction:column;height:100vh;overflow:hidden}
-  .content{padding:10px;padding-bottom:72px;overflow-y:auto;flex:1}
-  .grid2{grid-template-columns:1fr 1fr}
-  .grid3{grid-template-columns:1fr 1fr 1fr}
-  .topbar{padding:6px 10px;gap:6px;overflow-x:auto;flex-wrap:nowrap;margin-bottom:10px}
-  .ticker{font-size:10px;padding:3px 8px;white-space:nowrap}
-  .card{padding:10px;border-radius:8px;margin-bottom:8px}
-  .card-header{font-size:11px}
-  .stat-val{font-size:16px}
-  .stat-label{font-size:9px}
-  .tbl{font-size:10px}
-  .tbl th,.tbl td{padding:5px 3px}
-  .sig-levels{grid-template-columns:1fr 1fr 1fr 1fr;font-size:9px}
-  .btn{font-size:11px;padding:6px 10px}
-  .chat-msgs{height:260px}
-  /* Bottom Nav */
-  #bottomNav{
-    display:flex!important;
-    position:fixed;bottom:0;left:0;right:0;
-    height:60px;background:var(--card);
-    border-top:1px solid var(--border);
-    z-index:900;flex-shrink:0;
-  }
-  .bnav-items{display:flex;width:100%;height:100%}
-  .bnav-item{
-    flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:2px;cursor:pointer;color:var(--muted);
-    font-size:9px;padding:6px 2px;
-    -webkit-user-select:none;user-select:none;
-    transition:color .15s;
-  }
-  .bnav-item .icon{font-size:18px;line-height:1}
-  .bnav-item.active{color:var(--blue)}
-  .bnav-item:active{opacity:.7}
-}
-
-/* ── FOLD PHONE (≤420px) ── */
-@media(max-width:420px){
-  .grid2,.grid3{grid-template-columns:1fr}
-  .stat-val{font-size:16px}
-  .sig-levels{grid-template-columns:1fr 1fr}
-  .tbl th:nth-child(5),.tbl td:nth-child(5),
-  .tbl th:nth-child(6),.tbl td:nth-child(6){display:none}
-}
-
-/* ── TABLET (769px–1024px) ── */
-@media(min-width:769px) and (max-width:1024px){
-  .sidebar{width:160px}
-  .nav-item{font-size:11px;padding:7px 8px}
-  .grid3{grid-template-columns:1fr 1fr 1fr}
-  .content{padding:12px}
-}
-
-/* ── DESKTOP (≥1025px) ── */
-@media(min-width:1025px){
-  #bottomNav{display:none!important}
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
 
@@ -175,7 +104,6 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       <div class="nav-label">Trading</div>
       <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
       <div class="nav-item" onclick="showPage('signals',this)">⚡ Signals</div>
-      <div class="nav-item" onclick="showPage('chart',this)">📊 Chart</div>
       <div class="nav-item" onclick="showPage('positions',this)">📈 Positions</div>
       <div class="nav-item" onclick="showPage('history',this)">📋 History</div>
       <div class="nav-item" onclick="showPage('prediction',this)">🔮 Predictions</div>
@@ -186,17 +114,14 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
     </div>
     <div class="nav-group">
       <div class="nav-label">AI</div>
-      <div class="nav-item" onclick="showPage('aichat',this)">💬 Chanakya Chat</div>
+      <div class="nav-item" onclick="showPage('aichat',this)">💬 AI Chat</div>
     </div>
     <div class="nav-group" id="adminNav" style="display:none">
       <div class="nav-label">Admin</div>
       <div class="nav-item" onclick="showPage('admin',this)">👑 Users</div>
-      <div class="nav-item" onclick="showPage('symbols',this)">📈 Symbols</div>
-      <div class="nav-item" onclick="showPage('appsettings',this)">🔧 App Tools</div>
     </div>
-    <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;color:#8090a8;margin-bottom:8px;padding:6px;background:var(--bg);border-radius:6px;line-height:1.5" id="userInfo">-</div>
-      <button class="btn btn-blue" onclick="installPWA()" style="width:100%;font-size:11px;margin-bottom:6px" id="installBtnSidebar">📱 Install App</button>
+    <div style="position:absolute;bottom:16px;left:16px;right:16px">
+      <div style="font-size:10px;color:#8090a8;margin-bottom:6px" id="userInfo">-</div>
       <button class="btn btn-red" style="width:100%;font-size:11px" onclick="doLogout()">Logout</button>
     </div>
   </div>
@@ -253,10 +178,9 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 
     <!-- CHART -->
     <div id="pg-chart" class="hidden">
-      <div class="card" style="padding:10px">
-        <div class="card-header" style="flex-wrap:wrap;gap:6px">
-          📊 Live Chart
-          <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+      <div class="card">
+        <div class="card-header">📊 Live Chart
+          <div style="display:flex;gap:6px;align-items:center">
             <select id="chartSym" style="background:#0a0f1a;color:#e0e8f0;border:1px solid #1e3a5f;border-radius:4px;padding:4px;font-size:11px">
               <option value="NIFTY|99926000|NSE">NIFTY</option>
               <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
@@ -271,21 +195,15 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
               <option value="FIFTEEN_MINUTE">15m</option>
               <option value="ONE_HOUR">1hr</option>
             </select>
-            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 8px">📊 Load</button>
-            <button class="btn btn-gold" onclick="loadChart(true)" style="font-size:10px;padding:4px 8px">🔄 Auto</button>
+            <button class="btn btn-blue" onclick="loadChart()" style="font-size:10px;padding:4px 10px">Load</button>
           </div>
         </div>
-        <!-- Indicator badges -->
-        <div id="chartInfo" style="display:flex;gap:6px;padding:6px 0;font-size:10px;flex-wrap:wrap"></div>
-        <!-- Main Candlestick Chart -->
-        <div id="chartContainer" style="width:100%;height:320px;border-radius:6px;overflow:hidden"></div>
-        <!-- RSI Chart -->
-        <div style="margin-top:6px">
-          <div style="font-size:9px;color:#8090a8;margin-bottom:2px">RSI(14)</div>
-          <div id="rsiContainer" style="width:100%;height:70px;border-radius:4px;overflow:hidden"></div>
+        <div id="chartInfo" style="display:flex;gap:12px;padding:4px 0 8px;font-size:11px;flex-wrap:wrap"></div>
+        <canvas id="mainChart" style="width:100%;height:350px"></canvas>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;color:#8090a8;margin-bottom:4px">RSI</div>
+          <canvas id="rsiChart" style="width:100%;height:80px"></canvas>
         </div>
-        <!-- VWAP info -->
-        <div id="vwapInfo" style="display:flex;gap:12px;margin-top:8px;font-size:10px;flex-wrap:wrap"></div>
       </div>
     </div>
     <!-- POSITIONS -->
@@ -344,90 +262,10 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
       </div>
     </div>
 
-    <!-- SYMBOL MANAGER -->
-    <div id="pg-symbols" class="hidden">
-      <div class="card">
-        <div class="card-header">📈 Symbol Manager
-          <button class="btn btn-green" onclick="showAddSymbol()" style="font-size:10px;padding:4px 10px">+ Add Symbol</button>
-        </div>
-        <!-- Search + Add form -->
-        <div id="addSymbolForm" class="hidden" style="background:#0a0f1a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
-          <div style="font-size:11px;color:#d4af37;margin-bottom:8px;font-weight:600">🔍 Search & Add Symbol</div>
-          <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-bottom:8px">
-            <input class="inp" id="symSearch" placeholder="Search symbol... (e.g. RELIANCE, HDFC)" style="margin:0" oninput="searchSymbols()">
-            <select id="symExchange" class="inp" style="margin:0;width:80px" onchange="searchSymbols()">
-              <option value="NSE">NSE</option>
-              <option value="MCX">MCX</option>
-              <option value="BSE">BSE</option>
-            </select>
-            <button class="btn btn-blue" onclick="searchSymbols()" style="font-size:10px;padding:6px 10px">🔍</button>
-          </div>
-          <!-- Search results -->
-          <div id="symSearchResults" style="max-height:160px;overflow-y:auto;margin-bottom:8px"></div>
-          <!-- Manual add -->
-          <div style="font-size:10px;color:#8090a8;margin:8px 0 4px">Or add manually:</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-            <input class="inp" id="newSymbol" placeholder="Symbol (NIFTY)" style="margin:0">
-            <input class="inp" id="newToken" placeholder="Token (99926000)" style="margin:0">
-            <select id="newExchange" class="inp" style="margin:0">
-              <option value="NSE">NSE</option>
-              <option value="MCX">MCX</option>
-              <option value="BSE">BSE</option>
-            </select>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-            <select id="newInstrType" class="inp" style="margin:0">
-              <option value="INDEX">INDEX</option>
-              <option value="EQ">EQUITY</option>
-              <option value="COMMODITY">COMMODITY</option>
-              <option value="FUTIDX">FUT-INDEX</option>
-            </select>
-            <input class="inp" id="newLotSize" placeholder="Lot Size (1)" style="margin:0" value="1">
-            <input class="inp" id="newTickSize" placeholder="Tick (0.05)" style="margin:0" value="0.05">
-          </div>
-          <!-- Role access -->
-          <div style="font-size:10px;color:#8090a8;margin-bottom:4px">Role Access:</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="roleCheckboxes">
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="developer" checked> Developer</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="administrator" checked> Admin</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="platinum" checked> Platinum</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="gold" checked> Gold</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="premium" checked> Premium</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="silver"> Silver</label>
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" value="demo"> Demo</label>
-          </div>
-          <div style="display:flex;gap:6px">
-            <label style="font-size:10px;display:flex;align-items:center;gap:3px"><input type="checkbox" id="canLive"> Live Trading</label>
-          </div>
-          <div style="display:flex;gap:6px;margin-top:8px">
-            <button class="btn btn-green" onclick="addSymbol()" style="flex:1;font-size:11px">✅ Add Symbol</button>
-            <button class="btn btn-red" onclick="showAddSymbol()" style="font-size:11px;padding:6px 12px">Cancel</button>
-          </div>
-        </div>
-        <!-- Symbol list -->
-        <table class="tbl">
-          <thead><tr><th>Symbol</th><th>Exchange</th><th>Type</th><th>Token</th><th>Lot</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="symbolTable"><tr><td colspan="7" style="text-align:center;color:#8090a8;padding:16px">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- APP SETTINGS / ADMIN TOOLS -->
-    <div id="pg-appsettings" class="hidden">
-      <div class="card">
-        <div class="card-header">🔧 Admin Tools — App Settings
-          <button class="btn btn-green" onclick="saveAppSettings()" style="font-size:10px;padding:4px 10px">💾 Save All</button>
-        </div>
-        <div id="settingsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="color:#8090a8;text-align:center;padding:20px;grid-column:1/-1">Loading...</div>
-        </div>
-      </div>
-    </div>
-
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
-        <div class="card-header">💬 Chanakya Chat <span style="font-size:9px;color:#00e676">● LLaMA 3.3 70B</span></div>
+        <div class="card-header">💬 Chanakya AI Chat <span style="font-size:9px;color:#00e676">● LLaMA 3.3 70B</span></div>
         <div class="chat-msgs" id="chatMsgs">
           <div class="chat-msg chat-ai">👋 Namaste! Chanakya AI here. NIFTY, BANKNIFTY, MCX signals saathi vicharaa!</div>
         </div>
@@ -436,11 +274,11 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
           <button class="btn btn-blue" onclick="sendChat()">Send</button>
         </div>
         <div class="quick-btns">
-          <span class="quick-btn" onclick="quickChat('NIFTY chart dakhva')">📊 NIFTY</span>
-          <span class="quick-btn" onclick="quickChat('BANKNIFTY chart 5m')">📊 BANK</span>
-          <span class="quick-btn" onclick="quickChat('CRUDEOIL chart MCX')">📊 CRUDE</span>
-          <span class="quick-btn" onclick="quickChat('NIFTY aaj signal dya')">⚡ Signal</span>
-          <span class="quick-btn" onclick="quickChat('Best strategy today?')">🎯 Strategy</span>
+          <span class="quick-btn" onclick="quickChat('NIFTY aaj signal dya')">NIFTY</span>
+          <span class="quick-btn" onclick="quickChat('BANKNIFTY analysis')">BANKNIFTY</span>
+          <span class="quick-btn" onclick="quickChat('CRUDEOIL MCX signal')">CRUDE</span>
+          <span class="quick-btn" onclick="quickChat('NATURALGAS live LTP')">NATGAS</span>
+          <span class="quick-btn" onclick="quickChat('Best strategy today?')">Strategy</span>
         </div>
       </div>
     </div>
@@ -474,41 +312,6 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 </div>
 
 <div id="toast"></div>
-
-<!-- PWA Install Banner -->
-<div id="pwaBanner">
-  <div class="pwa-icon">⚡</div>
-  <div class="pwa-text">
-    <b>Install Chanakya AI</b>
-    <span>Home screen वर add करा — app सारखं वापरा</span>
-  </div>
-  <button class="btn btn-gold" onclick="installPWA()" style="font-size:11px;padding:8px 14px;flex-shrink:0">Install</button>
-  <button onclick="document.getElementById('pwaBanner').style.display='none'" style="background:none;border:none;color:#8090a8;font-size:18px;cursor:pointer;padding:4px">✕</button>
-</div>
-
-<!-- BOTTOM NAV (Mobile) -->
-<div id="bottomNav">
-  <div class="bnav-items">
-    <div class="bnav-item active" id="bn-dashboard" onclick="showPage('dashboard',null);setBottomNav('dashboard')">
-      <div class="icon">📊</div><div>Dashboard</div>
-    </div>
-    <div class="bnav-item" id="bn-signals" onclick="showPage('signals',null);setBottomNav('signals')">
-      <div class="icon">⚡</div><div>Signals</div>
-    </div>
-    <div class="bnav-item" id="bn-chart" onclick="showPage('chart',null);setBottomNav('chart')">
-      <div class="icon">📊</div><div>Chart</div>
-    </div>
-    <div class="bnav-item" id="bn-positions" onclick="showPage('positions',null);setBottomNav('positions')">
-      <div class="icon">📈</div><div>Positions</div>
-    </div>
-    <div class="bnav-item" id="bn-history" onclick="showPage('history',null);setBottomNav('history')">
-      <div class="icon">📋</div><div>History</div>
-    </div>
-    <div class="bnav-item" id="bn-aichat" onclick="showPage('aichat',null);setBottomNav('aichat')">
-      <div class="icon">💬</div><div>Chat</div>
-    </div>
-  </div>
-</div>
 
 <script>
 var TOKEN = localStorage.getItem("ch_token") || "";
@@ -560,12 +363,9 @@ function showPage(id, el) {
   document.getElementById("pg-"+id).classList.remove("hidden");
   if(el) el.classList.add("active");
   if(id==="positions") loadPositions();
-  if(id==="chart") initChart();
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
   if(id==="settings") loadBrokerSettings();
-  if(id==="symbols") loadAdminSymbols();
-  if(id==="appsettings") loadAppSettings();
   if(id==="admin") loadUsers();
 }
 
@@ -693,142 +493,6 @@ async function closeTrade(tid, price) {
   else toast("❌ "+d.error,"#ff0000");
 }
 
-// ── SYMBOL MANAGER ────────────────────────────────────
-function showAddSymbol() {
-  var f = document.getElementById('addSymbolForm');
-  f.classList.toggle('hidden');
-}
-
-var _searchTimer = null;
-async function searchSymbols() {
-  var q = document.getElementById('symSearch').value.trim();
-  var exch = document.getElementById('symExchange').value;
-  if(q.length < 2) { document.getElementById('symSearchResults').innerHTML = ''; return; }
-  if(_searchTimer) clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(async function(){
-    var d = await api('/admin/symbols/search?q='+encodeURIComponent(q)+'&exchange='+exch);
-    if(!d.success || !d.results.length) {
-      document.getElementById('symSearchResults').innerHTML = "<div style='color:#8090a8;font-size:10px;padding:4px'>No results</div>";
-      return;
-    }
-    document.getElementById('symSearchResults').innerHTML = d.results.map(function(r){
-      return "<div style='display:flex;justify-content:space-between;align-items:center;padding:4px 6px;border-bottom:1px solid var(--border);font-size:10px'>"+
-        "<span><b>"+r.symbol+"</b> <span style='color:#8090a8'>"+r.exchange+"</span></span>"+
-        "<span style='color:#8090a8'>token:"+r.token+" lot:"+r.lot_size+"</span>"+
-        "<button class='btn btn-blue' onclick='prefillSymbol("+JSON.stringify(r)+")' style='font-size:9px;padding:2px 6px'>Use</button>"+
-      "</div>";
-    }).join('');
-  }, 400);
-}
-
-function prefillSymbol(r) {
-  document.getElementById('newSymbol').value = r.symbol;
-  document.getElementById('newToken').value = r.token;
-  document.getElementById('newExchange').value = r.exchange;
-  document.getElementById('newInstrType').value = r.instrument_type||'EQ';
-  document.getElementById('newLotSize').value = r.lot_size||1;
-  document.getElementById('newTickSize').value = r.tick_size||0.05;
-  document.getElementById('symSearchResults').innerHTML = '';
-}
-
-async function addSymbol() {
-  var symbol = document.getElementById('newSymbol').value.trim().toUpperCase();
-  var token  = document.getElementById('newToken').value.trim();
-  var exch   = document.getElementById('newExchange').value;
-  var itype  = document.getElementById('newInstrType').value;
-  var lot    = parseInt(document.getElementById('newLotSize').value)||1;
-  var tick   = parseFloat(document.getElementById('newTickSize').value)||0.05;
-  var canLive = document.getElementById('canLive').checked ? 1 : 0;
-  if(!symbol || !token) { toast("❌ Symbol + Token required","#ff0000"); return; }
-  var roles = Array.from(document.querySelectorAll('#roleCheckboxes input:checked')).map(function(c){return c.value;});
-  var d = await api('/admin/symbols','POST',{
-    symbol, token, exchange:exch, instrument_type:itype,
-    lot_size:lot, tick_size:tick, trading_symbol:symbol, roles, can_live:canLive
-  });
-  if(d.success){
-    toast("✅ "+symbol+" added!","#1e3a5f");
-    showAddSymbol();
-    loadAdminSymbols();
-  } else toast("❌ "+d.error,"#ff0000");
-}
-
-async function loadAdminSymbols() {
-  var d = await api('/admin/symbols');
-  if(!d.success) return;
-  var syms = d.symbols||[];
-  var tb = document.getElementById('symbolTable');
-  if(!syms.length) {
-    tb.innerHTML = "<tr><td colspan='7' style='text-align:center;color:#8090a8;padding:16px'>No symbols</td></tr>";
-    return;
-  }
-  tb.innerHTML = syms.map(function(s){
-    var exchClr = s.exchange==='NSE'?'#00c8ff':s.exchange==='MCX'?'#ff9800':'#00e676';
-    var typeClr = s.instrument_type==='INDEX'?'#d4af37':s.instrument_type==='COMMODITY'?'#ff9800':'#00e676';
-    return "<tr>"+
-      "<td><b>"+s.symbol+"</b></td>"+
-      "<td><span style='color:"+exchClr+"'>"+s.exchange+"</span></td>"+
-      "<td><span style='color:"+typeClr+"'>"+s.instrument_type+"</span></td>"+
-      "<td style='color:#8090a8;font-size:10px'>"+s.token+"</td>"+
-      "<td style='color:#8090a8'>"+s.lot_size+"</td>"+
-      "<td>"+(s.is_active?"<span class='badge badge-green'>Active</span>":"<span class='badge badge-red'>Inactive</span>")+"</td>"+
-      "<td><button class='btn btn-red' onclick='deleteSymbol("+s.id+",""+s.symbol+"")' style='font-size:9px;padding:2px 8px'>Delete</button></td>"+
-    "</tr>";
-  }).join('');
-}
-
-async function deleteSymbol(sid, name) {
-  if(!confirm('Delete '+name+'?')) return;
-  var d = await api('/admin/symbols/'+sid,'DELETE');
-  if(d.success){ toast("✅ "+name+" deleted","#1e3a5f"); loadAdminSymbols(); }
-  else toast("❌ "+d.error,"#ff0000");
-}
-
-// ── APP SETTINGS ───────────────────────────────────────
-var _settingsData = {};
-async function loadAppSettings() {
-  var d = await api('/admin/settings');
-  if(!d.success) return;
-  _settingsData = {};
-  d.settings.forEach(function(s){ _settingsData[s.key] = s; });
-  var html = d.settings.map(function(s){
-    var isToggle = s.value==='true'||s.value==='false';
-    var inputHtml = isToggle ?
-      "<div style='display:flex;gap:6px'>"+
-        "<label style='font-size:11px;display:flex;align-items:center;gap:4px'>"+
-          "<input type='radio' name='set_"+s.key+"' value='true' "+(s.value==='true'?'checked':'')+"> ON"+
-        "</label>"+
-        "<label style='font-size:11px;display:flex;align-items:center;gap:4px'>"+
-          "<input type='radio' name='set_"+s.key+"' value='false' "+(s.value==='false'?'checked':'')+"> OFF"+
-        "</label>"+
-      "</div>" :
-      "<input class='inp' id='set_"+s.key+"' value='"+s.value+"' style='margin:0;font-size:11px'>";
-    return "<div style='background:#0a0f1a;border:1px solid var(--border);border-radius:6px;padding:10px'>"+
-      "<div style='font-size:10px;color:#d4af37;font-weight:600;margin-bottom:2px'>"+s.key.replace(/_/g,' ').toUpperCase()+"</div>"+
-      "<div style='font-size:9px;color:#8090a8;margin-bottom:6px'>"+s.description+"</div>"+
-      inputHtml+
-    "</div>";
-  }).join('');
-  document.getElementById('settingsList').innerHTML = html;
-}
-
-async function saveAppSettings() {
-  var data = {};
-  Object.keys(_settingsData).forEach(function(key){
-    var s = _settingsData[key];
-    var isToggle = s.value==='true'||s.value==='false';
-    if(isToggle) {
-      var checked = document.querySelector('input[name="set_'+key+'"]:checked');
-      if(checked) data[key] = checked.value;
-    } else {
-      var el = document.getElementById('set_'+key);
-      if(el) data[key] = el.value;
-    }
-  });
-  var d = await api('/admin/settings','POST',data);
-  if(d.success) toast("✅ "+d.updated+" settings saved!","#1e3a5f");
-  else toast("❌ "+d.error,"#ff0000");
-}
-
 async function loadBrokerSettings() {
   var d = await api("/settings/broker");
   if(!d.success) return;
@@ -858,140 +522,6 @@ async function saveBroker() {
     msg.textContent="❌ "+(d.error||"Save failed");
   }
   setTimeout(function(){msg.textContent=""},3000);
-}
-
-// ── CHART ─────────────────────────────────────────────
-var _chartInstance = null;
-var _rsiInstance = null;
-var _chartAutoTimer = null;
-var _chartSeries = null;
-var _rsiSeries = null;
-
-function initChart() {
-  if(!_chartInstance) {
-    // Main candlestick chart
-    _chartInstance = LightweightCharts.createChart(document.getElementById('chartContainer'), {
-      layout: { background:{color:'#0d1b2a'}, textColor:'#8090a8' },
-      grid: { vertLines:{color:'#1e3a5f33'}, horzLines:{color:'#1e3a5f33'} },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-      rightPriceScale: { borderColor:'#1e3a5f' },
-      timeScale: { borderColor:'#1e3a5f', timeVisible:true, secondsVisible:false },
-      width: document.getElementById('chartContainer').clientWidth,
-      height: 320,
-    });
-    _chartSeries = _chartInstance.addCandlestickSeries({
-      upColor:'#00e676', downColor:'#ff5252',
-      borderUpColor:'#00e676', borderDownColor:'#ff5252',
-      wickUpColor:'#00e676', wickDownColor:'#ff5252',
-    });
-
-    // RSI chart
-    _rsiInstance = LightweightCharts.createChart(document.getElementById('rsiContainer'), {
-      layout: { background:{color:'#0d1b2a'}, textColor:'#8090a8' },
-      grid: { vertLines:{color:'#1e3a5f22'}, horzLines:{color:'#1e3a5f22'} },
-      rightPriceScale: { borderColor:'#1e3a5f', scaleMargins:{top:0.1,bottom:0.1} },
-      timeScale: { borderColor:'#1e3a5f', timeVisible:true, visible:false },
-      width: document.getElementById('rsiContainer').clientWidth,
-      height: 70,
-    });
-    _rsiSeries = _rsiInstance.addLineSeries({color:'#d4af37', lineWidth:1});
-
-    // Resize handler
-    window.addEventListener('resize', function(){
-      if(_chartInstance) _chartInstance.applyOptions({width: document.getElementById('chartContainer').clientWidth});
-      if(_rsiInstance) _rsiInstance.applyOptions({width: document.getElementById('rsiContainer').clientWidth});
-    });
-  }
-  loadChart();
-}
-
-async function loadChart(auto) {
-  var symVal = document.getElementById('chartSym').value.split('|');
-  var symbol = symVal[0], token = symVal[1], exchange = symVal[2];
-  var interval = document.getElementById('chartInt').value;
-
-  var d = await api('/chart?symbol='+symbol+'&token='+token+'&exchange='+exchange+'&interval='+interval+'&days=2');
-  if(!d.success){
-    document.getElementById('chartInfo').innerHTML = "<span style='color:#ff5252'>❌ "+d.error+"</span>";
-    return;
-  }
-
-  var candles = d.candles||[];
-  if(!candles.length) return;
-
-  // Candlestick data
-  var cData = candles.map(function(c){
-    var t = typeof c.t === 'string' ? Math.floor(new Date(c.t).getTime()/1000) : c.t;
-    return {time:t, open:c.o, high:c.h, low:c.l, close:c.c};
-  }).filter(function(c){return !isNaN(c.time)});
-
-  if(_chartSeries && cData.length) {
-    _chartSeries.setData(cData);
-
-    // EMA9 line
-    if(!_chartInstance._ema9) {
-      _chartInstance._ema9 = _chartInstance.addLineSeries({color:'#00c8ff',lineWidth:1,priceLineVisible:false});
-    }
-    var ind = d.indicators||{};
-    if(ind.ema9 && ind.ema9.length) {
-      var ema9Data = cData.map(function(c,i){ return {time:c.time, value:ind.ema9[i]}; }).filter(function(x){return x.value;});
-      _chartInstance._ema9.setData(ema9Data);
-    }
-
-    // EMA21 line
-    if(!_chartInstance._ema21) {
-      _chartInstance._ema21 = _chartInstance.addLineSeries({color:'#d4af37',lineWidth:1,priceLineVisible:false});
-    }
-    if(ind.ema21 && ind.ema21.length) {
-      var ema21Data = cData.map(function(c,i){ return {time:c.time, value:ind.ema21[i]}; }).filter(function(x){return x.value;});
-      _chartInstance._ema21.setData(ema21Data);
-    }
-
-    // VWAP line
-    if(ind.vwap) {
-      if(!_chartInstance._vwap) {
-        _chartInstance._vwap = _chartInstance.addLineSeries({color:'#ff9800',lineWidth:1,lineStyle:2,priceLineVisible:false});
-      }
-      var vwapData = cData.map(function(c){ return {time:c.time, value:ind.vwap}; });
-      _chartInstance._vwap.setData(vwapData);
-    }
-
-    _chartInstance.timeScale().fitContent();
-  }
-
-  // RSI
-  if(_rsiSeries && d.indicators && d.indicators.rsi) {
-    var rsiData = cData.map(function(c){ return {time:c.time, value:d.indicators.rsi}; });
-    _rsiSeries.setData(rsiData);
-  }
-
-  // LTP + indicators info
-  var ltp = d.ltp||0;
-  var ind = d.indicators||{};
-  var vwapBias = ltp > (ind.vwap||0) ? "🟢 Above VWAP" : "🔴 Below VWAP";
-  document.getElementById('chartInfo').innerHTML =
-    "<span style='color:#00c8ff;font-weight:700'>LTP: ₹"+ltp.toFixed(1)+"</span>"+
-    "<span style='color:#00c8ff'>EMA9: ₹"+(ind.ema9&&ind.ema9.length?ind.ema9[ind.ema9.length-1].toFixed(1):"-")+"</span>"+
-    "<span style='color:#d4af37'>EMA21: ₹"+(ind.ema21&&ind.ema21.length?ind.ema21[ind.ema21.length-1].toFixed(1):"-")+"</span>"+
-    "<span style='color:#ff9800'>VWAP: ₹"+(ind.vwap?ind.vwap.toFixed(1):"-")+"</span>"+
-    "<span>"+vwapBias+"</span>"+
-    "<span style='color:#8090a8'>RSI: "+(ind.rsi?ind.rsi.toFixed(1):"-")+"</span>"+
-    "<span style='color:#8090a8'>ATR: "+(ind.atr?ind.atr.toFixed(1):"-")+"</span>";
-
-  // Auto refresh
-  if(auto) {
-    if(_chartAutoTimer) clearInterval(_chartAutoTimer);
-    _chartAutoTimer = setInterval(function(){
-      if(!document.getElementById('pg-chart').classList.contains('hidden')) loadChart();
-    }, 10000); // 10 sec auto refresh
-    document.querySelector('[onclick="loadChart(true)"]').textContent = "🔄 Auto ON";
-  }
-}
-
-function setBottomNav(id) {
-  document.querySelectorAll(".bnav-item").forEach(function(b){b.classList.remove("active")});
-  var el = document.getElementById("bn-"+id);
-  if(el) el.classList.add("active");
 }
 
 var _predTimer = null;
@@ -1083,98 +613,6 @@ async function loadHistory() {
   }).join("");
 }
 
-// Chart keywords detect करूया
-var CHART_KEYWORDS = ['chart','candle','candlestick','graph','technical','vwap','ema','rsi','चार्ट','कँडल'];
-var SYMBOL_MAP = {
-  'nifty':    'NIFTY|99926000|NSE',
-  'banknifty':'BANKNIFTY|99926009|NSE',
-  'bank nifty':'BANKNIFTY|99926009|NSE',
-  'finnifty': 'FINNIFTY|99926037|NSE',
-  'crudeoil': 'CRUDEOIL|488290|MCX',
-  'crude':    'CRUDEOIL|488290|MCX',
-  'naturalgas':'NATURALGAS|488505|MCX',
-  'natgas':   'NATURALGAS|488505|MCX',
-  'reliance': 'RELIANCE|2885|NSE',
-};
-var TF_MAP = {
-  '1m':'ONE_MINUTE','1min':'ONE_MINUTE',
-  '5m':'FIVE_MINUTE','5min':'FIVE_MINUTE',
-  '15m':'FIFTEEN_MINUTE','15min':'FIFTEEN_MINUTE',
-  '1h':'ONE_HOUR','1hr':'ONE_HOUR','1hour':'ONE_HOUR',
-};
-
-function detectChartRequest(msg) {
-  var lower = msg.toLowerCase();
-  var isChart = CHART_KEYWORDS.some(function(k){ return lower.includes(k); });
-  if(!isChart) return null;
-  var sym = 'NIFTY|99926000|NSE';
-  Object.keys(SYMBOL_MAP).forEach(function(k){ if(lower.includes(k)) sym = SYMBOL_MAP[k]; });
-  var tf = 'FIVE_MINUTE';
-  Object.keys(TF_MAP).forEach(function(k){ if(lower.includes(k)) tf = TF_MAP[k]; });
-  return {sym:sym, tf:tf};
-}
-
-var _chatChartId = 0;
-async function renderChatChart(chartReq, containerId) {
-  var symParts = chartReq.sym.split('|');
-  var symbol=symParts[0], token=symParts[1], exchange=symParts[2];
-  var d = await api('/chart?symbol='+symbol+'&token='+token+'&exchange='+exchange+'&interval='+chartReq.tf+'&days=2');
-  if(!d.success){
-    document.getElementById(containerId).innerHTML = "<div style='color:#ff5252;padding:8px'>❌ "+d.error+"</div>";
-    return;
-  }
-  var candles = d.candles||[];
-  if(!candles.length) return;
-  var el = document.getElementById(containerId);
-  // Responsive height
-  var screenW = window.innerWidth;
-  var chartH = screenW < 480 ? 200 : screenW < 768 ? 240 : screenW < 1200 ? 280 : 320;
-  el.style.height = chartH+'px';
-  el.style.width = '100%';
-  var chart = LightweightCharts.createChart(el, {
-    layout:{background:{color:'#0d1b2a'},textColor:'#8090a8'},
-    grid:{vertLines:{color:'#1e3a5f22'},horzLines:{color:'#1e3a5f22'}},
-    rightPriceScale:{borderColor:'#1e3a5f',scaleMargins:{top:0.05,bottom:0.05}},
-    timeScale:{borderColor:'#1e3a5f',timeVisible:true,secondsVisible:false},
-    width:el.clientWidth||(screenW>600?screenW-220:screenW-24), height:chartH,
-    handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true},
-    handleScale:{mouseWheel:true,pinch:true},
-  });
-  var cs = chart.addCandlestickSeries({
-    upColor:'#00e676',downColor:'#ff5252',
-    borderUpColor:'#00e676',borderDownColor:'#ff5252',
-    wickUpColor:'#00e676',wickDownColor:'#ff5252',
-  });
-  var cData = candles.map(function(c){
-    var t = typeof c.t==='string' ? Math.floor(new Date(c.t).getTime()/1000) : c.t;
-    return {time:t,open:c.o,high:c.h,low:c.l,close:c.c};
-  }).filter(function(c){return !isNaN(c.time)});
-  cs.setData(cData);
-  // EMA9
-  var e9 = chart.addLineSeries({color:'#00c8ff',lineWidth:1,priceLineVisible:false});
-  var ind = d.indicators||{};
-  if(ind.ema9) e9.setData(cData.map(function(c,i){return {time:c.time,value:ind.ema9[i]};}).filter(function(x){return x.value;}));
-  // EMA21
-  var e21 = chart.addLineSeries({color:'#d4af37',lineWidth:1,priceLineVisible:false});
-  if(ind.ema21) e21.setData(cData.map(function(c,i){return {time:c.time,value:ind.ema21[i]};}).filter(function(x){return x.value;}));
-  // VWAP
-  if(ind.vwap) {
-    var vw = chart.addLineSeries({color:'#ff9800',lineWidth:1,lineStyle:2,priceLineVisible:false});
-    vw.setData(cData.map(function(c){return {time:c.time,value:ind.vwap};}));
-  }
-  chart.timeScale().fitContent();
-  // Info bar
-  var ltp = d.ltp||0;
-  var bias = ltp>(ind.vwap||0)?'🟢 Above VWAP':'🔴 Below VWAP';
-  document.getElementById(containerId+'_info').innerHTML =
-    "<span style='color:#00c8ff'>LTP:₹"+ltp.toFixed(1)+"</span> "+
-    "<span style='color:#00c8ff'>EMA9:₹"+(ind.ema9&&ind.ema9.length?ind.ema9[ind.ema9.length-1].toFixed(1):'-')+"</span> "+
-    "<span style='color:#d4af37'>EMA21:₹"+(ind.ema21&&ind.ema21.length?ind.ema21[ind.ema21.length-1].toFixed(1):'-')+"</span> "+
-    "<span style='color:#ff9800'>VWAP:₹"+(ind.vwap&&ind.vwap>0?ind.vwap.toFixed(1):'N/A')+"</span> "+
-    "<span>"+bias+"</span> "+
-    "<span style='color:#8090a8'>RSI:"+(ind.rsi?ind.rsi.toFixed(1):'-')+"</span>";
-}
-
 async function sendChat() {
   var inp = document.getElementById("chatInp");
   var msg = inp.value.trim();
@@ -1182,23 +620,6 @@ async function sendChat() {
   inp.value = "";
   var msgs = document.getElementById("chatMsgs");
   msgs.innerHTML += "<div class='chat-msg chat-user'>"+msg+"</div>";
-
-  // Chart request detect करूया
-  var chartReq = detectChartRequest(msg);
-  if(chartReq) {
-    _chatChartId++;
-    var cid = 'chatChart'+_chatChartId;
-    var symName = chartReq.sym.split('|')[0];
-    msgs.innerHTML += "<div class='chat-msg chat-ai chart-msg'>"+
-      "<div style='font-size:11px;color:#d4af37;margin-bottom:4px'>📊 "+symName+" Chart loading...</div>"+
-      "<div id='"+cid+"_info' style='font-size:9px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;color:#8090a8'></div>"+
-      "<div id='"+cid+"' style='width:100%;min-width:0;border-radius:6px;overflow:hidden;background:#0d1b2a;display:block'></div>"+
-    "</div>";
-    msgs.scrollTop = msgs.scrollHeight;
-    setTimeout(function(){ renderChatChart(chartReq, cid); }, 100);
-    return;
-  }
-
   msgs.innerHTML += "<div class='chat-msg chat-ai' id='typing'>⏳ Thinking...</div>";
   msgs.scrollTop = msgs.scrollHeight;
   var d = await api("/ai/chat","POST",{message:msg});
@@ -1289,19 +710,9 @@ var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   _deferredPrompt = e;
-  // PWA Banner दाखवूया
-  var banner = document.getElementById('pwaBanner');
-  if(banner) banner.style.display = 'flex';
+  // Install button दाखवूया
   var btn = document.getElementById('installBtn');
   if(btn) btn.style.display = 'block';
-  var btn2 = document.getElementById('installBtnSidebar');
-  if(btn2) btn2.style.display = 'block';
-});
-
-window.addEventListener('appinstalled', function() {
-  var banner = document.getElementById('pwaBanner');
-  if(banner) banner.style.display = 'none';
-  toast("✅ Chanakya AI installed successfully!","#1e3a5f");
 });
 
 function installPWA() {

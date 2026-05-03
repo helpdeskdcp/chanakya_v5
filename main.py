@@ -354,6 +354,116 @@ def broker_settings():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+# ── Symbol Manager Routes ──────────────────────────────
+@app.route("/api/symbols")
+@require_auth
+def get_symbols():
+    try:
+        from database.symbol_manager import get_user_symbols
+        user = request.user
+        syms = get_user_symbols(request.username, user.get("role","demo"))
+        return jsonify({"success":True,"symbols":syms,"total":len(syms)})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols")
+@require_role("developer","administrator")
+def admin_get_symbols():
+    try:
+        from database.symbol_manager import get_all_symbols
+        syms = get_all_symbols(active_only=False)
+        return jsonify({"success":True,"symbols":syms})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols", methods=["POST"])
+@require_role("developer","administrator")
+def admin_add_symbol():
+    try:
+        data = request.json or {}
+        from database.symbol_manager import add_symbol, set_symbol_access
+        sid = add_symbol(
+            data.get("symbol",""), data.get("trading_symbol",""),
+            data.get("token",""), data.get("exchange","NSE"),
+            data.get("instrument_type","INDEX"),
+            int(data.get("lot_size",1)), float(data.get("tick_size",0.05)),
+            request.username)
+        if not sid:
+            return jsonify({"success":False,"error":"Add failed"})
+        # Default access set करूया
+        roles = data.get("roles", ["developer","administrator","platinum","gold","premium","silver"])
+        users = data.get("users", [])
+        can_live = int(data.get("can_live",0))
+        for role in roles:
+            can_l = 1 if role in ["developer","administrator","platinum","gold"] else can_live
+            set_symbol_access(sid,"role",role,1,1,can_l,1)
+        for user in users:
+            set_symbol_access(sid,"user",user,1,1,can_live,1)
+        return jsonify({"success":True,"symbol_id":sid})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols/<int:sid>", methods=["DELETE"])
+@require_role("developer","administrator")
+def admin_delete_symbol(sid):
+    try:
+        from database.symbol_manager import delete_symbol
+        ok = delete_symbol(sid)
+        return jsonify({"success":ok})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols/<int:sid>/access", methods=["POST"])
+@require_role("developer","administrator")
+def admin_set_access(sid):
+    try:
+        data = request.json or {}
+        from database.symbol_manager import set_symbol_access
+        ok = set_symbol_access(sid,
+            data.get("access_type","role"), data.get("access_value",""),
+            int(data.get("can_scan",1)), int(data.get("can_paper",1)),
+            int(data.get("can_live",0)), int(data.get("can_signal",1)))
+        return jsonify({"success":ok})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols/search")
+@require_role("developer","administrator")
+def admin_search_symbol():
+    try:
+        query = request.args.get("q","")
+        exchange = request.args.get("exchange","NSE")
+        from database.symbol_manager import search_angel_symbol
+        results = search_angel_symbol(query, exchange)
+        return jsonify({"success":True,"results":results})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+# ── App Settings Routes ────────────────────────────────
+@app.route("/api/admin/settings")
+@require_role("developer","administrator")
+def admin_get_settings():
+    try:
+        from database.symbol_manager import get_all_settings
+        return jsonify({"success":True,"settings":get_all_settings()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/settings", methods=["POST"])
+@require_role("developer","administrator")
+def admin_update_settings():
+    try:
+        data = request.json or {}
+        from database.symbol_manager import update_setting
+        updated = 0
+        for key, value in data.items():
+            if update_setting(key, str(value), request.username):
+                updated += 1
+        return jsonify({"success":True,"updated":updated})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/pnl")
 @require_auth
 def pnl():
