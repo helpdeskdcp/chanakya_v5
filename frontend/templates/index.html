@@ -149,6 +149,58 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── AUTO TRADER ─────────────────────────────────────
+var _atRunning = false;
+var _atAuto = false;
+
+async function loadAutoTraderStatus() {
+  var d = await api("/autotrader/status");
+  if(!d.success) return;
+  var s = d.status;
+  _atRunning = s.running;
+  _atAuto = s.auto_trade;
+  var btn = document.getElementById("atBtn");
+  var statusEl = document.getElementById("atStatus");
+  if(!s.running) {
+    statusEl.textContent = "⛔ Stopped"; statusEl.style.color="#ff5252";
+    btn.textContent = "▶ Start"; btn.className = "btn btn-green";
+  } else if(s.auto_trade) {
+    statusEl.textContent = "🤖 Auto ON"; statusEl.style.color="#00e676";
+    btn.textContent = "⏸ Pause Auto"; btn.className = "btn btn-red";
+  } else {
+    statusEl.textContent = "👁 Monitor Only"; statusEl.style.color="#d4af37";
+    btn.textContent = "🤖 Auto ON"; btn.className = "btn btn-gold";
+  }
+  document.getElementById("atMode").textContent = s.mode || "PAPER";
+  document.getElementById("atMode").style.color = s.mode==="LIVE" ? "#ff5252" : "#d4af37";
+  document.getElementById("atOpen").textContent = s.open_count || 0;
+  var pnl = s.today_pnl || 0;
+  var pnlEl = document.getElementById("atPnl");
+  pnlEl.textContent = (pnl>=0?"+":"")+"₹"+pnl.toFixed(0);
+  pnlEl.style.color = pnl>=0?"#00e676":"#ff5252";
+  document.getElementById("atScan").textContent = s.last_scan || "-";
+  var log = (s.log||[]).slice(-4).reverse();
+  document.getElementById("atLog").innerHTML = log.length ?
+    log.map(function(l){return "<div>"+l+"</div>"}).join("") :
+    "<div style='color:#8090a8'>No activity yet</div>";
+}
+
+async function toggleAutoTrader() {
+  if(!_atRunning) {
+    var d = await api("/autotrader/start","POST",{mode:"PAPER",auto_trade:true});
+    if(d.success) { toast("🤖 Auto Trader started!","#1e3a5f"); loadAutoTraderStatus(); }
+    else toast("❌ "+(d.error||"Failed"),"#ff0000");
+  } else if(_atAuto) {
+    var d = await api("/autotrader/toggle","POST",{auto_trade:false});
+    if(d.success) { toast("👁 Monitor only mode","#1e3a5f"); loadAutoTraderStatus(); }
+  } else {
+    var d = await api("/autotrader/toggle","POST",{auto_trade:true,mode:"PAPER"});
+    if(d.success) { toast("🤖 Auto Trade ON!","#1e3a5f"); loadAutoTraderStatus(); }
+  }
+}
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -226,6 +278,37 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
           <div class="stat"><div class="stat-val" id="dWin">0%</div><div class="stat-label">All time</div></div>
         </div>
       </div>
+      <!-- AUTO TRADER WIDGET -->
+      <div class="card" style="border-color:#d4af3744">
+        <div class="card-header">🤖 Auto Trader
+          <div style="display:flex;gap:6px;align-items:center">
+            <span id="atStatus" style="font-size:10px;color:#8090a8">Loading...</span>
+            <button class="btn btn-blue" onclick="toggleAutoTrader()" id="atBtn" style="font-size:10px;padding:4px 12px">⏳</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px;font-size:11px;text-align:center">
+          <div style="background:#0a0f1a;border-radius:6px;padding:6px">
+            <div style="color:#8090a8;font-size:9px">Mode</div>
+            <div id="atMode" style="color:#d4af37;font-weight:600">PAPER</div>
+          </div>
+          <div style="background:#0a0f1a;border-radius:6px;padding:6px">
+            <div style="color:#8090a8;font-size:9px">Open</div>
+            <div id="atOpen" style="color:#00c8ff;font-weight:600">0</div>
+          </div>
+          <div style="background:#0a0f1a;border-radius:6px;padding:6px">
+            <div style="color:#8090a8;font-size:9px">Auto P&L</div>
+            <div id="atPnl" style="font-weight:600">₹0</div>
+          </div>
+          <div style="background:#0a0f1a;border-radius:6px;padding:6px">
+            <div style="color:#8090a8;font-size:9px">Last Scan</div>
+            <div id="atScan" style="color:#8090a8;font-size:9px">-</div>
+          </div>
+        </div>
+        <div id="atLog" style="background:#0a0f1a;border-radius:6px;padding:8px;font-size:10px;color:#8090a8;max-height:80px;overflow-y:auto;line-height:1.6">
+          Loading log...
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">⚡ Recent Signals <button class="btn btn-blue" onclick="loadSignals()" style="font-size:10px;padding:4px 10px">Scan</button></div>
         <div id="dashSignals"><div style="color:#8090a8;text-align:center;padding:20px">Click Scan to load signals</div></div>
@@ -292,6 +375,44 @@ body{font-family:-apple-system,sans-serif;background:#0a0f1a;color:#e0e8f0;min-h
     <div id="pg-positions" class="hidden">
       <div class="card">
         <div class="card-header">📈 Open Positions <button class="btn btn-blue" onclick="loadPositions()" style="font-size:10px;padding:4px 10px">🔄 Refresh</button></div>
+
+      <div class="card" style="background:#1E293B;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:20px">📄</span>
+          <div>
+            <div style="font-weight:700;color:#F59E0B;font-size:14px">PDF Trade Report</div>
+            <div style="font-size:11px;color:#94A3B8">Download your trade history as PDF</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="pdf-tab active" data-type="daily"   onclick="selectPdfType('daily')"   style="padding:5px 12px;border-radius:20px;border:1px solid #F59E0B;background:#F59E0B;color:#0F172A;cursor:pointer;font-size:11px;font-weight:700">📅 Daily</button>
+          <button class="pdf-tab"        data-type="range"   onclick="selectPdfType('range')"   style="padding:5px 12px;border-radius:20px;border:1px solid #334155;background:#0F172A;color:#94A3B8;cursor:pointer;font-size:11px">📆 Range</button>
+          <button class="pdf-tab"        data-type="monthly" onclick="selectPdfType('monthly')" style="padding:5px 12px;border-radius:20px;border:1px solid #334155;background:#0F172A;color:#94A3B8;cursor:pointer;font-size:11px">🗓️ Monthly</button>
+          <button class="pdf-tab"        data-type="single"  onclick="selectPdfType('single')"  style="padding:5px 12px;border-radius:20px;border:1px solid #334155;background:#0F172A;color:#94A3B8;cursor:pointer;font-size:11px">🔍 Single</button>
+        </div>
+        <div id="pdf_params_daily">
+          <label style="font-size:11px;color:#94A3B8">Date</label><br>
+          <input type="date" id="pdf_daily_date" style="background:#0F172A;border:1px solid #334155;color:#F1F5F9;border-radius:6px;padding:5px 10px;font-size:12px;margin-top:4px;width:170px">
+        </div>
+        <div id="pdf_params_range" style="display:none">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div><label style="font-size:11px;color:#94A3B8">From</label><br>
+            <input type="date" id="pdf_range_from" style="background:#0F172A;border:1px solid #334155;color:#F1F5F9;border-radius:6px;padding:5px 10px;font-size:12px;margin-top:4px;width:150px"></div>
+            <div><label style="font-size:11px;color:#94A3B8">To</label><br>
+            <input type="date" id="pdf_range_to" style="background:#0F172A;border:1px solid #334155;color:#F1F5F9;border-radius:6px;padding:5px 10px;font-size:12px;margin-top:4px;width:150px"></div>
+          </div>
+        </div>
+        <div id="pdf_params_monthly" style="display:none">
+          <label style="font-size:11px;color:#94A3B8">Month</label><br>
+          <input type="month" id="pdf_monthly" style="background:#0F172A;border:1px solid #334155;color:#F1F5F9;border-radius:6px;padding:5px 10px;font-size:12px;margin-top:4px;width:170px">
+        </div>
+        <div id="pdf_params_single" style="display:none">
+          <label style="font-size:11px;color:#94A3B8">Trade ID</label><br>
+          <input type="number" id="pdf_trade_id" placeholder="e.g. 42" style="background:#0F172A;border:1px solid #334155;color:#F1F5F9;border-radius:6px;padding:5px 10px;font-size:12px;margin-top:4px;width:170px">
+        </div>
+        <button onclick="downloadPdfReport()" id="pdfDlBtn" style="margin-top:14px;background:linear-gradient(135deg,#F59E0B,#D97706);color:#0F172A;border:none;border-radius:8px;padding:9px 20px;font-weight:700;font-size:12px;cursor:pointer">⬇️ Download PDF</button>
+        <span id="pdfDlStatus" style="margin-left:10px;font-size:11px;color:#94A3B8"></span>
+      </div>
         <table class="tbl">
           <thead><tr><th>Symbol</th><th>Dir</th><th>Entry</th><th>LTP</th><th>SL</th><th>Target</th><th>Live P&L</th><th>Action</th></tr></thead>
           <tbody id="posTable"><tr><td colspan="7" style="text-align:center;color:#8090a8;padding:16px">No open positions</td></tr></tbody>
@@ -601,6 +722,8 @@ async function startApp() {
   loadPnL();
   setInterval(loadMarket, 5000);
   setInterval(loadPnL, 30000);
+  loadAutoTraderStatus();
+  setInterval(loadAutoTraderStatus, 15000);
   // Auto refresh positions if on positions page
   setInterval(function(){ if(!document.getElementById('pg-positions').classList.contains('hidden')) loadPositions(); }, 5000);
 }
@@ -1444,6 +1567,97 @@ function installPWA() {
     if(btn) btn.style.display = 'none';
   });
 }
+
+// ── PDF Report ─────────────────────────────────────────
+(function(){
+  var today = new Date().toISOString().split('T')[0];
+  var ym    = today.slice(0,7);
+  setTimeout(function(){
+    document.getElementById('pdf_daily_date').value = today;
+    document.getElementById('pdf_range_from').value = today;
+    document.getElementById('pdf_range_to').value   = today;
+    document.getElementById('pdf_monthly').value    = ym;
+  }, 500);
+})();
+
+var _pdfType = 'daily';
+
+function selectPdfType(type) {
+  _pdfType = type;
+  document.querySelectorAll('.pdf-tab').forEach(function(btn){
+    var active = btn.dataset.type === type;
+    btn.style.background  = active ? '#F59E0B' : '#0F172A';
+    btn.style.color       = active ? '#0F172A' : '#94A3B8';
+    btn.style.borderColor = active ? '#F59E0B' : '#334155';
+    btn.style.fontWeight  = active ? '700'     : '400';
+  });
+  ['daily','range','monthly','single'].forEach(function(t){
+    document.getElementById('pdf_params_'+t).style.display = (t===type) ? '' : 'none';
+  });
+}
+
+async function downloadPdfReport() {
+  var btn    = document.getElementById('pdfDlBtn');
+  var status = document.getElementById('pdfDlStatus');
+  var url    = '/api/report/pdf?type=' + _pdfType;
+
+  if(_pdfType === 'daily') {
+    var d = document.getElementById('pdf_daily_date').value;
+    if(!d) { alert('Date select करा'); return; }
+    url += '&date=' + d;
+  } else if(_pdfType === 'range') {
+    var f = document.getElementById('pdf_range_from').value;
+    var t = document.getElementById('pdf_range_to').value;
+    if(!f||!t) { alert('From आणि To date select करा'); return; }
+    if(f>t)    { alert('From date आधीची असणे आवश्यक'); return; }
+    url += '&from='+f+'&to='+t;
+  } else if(_pdfType === 'monthly') {
+    var m = document.getElementById('pdf_monthly').value;
+    if(!m) { alert('Month select करा'); return; }
+    url += '&month=' + m;
+  } else if(_pdfType === 'single') {
+    var tid = document.getElementById('pdf_trade_id').value;
+    if(!tid) { alert('Trade ID टाका'); return; }
+    url += '&trade_id=' + tid;
+  }
+
+  var token = localStorage.getItem('token') || '';
+  if(!token) { alert('Please login again'); return; }
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ Generating...';
+  status.style.color = '#94A3B8';
+  status.textContent = 'PDF तयार होतोय...';
+
+  try {
+    var resp = await fetch(url, { headers: { 'X-Auth-Token': token } });
+    if(!resp.ok) {
+      var err = await resp.json().catch(function(){return {};});
+      throw new Error(err.error || 'HTTP '+resp.status);
+    }
+    var blob    = await resp.blob();
+    var blobUrl = URL.createObjectURL(blob);
+    var a       = document.createElement('a');
+    var cd      = resp.headers.get('Content-Disposition') || '';
+    var match   = cd.match(/filename[^;=\n]*=(['""].*?['""]|[^;\n]*)/);
+    a.download  = match ? match[1].replace(/['"]/g,'') : 'chanakya_report.pdf';
+    a.href      = blobUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    status.style.color = '#10B981';
+    status.textContent = '✅ PDF download झाली!';
+  } catch(err) {
+    status.style.color = '#EF4444';
+    status.textContent = '❌ ' + err.message;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '⬇️ Download PDF';
+    setTimeout(function(){ status.textContent = ''; }, 5000);
+  }
+}
+
 </script>
 </body>
 </html>
