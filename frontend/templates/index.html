@@ -823,15 +823,18 @@ var SETTINGS_GROUPS = {
 };
 
 var EXPIRY_CONFIG = [
-  {name:'NIFTY',     key:'nifty_expiry_day',      type:'weekly',  color:'#00c8ff', exchange:'NSE'},
-  {name:'BANKNIFTY', key:'banknifty_expiry_day',   type:'weekly',  color:'#00e676', exchange:'NSE'},
-  {name:'FINNIFTY',  key:'finnifty_expiry_day',    type:'weekly',  color:'#d4af37', exchange:'NSE'},
-  {name:'MIDCPNIFTY',key:'midcpnifty_expiry_day',  type:'weekly',  color:'#ff9800', exchange:'NSE'},
-  {name:'SENSEX',    key:'sensex_expiry_day',       type:'weekly',  color:'#ff5252', exchange:'BSE'},
-  {name:'BANKEX',    key:'bankex_expiry_day',       type:'monthly', color:'#a855f7', exchange:'BSE'},
-  {name:'CRUDEOIL',  key:'mcx_crude_expiry',        type:'monthly', color:'#8090a8', exchange:'MCX'},
-  {name:'GOLD',      key:'mcx_gold_expiry',         type:'monthly', color:'#ffd700', exchange:'MCX'},
-  {name:'SILVER',    key:'mcx_silver_expiry',       type:'monthly', color:'#c0c0c0', exchange:'MCX'},
+  // NSE Weekly
+  {name:'NIFTY',      key:'nifty_expiry_day',      type:'weekly',  color:'#00c8ff', exchange:'NSE', note:'Thu'},
+  {name:'BANKNIFTY',  key:'banknifty_expiry_day',   type:'weekly',  color:'#00e676', exchange:'NSE', note:'Thu'},
+  {name:'FINNIFTY',   key:'finnifty_expiry_day',    type:'weekly',  color:'#d4af37', exchange:'NSE', note:'Tue'},
+  {name:'MIDCPNIFTY', key:'midcpnifty_expiry_day',  type:'weekly',  color:'#ff9800', exchange:'NSE', note:'Mon'},
+  // BSE
+  {name:'SENSEX',     key:'sensex_expiry_day',      type:'weekly',  color:'#ff5252', exchange:'BSE', note:'Thu'},
+  {name:'BANKEX',     key:'bankex_expiry_day',       type:'monthly', color:'#a855f7', exchange:'BSE', note:'Last Thu'},
+  // MCX
+  {name:'CRUDEOIL',   key:'mcx_crude_expiry',       type:'monthly', color:'#8090a8', exchange:'MCX', note:'19th'},
+  {name:'GOLD',       key:'mcx_gold_expiry',         type:'monthly', color:'#ffd700', exchange:'MCX', note:'5th'},
+  {name:'SILVER',     key:'mcx_silver_expiry',       type:'monthly', color:'#c0c0c0', exchange:'MCX', note:'Last day'},
 ];
 
 var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
