@@ -143,7 +143,7 @@ def ai_chat():
         from engine.scanner import get_live_ltps
         from ai.chanakya_brain import chanakya_chat
         from broker.global_broker import get_broker
-        reply = chanakya_chat(msg, get_broker())
+        reply = chanakya_chat(msg, get_broker(), username=request.username, role=request.user.get("role","demo"))
         return jsonify({"success":True,"reply":reply})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})

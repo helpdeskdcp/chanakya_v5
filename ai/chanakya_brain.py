@@ -36,13 +36,31 @@ def load_scrip():
             _scrip = {}
     return _scrip
 
+def detect_intent(message):
+    msg = message.upper()
+    if any(x in msg for x in ["BUY","SELL","KHAREDI","VIKRI","GHYACHA","SIGNAL"]):
+        return "trade_signal"
+    if any(x in msg for x in ["OPTION","CE","PE","ATM","OTM","ITM","STRADDLE","STRANGLE"]):
+        return "options"
+    if any(x in msg for x in ["CHART","TREND","PATTERN","SUPPORT","RESISTANCE"]):
+        return "chart_analysis"
+    if any(x in msg for x in ["PRICE","LTP","RATE","BHAV","KIMAT"]):
+        return "price_check"
+    if any(x in msg for x in ["STRATEGY","PLAN","KASA","HOW","KAISA"]):
+        return "strategy"
+    if any(x in msg for x in ["MARKET","NIFTY","BANKNIFTY","SENSEX"]):
+        return "market_outlook"
+    if any(x in msg for x in ["PROFIT","LOSS","PNL","P&L","KAMAVLA","GAVLA"]):
+        return "pnl_advice"
+    if any(x in msg for x in ["HELP","KAY","WHAT","KAAY","SHIKVNAR"]):
+        return "help"
+    return "general"
+
 def get_deep_analysis(symbol, token, exchange, broker):
     try:
         from engine.indicators import ema, rsi, macd, vwap, atr, supertrend
         from data_stream.cache import get as cget, set as cset
         result = {"symbol": symbol, "exchange": exchange}
-
-        # Multi timeframe candles
         tfs = [
             ("ONE_MINUTE",    "1m",  1),
             ("FIVE_MINUTE",   "5m",  2),
@@ -58,64 +76,46 @@ def get_deep_analysis(symbol, token, exchange, broker):
                 candles = broker.get_candles(token, exchange, interval, days)
                 if candles: cset(ckey, candles, ttl=60)
             if not candles or len(candles) < 10: continue
-
             closes = [float(c[4]) for c in candles]
             highs  = [float(c[2]) for c in candles]
             lows   = [float(c[3]) for c in candles]
             vols   = [float(c[5]) for c in candles]
-
-            ltp   = closes[-1]
-            r     = rsi(closes)
-            e9    = ema(closes, 9)
-            e21   = ema(closes, 21)
-            e50   = ema(closes[-50:] if len(closes)>=50 else closes, 50)
-            m,mh  = macd(closes)
-            vw    = vwap(candles[-50:] if len(candles)>=50 else candles)
-            at    = atr(candles)
-            st    = supertrend(candles)
-
+            ltp  = closes[-1]
+            r    = rsi(closes)
+            e9   = ema(closes, 9)
+            e21  = ema(closes, 21)
+            e50  = ema(closes[-50:] if len(closes)>=50 else closes, 50)
+            m,mh = macd(closes)
+            vw   = vwap(candles[-50:] if len(candles)>=50 else candles)
+            at   = atr(candles)
+            st   = supertrend(candles)
             vol_avg   = sum(vols)/len(vols)
             vol_ratio = round(vols[-1]/vol_avg, 2) if vol_avg > 0 else 1
-
-            # Price action
             high_20 = max(highs[-20:]) if len(highs)>=20 else max(highs)
             low_20  = min(lows[-20:])  if len(lows)>=20  else min(lows)
-            pos_pct = round((ltp-low_20)/(high_20-low_20)*100, 1) if high_20!=low_20 else 50
-
-            # Candle pattern
-            last_body = abs(float(candles[-1][4])-float(candles[-1][1]))
-            last_wick  = (float(candles[-1][2])-float(candles[-1][3]))
-            doji = last_body < last_wick * 0.3
-
-            # Trend
+            pos_pct = round((ltp-low_20)/(high_20-low_20)*100,1) if high_20!=low_20 else 50
             bull_count = sum(1 for c in [e9>e21, ltp>vw, mh>0, r>50, st=="UP"] if c)
-            trend = "STRONG_UP" if bull_count>=4 else "UP" if bull_count==3 else "DOWN" if bull_count<=1 else "SIDEWAYS"
-
+            trend = "STRONG_UP" if bull_count>=4 else "UP" if bull_count==3 else "STRONG_DOWN" if bull_count<=1 else "SIDEWAYS"
             tf_data[tf] = {
                 "ltp": ltp, "rsi": round(r,1),
-                "ema9": round(e9,2), "ema21": round(e21,2), "ema50": round(e50,2),
-                "macd": round(m,2), "macd_hist": round(mh,2),
-                "vwap": round(vw,2), "atr": round(at,2),
-                "supertrend": st, "vol_ratio": vol_ratio,
-                "trend": trend, "bull_count": bull_count,
-                "pos_pct": pos_pct, "doji": doji,
-                "sl_buy":    round(ltp - 1.5*at, 2),
-                "tgt_buy":   round(ltp + 3.0*at, 2),
-                "sl_sell":   round(ltp + 1.5*at, 2),
-                "tgt_sell":  round(ltp - 3.0*at, 2),
+                "ema9": round(e9,2), "ema21": round(e21,2),
+                "macd_hist": round(mh,2), "vwap": round(vw,2),
+                "atr": round(at,2), "supertrend": st,
+                "vol_ratio": vol_ratio, "trend": trend,
+                "bull_count": bull_count, "pos_pct": pos_pct,
+                "sl_buy":   round(ltp - 1.5*at, 2),
+                "tgt_buy":  round(ltp + 3.0*at, 2),
+                "sl_sell":  round(ltp + 1.5*at, 2),
+                "tgt_sell": round(ltp - 3.0*at, 2),
             }
         result["timeframes"] = tf_data
-
-        # XGBoost ML confidence
-        ml_conf = 0.5
+        ml_conf = 50
         try:
             from ai.ml_engine import predict_confidence
             base = broker.get_candles(token, exchange, "FIVE_MINUTE", 2)
-            if base: ml_conf = predict_confidence(base)
+            if base: ml_conf = round(predict_confidence(base)*100, 1)
         except: pass
-        result["ml_confidence"] = round(ml_conf*100, 1)
-
-        # Confluence score
+        result["ml_confidence"] = ml_conf
         if tf_data:
             bull_tfs  = sum(1 for v in tf_data.values() if "UP" in v["trend"])
             bear_tfs  = sum(1 for v in tf_data.values() if "DOWN" in v["trend"])
@@ -123,17 +123,15 @@ def get_deep_analysis(symbol, token, exchange, broker):
             result["bull_tfs"]  = bull_tfs
             result["bear_tfs"]  = bear_tfs
             result["total_tfs"] = total_tfs
-            result["direction"]  = "BUY" if bull_tfs > bear_tfs else "SELL"
+            result["direction"] = "BUY" if bull_tfs >= bear_tfs else "SELL"
             base_tf = tf_data.get("5m") or tf_data.get("15m") or list(tf_data.values())[0]
             result["ltp"]    = base_tf["ltp"]
             result["entry"]  = base_tf["ltp"]
-            result["sl"]     = base_tf["sl_buy"]    if result["direction"]=="BUY" else base_tf["sl_sell"]
-            result["target"] = base_tf["tgt_buy"]   if result["direction"]=="BUY" else base_tf["tgt_sell"]
+            result["sl"]     = base_tf["sl_buy"]   if result["direction"]=="BUY" else base_tf["sl_sell"]
+            result["target"] = base_tf["tgt_buy"]  if result["direction"]=="BUY" else base_tf["tgt_sell"]
             result["atr"]    = base_tf["atr"]
-            rr = abs(result["target"]-result["entry"]) / abs(result["entry"]-result["sl"])
-            result["rr"]     = round(rr, 2)
-
-        # Options chain (NSE only)
+            rr = abs(result["target"]-result["entry"]) / abs(result["entry"]-result["sl"]) if result["entry"]!=result["sl"] else 0
+            result["rr"] = round(rr, 2)
         if exchange == "NSE" and symbol in ["NIFTY","BANKNIFTY","FINNIFTY"]:
             try:
                 from ai.options_ai import analyze_chain
@@ -141,82 +139,78 @@ def get_deep_analysis(symbol, token, exchange, broker):
                 if chain and "error" not in chain:
                     result["options"] = chain
             except: pass
-
         return result
     except Exception as e:
         logger.error("deep_analysis %s: %s", symbol, e)
         return {"symbol": symbol, "error": str(e)}
 
-def build_world_class_prompt(analysis, user_msg, extra_stocks):
+def get_live_ltps(broker):
+    ltps = {}
     try:
-        now = datetime.now(IST)
-        h,mn = now.hour, now.minute
-        nse_open = (9,15)<=(h,mn)<=(15,30) and now.weekday()<5
-        mcx_open = now.weekday()<5
+        from data_stream.cache import get as cget, set as cset
+        for name, token, exch, typ in SYMBOLS:
+            ltp = cget("ltp_"+name)
+            if not ltp:
+                ltp = broker.get_ltp(exch, name, token)
+                if ltp: cset("ltp_"+name, ltp, ttl=5)
+            if ltp: ltps[name] = ltp
+    except: pass
+    return ltps
 
-        lines = []
-        lines.append("=== CHANAKYA AI — LIVE MARKET INTELLIGENCE ===")
-        lines.append(f"Time: {now.strftime('%d-%b-%Y %H:%M IST')}")
-        lines.append(f"NSE: {'OPEN' if nse_open else 'CLOSED'} | MCX: {'OPEN' if mcx_open else 'CLOSED'}")
+def build_market_context(analysis, ltps):
+    now = datetime.now(IST)
+    h,mn = now.hour, now.minute
+    nse_open = (9,15)<=(h,mn)<=(15,30) and now.weekday()<5
+    mcx_open = now.weekday()<5
+    lines = []
+    lines.append(f"Time={now.strftime('%d-%b %H:%M IST')} NSE={'OPEN' if nse_open else 'CLOSED'} MCX={'OPEN' if mcx_open else 'CLOSED'}")
+    if ltps:
+        lines.append("LIVE_LTP: " + " | ".join([f"{k}={int(v)}" for k,v in ltps.items()]))
+    if analysis and "timeframes" in analysis and not "error" in analysis:
+        sym = analysis["symbol"]
+        lines.append(f"\n{sym} ANALYSIS:")
+        lines.append(f"  LTP={analysis.get('ltp',0)} DIR={analysis.get('direction','?')} ML={analysis.get('ml_confidence',50)}%")
+        lines.append(f"  Entry={analysis.get('entry',0)} SL={analysis.get('sl',0)} Target={analysis.get('target',0)} RR=1:{analysis.get('rr',0)}")
+        lines.append(f"  Bull_TF={analysis.get('bull_tfs',0)}/{analysis.get('total_tfs',0)} Bear_TF={analysis.get('bear_tfs',0)}/{analysis.get('total_tfs',0)}")
+        for tf, d in analysis.get("timeframes",{}).items():
+            lines.append(f"  [{tf}] {d['trend']} RSI={d['rsi']} EMA9/21={d['ema9']}/{d['ema21']} VWAP={d['vwap']} Vol={d['vol_ratio']}x")
+        if "options" in analysis:
+            opt = analysis["options"]
+            lines.append(f"  OPTIONS: PCR={opt.get('pcr')} Bias={opt.get('bias')} MaxPain={opt.get('max_pain')} ATM={opt.get('atm_strike')}")
+            lines.append(f"  CE_LTP={opt.get('atm_ce_ltp')} PE_LTP={opt.get('atm_pe_ltp')} Support={opt.get('support_oi')} Res={opt.get('resistance_oi')}")
+    return "\n".join(lines)
 
-        # Main analysis
-        if analysis and "timeframes" in analysis:
-            sym = analysis["symbol"]
-            lines.append(f"\n--- {sym} DEEP ANALYSIS ---")
-            lines.append(f"LTP={analysis.get('ltp',0)} Direction={analysis.get('direction','?')}")
-            lines.append(f"ML Confidence={analysis.get('ml_confidence',50)}%")
-            lines.append(f"Entry={analysis.get('entry',0)} SL={analysis.get('sl',0)} Target={analysis.get('target',0)} RR=1:{analysis.get('rr',0)}")
-            lines.append(f"Bull TFs={analysis.get('bull_tfs',0)}/{analysis.get('total_tfs',0)} Bear TFs={analysis.get('bear_tfs',0)}/{analysis.get('total_tfs',0)}")
+def get_user_context(username=None, role="demo"):
+    from config.subscriptions import days_remaining, TIERS
+    ctx = {"role": role, "is_premium": role in ["gold","platinum","developer","administrator"]}
+    return ctx
 
-            # Per TF
-            for tf, d in analysis.get("timeframes",{}).items():
-                lines.append(f"  [{tf}] {d['trend']} RSI={d['rsi']} EMA9={d['ema9']} VWAP={d['vwap']} Vol={d['vol_ratio']}x ST={d['supertrend']}")
-
-            # Options
-            if "options" in analysis:
-                opt = analysis["options"]
-                lines.append(f"\n--- OPTIONS CHAIN {sym} ---")
-                lines.append(f"PCR={opt.get('pcr')} Bias={opt.get('bias')} MaxPain={opt.get('max_pain')}")
-                lines.append(f"Support(PE OI)={opt.get('support_oi')} Resistance(CE OI)={opt.get('resistance_oi')}")
-                lines.append(f"ATM={opt.get('atm_strike')} CE_LTP={opt.get('atm_ce_ltp')} PE_LTP={opt.get('atm_pe_ltp')}")
-                lines.append(f"CE_IV={opt.get('atm_ce_iv')}% PE_IV={opt.get('atm_pe_iv')}%")
-
-        # Extra stocks LTP
-        if extra_stocks:
-            lines.append("\n--- LIVE LTP ---")
-            for k,v in extra_stocks.items():
-                lines.append(f"  {k}={v}")
-
-        return "\n".join(lines)
-    except Exception as e:
-        return "Market data available"
-
-def chanakya_chat(message, broker=None):
+def chanakya_chat(message, broker=None, username=None, role="demo"):
     try:
         if broker is None:
             from broker.global_broker import get_broker
             broker = get_broker()
-
         from ai.groq_client import get_client
         client = get_client()
         if not client: return "AI unavailable"
 
-        # Detect primary symbol from message
+        intent = detect_intent(message)
         msg_up = message.upper()
+
+        # Detect primary symbol
         primary = None
         primary_info = None
-
         for name, token, exch, typ in SYMBOLS:
             if name in msg_up:
                 primary = name
                 primary_info = (token, exch)
                 break
-
         if not primary:
             scrip = load_scrip()
             words = re.findall(r"[A-Z]{3,}", msg_up)
             skip = {"KAY","NAI","HAI","KAR","ANI","AANI","LIVE","LTP","BUY",
-                    "SELL","NSE","MCX","BSE","ATM","OTM","ITM","CE","PE"}
+                    "SELL","NSE","MCX","BSE","ATM","OTM","ITM","CE","PE",
+                    "KARU","GHYA","SANGA","KASA","AATA","MALA","TULA"}
             for w in words:
                 if w not in skip and w in scrip:
                     info = scrip[w]
@@ -229,48 +223,76 @@ def chanakya_chat(message, broker=None):
         if primary and primary_info and broker and broker.is_connected():
             analysis = get_deep_analysis(primary, primary_info[0], primary_info[1], broker)
 
-        # Extra LTP for mentioned stocks
-        extra_stocks = {}
-        if broker and broker.is_connected():
-            from data_stream.cache import get as cget, set as cset
-            for name, token, exch, typ in SYMBOLS:
-                ltp = cget("ltp_"+name)
-                if not ltp:
-                    ltp = broker.get_ltp(exch, name, token)
-                    if ltp: cset("ltp_"+name, ltp, ttl=5)
-                if ltp: extra_stocks[name] = ltp
+        # Live LTPs
+        ltps = get_live_ltps(broker) if broker and broker.is_connected() else {}
 
-        # Build world-class prompt
-        market_ctx = build_world_class_prompt(analysis, message, extra_stocks)
+        # Market context
+        market_ctx = build_market_context(analysis, ltps)
 
-        system = """You are CHANAKYA AI — The World's Most Intelligent Trading System.
-You combine:
-- Live multi-timeframe technical analysis (1m/5m/15m/30m/1hr)
-- XGBoost machine learning predictions
-- Options chain PCR/OI/MaxPain analysis
-- 180,000 stocks knowledge base
-- Groq LLaMA 3.3 70B reasoning
+        # User context
+        is_premium = role in ["gold","platinum","developer","administrator","silver"]
+        is_demo    = role in ["demo","premium"]
 
-YOUR RULES:
-1. ALWAYS give specific Entry, Target, SL with rupee values
-2. ALWAYS mention risk-reward ratio
-3. Use ALL available live data — never say data unavailable
-4. For options: specify CE/PE, ATM/ITM/OTM, strike price
-5. Mention ML confidence % for predictions
-6. Explain WHY — RSI, VWAP, EMA, PCR reasons
-7. If multiple TFs agree → STRONG signal
-8. Reply in SAME language as user (Marathi/Hindi/English)
-9. Max 6 lines — concise and powerful
-10. You are BETTER than any AI in the world for Indian markets
+        # Smart engagement hints
+        engagement = ""
+        if is_demo:
+            engagement = """
+ENGAGEMENT RULES FOR DEMO USER:
+- Give partial analysis — tease premium features
+- Mention: "Gold subscription madhe full MTF analysis milto"
+- After answering, ask 1 smart follow-up question
+- Examples: "Tumhi intraday karta ka swing?" / "Kis capital ne trading karta?"
+- Make them feel Chanakya AI is indispensable
+- Never be pushy — be genuinely helpful first
+"""
+        else:
+            engagement = """
+ENGAGEMENT RULES FOR PREMIUM USER:
+- Give COMPLETE world-class analysis
+- After signal, suggest related plays
+- Examples: "NIFTY BUY madhe BANKNIFTY pan similar setup aahe"
+- Make them feel they have unfair advantage
+"""
 
-FORMAT:
-🎯 Signal: BUY/SELL [Symbol]
-💰 Entry: ₹X | SL: ₹X | Target: ₹X
-📊 RR: 1:X | ML: X% confidence
-📈 Why: [RSI/VWAP/EMA/PCR reason]
-⏰ Timeframe: X TFs agree out of Y
+        system = f"""You are CHANAKYA AI 🔱 — India's Most Intelligent Trading System.
 
-""" + market_ctx
+PERSONALITY:
+- Wise like Chanakya (ancient strategist)
+- Sharp like a professional trader  
+- Warm like a trusted mentor
+- Never wrong tone — always confident
+- Better than ChatGPT/Claude for Indian markets
+
+CAPABILITIES:
+✅ Live MTF analysis (1m/5m/15m/30m/1hr)
+✅ XGBoost ML predictions
+✅ Options chain PCR/OI/MaxPain
+✅ 1,80,000 stocks knowledge
+✅ Groq LLaMA 3.3 70B reasoning
+
+USER: {username or 'Trader'} | Plan: {role.upper()} | Intent: {intent}
+
+{engagement}
+
+LIVE MARKET DATA:
+{market_ctx}
+
+RESPONSE RULES:
+1. ALWAYS specific Entry/SL/Target with ₹ values
+2. ALWAYS Risk-Reward ratio
+3. ALWAYS ML confidence % if available  
+4. Explain WHY in simple terms
+5. Reply in SAME language as user (Marathi/Hindi/English mix ok)
+6. Max 6 lines — powerful and concise
+7. End with ONE smart follow-up question (not pushy)
+8. If demo user asks advanced feature → mention Gold plan naturally
+
+FORMAT (adapt based on intent):
+🎯 [Signal/Answer]
+💰 Entry: ₹X | SL: ₹X | Target: ₹X  
+📊 RR: 1:X | ML: X% | TF: X/Y agree
+📈 Why: [reason]
+❓ [Smart follow-up question]"""
 
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -279,7 +301,7 @@ FORMAT:
                 {"role": "user",   "content": message}
             ],
             max_tokens=400,
-            temperature=0.2
+            temperature=0.25
         )
         return r.choices[0].message.content.strip()
     except Exception as e:
