@@ -1,4 +1,4 @@
-const CACHE = "chanakya-v5-v1";
+const CACHE = "chanakya-v5-v3";
 const STATIC = [
   "/v5/",
   "/v5/static/manifest.json",
