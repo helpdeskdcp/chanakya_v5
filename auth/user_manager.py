@@ -78,7 +78,7 @@ def create_session(username):
     try:
         token = secrets.token_hex(32)
         now = datetime.datetime.now()
-        exp = (now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+        exp = (now + datetime.timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
         conn = sqlite3.connect(DB_PATH)
         conn.execute("DELETE FROM sessions WHERE username=?", (username,))
         conn.execute("INSERT INTO sessions (username,token,created_at,expires_at) VALUES (?,?,?,?)",

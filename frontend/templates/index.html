@@ -674,6 +674,7 @@ async function api(path, method, body) {
     var opts = {method:method||"GET", headers:{"Content-Type":"application/json","X-Auth-Token":TOKEN}};
     if(body) opts.body = JSON.stringify(body);
     var r = await fetch("/v5/api"+path, opts);
+    if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/login";return;}
     return await r.json();
   } catch(e) { return {success:false,error:String(e)}; }
 }
@@ -1622,7 +1623,7 @@ async function downloadPdfReport() {
   }
 
   var token = localStorage.getItem('token') || '';
-  if(!token) { alert('Please login again'); return; }
+  if(!token) { window.location.href='/login'; return; }
 
   btn.disabled    = true;
   btn.textContent = '⏳ Generating...';
