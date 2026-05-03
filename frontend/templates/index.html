@@ -771,7 +771,7 @@ async function loadAdminSymbols() {
       "<td style='color:#8090a8;font-size:10px'>"+s.token+"</td>"+
       "<td style='color:#8090a8'>"+s.lot_size+"</td>"+
       "<td>"+(s.is_active?"<span class='badge badge-green'>Active</span>":"<span class='badge badge-red'>Inactive</span>")+"</td>"+
-      "<td><button class='btn btn-red' onclick='deleteSymbol("+s.id+",""+s.symbol+"")' style='font-size:9px;padding:2px 8px'>Delete</button></td>"+
+      "<td><button class='btn btn-red' onclick='deleteSymbol("+s.id+",\""+s.symbol+"\")' style='font-size:9px;padding:2px 8px'>Delete</button></td>"+
     "</tr>";
   }).join('');
 }
