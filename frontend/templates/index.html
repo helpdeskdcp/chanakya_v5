@@ -1600,7 +1600,7 @@ function selectPdfType(type) {
 async function downloadPdfReport() {
   var btn    = document.getElementById('pdfDlBtn');
   var status = document.getElementById('pdfDlStatus');
-  var url    = '/api/report/pdf?type=' + _pdfType;
+  var url    = '/v5/api/report/pdf?type=' + _pdfType;
 
   if(_pdfType === 'daily') {
     var d = document.getElementById('pdf_daily_date').value;
