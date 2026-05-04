@@ -116,7 +116,20 @@ def get_market_sentiment(symbols=None):
         if symbols:
             result["stocks"] = {}
             for sym in symbols[:3]:
-                sym_news = [n for n in news if sym.upper() in n["title"].upper() or sym.upper() in n.get("desc","").upper()]
+                # Symbol aliases for better matching
+ALIASES = {
+    "CRUDEOIL": ["CRUDE","OIL","BRENT","WTI","CRUDE OIL"],
+    "NATURALGAS": ["NATURAL GAS","NATGAS","GAS","LNG"],
+    "GOLD": ["GOLD","MCX GOLD","YELLOW METAL"],
+    "SILVER": ["SILVER","MCX SILVER"],
+    "NIFTY": ["NIFTY","NIFTY50","NSE","SENSEX","MARKET"],
+    "BANKNIFTY": ["BANK NIFTY","BANKNIFTY","BANKING","BANK INDEX"],
+}
+search_terms = ALIASES.get(sym.upper(), [sym.upper()])
+sym_news = [n for n in news if any(
+    term in n["title"].upper() or term in n.get("desc","").upper()
+    for term in search_terms
+)]
                 if sym_news:
                     result["stocks"][sym] = analyze_sentiment(sym_news, sym)
                     time.sleep(0.5)
