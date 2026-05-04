@@ -1,4 +1,6 @@
-import logging, requests, re, time
+import logging, requests, re, time, os
+from dotenv import load_dotenv
+load_dotenv("/root/chanakya_v5/.env")
 from datetime import datetime
 import pytz
 logger = logging.getLogger(__name__)
