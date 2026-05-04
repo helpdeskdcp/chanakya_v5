@@ -6,25 +6,30 @@ import pytz
 logger = logging.getLogger(__name__)
 IST = pytz.timezone("Asia/Kolkata")
 
+HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 NEWS_SOURCES = [
     "https://feeds.feedburner.com/ndtvprofit-latest",
     "https://www.moneycontrol.com/rss/latestnews.xml",
     "https://www.business-standard.com/rss/markets-106.rss",
-    "https://www.livemint.com/rss/markets",
 ]
-
+ALIASES = {
+    "CRUDEOIL":   ["CRUDE","OIL","BRENT","WTI","CRUDE OIL","PETROLEUM"],
+    "NATURALGAS": ["NATURAL GAS","NATGAS","GAS","LNG","NG"],
+    "GOLD":       ["GOLD","YELLOW METAL","MCX GOLD","BULLION"],
+    "SILVER":     ["SILVER","MCX SILVER"],
+    "NIFTY":      ["NIFTY","NIFTY50","SENSEX","MARKET","NSE","INDICES"],
+    "BANKNIFTY":  ["BANK NIFTY","BANKNIFTY","BANKING","BANK INDEX","BANKEX"],
+    "FINNIFTY":   ["FINNIFTY","FINANCIAL","FIN NIFTY"],
+}
 _cache = {"news": [], "sentiment": {}, "ts": 0}
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 def fetch_rss(url):
     try:
         r = requests.get(url, headers=HEADERS, timeout=8)
         if r.status_code != 200: return []
-        text = r.text
-        items = re.findall(r'<item>(.*?)</item>', text, re.DOTALL)
+        items = re.findall(r'<item>(.*?)</item>', r.text, re.DOTALL)
         news = []
         for item in items[:15]:
-            # Handle CDATA titles
             title = (re.search(r'<title><!\[CDATA\[(.*?)\]\]>', item) or
                      re.search(r'<title>(.*?)</title>', item))
             desc  = (re.search(r'<description><!\[CDATA\[(.*?)\]\]>', item) or
@@ -34,7 +39,7 @@ def fetch_rss(url):
                 t = re.sub(r'<[^>]+>','', title.group(1)).strip()
                 d = re.sub(r'<[^>]+>','', desc.group(1) if desc else "").strip()[:200]
                 if len(t) > 10:
-                    news.append({"title": t, "desc": d, "time": pub.group(1).strip() if pub else ""})
+                    news.append({"title":t,"desc":d,"time":pub.group(1).strip() if pub else ""})
         return news
     except Exception as e:
         logger.debug("RSS %s: %s", url, e)
@@ -46,12 +51,10 @@ def get_live_news():
         return _cache["news"]
     all_news = []
     for url in NEWS_SOURCES:
-        news = fetch_rss(url)
-        all_news.extend(news)
+        all_news.extend(fetch_rss(url))
         if len(all_news) >= 20: break
-    # Filter market-related news
     keywords = ["nifty","sensex","market","stock","share","trade","bse","nse",
-                "crude","gold","rupee","sebi","rbi","fii","dii","ipo","budget"]
+                "crude","gold","rupee","sebi","rbi","fii","dii","gas","oil","silver"]
     filtered = [n for n in all_news if any(k in n["title"].lower() or k in n["desc"].lower() for k in keywords)]
     final = filtered[:20] if filtered else all_news[:20]
     if final:
@@ -59,43 +62,43 @@ def get_live_news():
         _cache["ts"] = now
     return _cache["news"]
 
+def search_news(news, symbol):
+    terms = ALIASES.get(symbol.upper(), [symbol.upper()])
+    return [n for n in news if any(t in n["title"].upper() or t in n.get("desc","").upper() for t in terms)]
+
 def analyze_sentiment(news_list, symbol=None):
     try:
         if not news_list:
-            return {"score": 50, "label": "NEUTRAL", "reason": "No news available", "key_news": ""}
+            return {"score":50,"label":"NEUTRAL","reason":"No news available","key_news":""}
         from ai.groq_client import get_client
         client = get_client()
         if not client:
-            return {"score": 50, "label": "NEUTRAL", "reason": "AI unavailable", "key_news": ""}
+            return {"score":50,"label":"NEUTRAL","reason":"AI unavailable","key_news":""}
         headlines = "\n".join([f"- {n['title']}" for n in news_list[:10]])
         sym_filter = f"Focus on news related to {symbol}." if symbol else "Analyze overall Indian market sentiment."
-        prompt = (
-            f"Analyze these Indian market news headlines for sentiment.\n"
-            f"{sym_filter}\n\n"
-            f"HEADLINES:\n{headlines}\n\n"
-            f"Respond ONLY in this exact JSON-like format:\n"
-            f"SCORE: [number 0-100]\n"
-            f"LABEL: [STRONGLY_BULLISH or BULLISH or NEUTRAL or BEARISH or STRONGLY_BEARISH]\n"
-            f"REASON: [one line max 15 words]\n"
-            f"KEY_NEWS: [most impactful headline max 10 words]\n"
-        )
+        prompt = (f"Analyze these Indian market news headlines for sentiment.\n{sym_filter}\n\n"
+                  f"HEADLINES:\n{headlines}\n\n"
+                  f"Respond ONLY in this format:\n"
+                  f"SCORE: [0-100]\nLABEL: [STRONGLY_BULLISH/BULLISH/NEUTRAL/BEARISH/STRONGLY_BEARISH]\n"
+                  f"REASON: [one line max 15 words]\nKEY_NEWS: [most impactful headline max 10 words]\n")
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role":"user","content":prompt}],
-            max_tokens=150, temperature=0.1
-        )
+            max_tokens=150, temperature=0.1)
         text = r.choices[0].message.content.strip()
-        def extract(pattern, default):
-            m = re.search(pattern, text, re.IGNORECASE)
+        def ex(pat, default):
+            m = re.search(pat, text, re.IGNORECASE)
             return m.group(1).strip() if m else default
-        score = int(extract(r'SCORE:\s*(\d+)', "50"))
-        label = extract(r'LABEL:\s*(\S+)', "NEUTRAL")
-        reason = extract(r'REASON:\s*(.+)', "")
-        key = extract(r'KEY_NEWS:\s*(.+)', "")
-        return {"score": score, "label": label, "reason": reason, "key_news": key, "count": len(news_list)}
+        return {
+            "score":   int(ex(r'SCORE:\s*(\d+)', "50")),
+            "label":   ex(r'LABEL:\s*(\S+)', "NEUTRAL"),
+            "reason":  ex(r'REASON:\s*(.+)', ""),
+            "key_news":ex(r'KEY_NEWS:\s*(.+)', ""),
+            "count":   len(news_list),
+        }
     except Exception as e:
         logger.error("analyze_sentiment: %s", e)
-        return {"score": 50, "label": "NEUTRAL", "reason": str(e), "key_news": ""}
+        return {"score":50,"label":"NEUTRAL","reason":str(e),"key_news":""}
 
 def get_market_sentiment(symbols=None):
     try:
@@ -116,16 +119,12 @@ def get_market_sentiment(symbols=None):
         if symbols:
             result["stocks"] = {}
             for sym in symbols[:3]:
-                # Symbol aliases for better matching
-sym_news = [n for n in news if any(
-    term in n["title"].upper() or term in n.get("desc","").upper()
-    for term in search_terms
-)]
+                sym_news = search_news(news, sym)
                 if sym_news:
                     result["stocks"][sym] = analyze_sentiment(sym_news, sym)
                     time.sleep(0.5)
-        _cache["sentiment"][cache_key] = {"data": result, "ts": now}
+        _cache["sentiment"][cache_key] = {"data":result,"ts":now}
         return result
     except Exception as e:
         logger.error("get_market_sentiment: %s", e)
-        return {"overall": {"score": 50, "label": "NEUTRAL"}, "error": str(e)}
+        return {"overall":{"score":50,"label":"NEUTRAL"},"error":str(e)}
