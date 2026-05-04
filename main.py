@@ -647,7 +647,9 @@ def autotrader_stop():
 def autotrader_toggle():
     try:
         data = request.json or {}
-        enabled = data.get("auto_trade", False)
+        from trading.auto_trader import get_status
+        current = get_status().get("auto_trade", False)
+        enabled = not current  # Toggle
         mode = data.get("mode", None)
         from trading.auto_trader import set_auto_trade
         return jsonify(set_auto_trade(enabled, mode))
