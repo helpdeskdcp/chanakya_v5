@@ -205,6 +205,18 @@ async function toggleAutoTrader() {
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyA1sdhn6O5aEFbifyqe4YUKWN0EC7UfSSc",
+    authDomain: "chanakya-ai-v5-7899f.firebaseapp.com",
+    projectId: "chanakya-ai-v5-7899f",
+    appId: "1:206676342056:web:dd3c2d056b39b5ca2d8c1d"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var firebaseAuth = firebase.auth();
+</script>
 </head>
 <body>
 
@@ -217,7 +229,11 @@ async function toggleAutoTrader() {
     <input class="inp" id="loginUser" placeholder="Username" type="text">
     <input class="inp" id="loginPass" placeholder="Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn btn-gold" onclick="doLogin()">Login →</button>
-    <div id="loginErr" style="color:#ff5252;font-size:11px;margin-top:8px"></div>
+    <div id="loginErr" style="color:#ff5252;font-size:11px;margin-top:8px"></div><div style="margin:10px 0;text-align:center;color:#8090a8;font-size:11px">— ya —</div>
+<button class="btn" onclick="googleLogin()" style="width:100%;padding:12px;background:#fff;color:#333;border:1px solid #ddd;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+  Gmail ne Login karo
+</button>
   </div>
 </div>
 
@@ -701,6 +717,33 @@ async function api(path, method, body) {
     if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/v5/login";return;}
     return await r.json();
   } catch(e) { return {success:false,error:String(e)}; }
+}
+
+
+async function googleLogin() {
+  try {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({'hd': ''});
+    var result = await firebaseAuth.signInWithPopup(provider);
+    var user = result.user;
+    var idToken = await user.getIdToken();
+    // Send to backend
+    var fp = btoa([navigator.userAgent, screen.width, screen.height].join("|")).substr(0,32);
+    var d = await api("/auth/google","POST",{id_token:idToken,email:user.email,name:user.displayName,device_fp:fp});
+    if(d.success) {
+      TOKEN = d.token; USER_ROLE = d.role;
+      localStorage.setItem("ch_token",TOKEN);
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("mainApp").style.display="flex";
+      document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
+      if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
+      startApp();
+    } else {
+      document.getElementById("loginErr").textContent = d.error||"Gmail login failed";
+    }
+  } catch(e) {
+    document.getElementById("loginErr").textContent = "Gmail error: "+e.message;
+  }
 }
 
 async function doLogin() {

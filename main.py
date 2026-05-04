@@ -754,6 +754,40 @@ def admin_download_pdf_report():
         logger.error(f"Admin PDF report error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+@app.route("/api/auth/google", methods=["POST"])
+def google_auth():
+    try:
+        data = request.json or {}
+        email = data.get("email","").lower().strip()
+        name  = data.get("name","")
+        id_token = data.get("id_token","")
+        device_fp = data.get("device_fp","")
+        if not email:
+            return jsonify({"success":False,"error":"No email"})
+        # Verify Firebase token (basic check)
+        import requests as req
+        r = req.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}", timeout=5)
+        if r.status_code != 200:
+            return jsonify({"success":False,"error":"Invalid token"})
+        token_info = r.json()
+        if token_info.get("email","").lower() != email:
+            return jsonify({"success":False,"error":"Email mismatch"})
+        # Get or create user
+        from auth.user_manager import get_user, create_user, create_session
+        import re
+        username = re.sub(r'[^a-z0-9]','', email.split('@')[0])[:20]
+        user = get_user(username)
+        if not user:
+            # New user → demo role
+            create_user(username, email, "gmail_"+username[:8], "demo")
+            user = get_user(username) or {}
+        # Create session
+        token = create_session(username)
+        role  = user.get("role","demo")
+        return jsonify({"success":True,"token":token,"role":role,"username":username,"email":email})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
