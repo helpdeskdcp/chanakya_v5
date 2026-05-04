@@ -747,11 +747,6 @@ def admin_download_pdf_report():
         logger.error(f"Admin PDF report error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-if __name__ == "__main__":
-    PORT = int(os.getenv("PORT",5002))
-    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
-    app.run(host="0.0.0.0", port=PORT, debug=False)
-
 @app.route("/api/admin/users/<username>/stats")
 @require_role("developer","administrator")
 def user_stats(username):
@@ -792,3 +787,8 @@ def reset_user_data(username):
         return jsonify({"success":True,"message":msg})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+if __name__ == "__main__":
+    PORT = int(os.getenv("PORT",5002))
+    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
+    app.run(host="0.0.0.0", port=PORT, debug=False)
+
