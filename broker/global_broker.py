@@ -68,7 +68,9 @@ def get_broker():
         from dotenv import load_dotenv
         load_dotenv("/root/chanakya_v5/.env")
         _broker = GlobalBroker()
-        _broker.connect()
+    if not _broker.connected:
+        try: _broker.connect()
+        except: pass
     return _broker
 
 def get_ltp(exchange, symbol, token):

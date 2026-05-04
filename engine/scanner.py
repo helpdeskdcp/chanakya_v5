@@ -63,8 +63,23 @@ def _analyze(candles, symbol):
     except Exception as e:
         logger.debug(f"analyze {symbol}: {e}"); return None
 
+
+def is_market_open():
+    """NSE: Mon-Fri 9:15-15:30, MCX: Mon-Fri 9:00-23:30"""
+    from datetime import datetime
+    import pytz
+    now = datetime.now(pytz.timezone("Asia/Kolkata"))
+    if now.weekday() >= 5:  # Saturday=5, Sunday=6
+        return False
+    t = now.hour * 100 + now.minute
+    return 915 <= t <= 1530  # NSE hours
+
 def scan_all(broker=None):
     try:
+        if not is_market_open():
+            logger.info("Market closed — skipping scan")
+            return []
+
         if broker is None:
             from broker.global_broker import get_broker
             broker = get_broker()
