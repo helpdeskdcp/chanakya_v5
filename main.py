@@ -106,8 +106,9 @@ def login():
             except: pass
         token = create_session(username)
         agreed = (user.get("role") not in ["demo","premium"]) or bool(data.get("agreed"))
+        skip_agreement = role in ["developer","administrator"]
         return jsonify({"success":True,"token":token,"role":role,"username":username,
-            "show_agreement":not user.get("agreed_terms",False)})
+            "show_agreement":False if skip_agreement else not user.get("agreed_terms",False)})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
