@@ -1080,7 +1080,9 @@ function renderExpiryCards() {
     var isToday = expInfo && expInfo.isToday;
     var dateStr = expInfo ? (isToday ? '🔴 TODAY' : formatDate(expInfo.date)) : val;
     if(isToday) todayExpiries.push(cfg.name);
-    return "<div style='background:#0a0f1a;border:1px solid "+(isToday?cfg.color:'var(--border)')+";border-radius:8px;padding:10px;text-align:center"+(isToday?';box-shadow:0 0 8px '+cfg.color+'44':'')+">"+
+    var borderClr = isToday ? cfg.color : 'var(--border)';
+    var boxShadow = isToday ? ';box-shadow:0 0 8px '+cfg.color+'44' : '';
+    return "<div style='background:#0a0f1a;border:1px solid "+borderClr+";border-radius:8px;padding:10px;text-align:center"+boxShadow+">"+
       "<div style='font-size:10px;color:"+cfg.color+";font-weight:700;margin-bottom:2px'>"+cfg.name+"</div>"+
       "<div style='display:flex;gap:4px;justify-content:center;margin-bottom:4px'>"+
         "<span style='font-size:8px;background:"+cfg.color+"22;color:"+cfg.color+";border-radius:3px;padding:1px 4px'>"+cfg.exchange+"</span>"+
