@@ -260,6 +260,8 @@ def update_user_role(username):
         data = request.json or {}
         role = data.get("role","demo")
         from auth.user_manager import update_role
+        if username == "avinash" and role not in ["developer","administrator"]:
+            return jsonify({"success":False,"error":"avinash role cannot be changed"})
         ok = update_role(username, role)
         return jsonify({"success":ok})
     except Exception as e:
