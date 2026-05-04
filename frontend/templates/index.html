@@ -222,6 +222,43 @@ async function toggleAutoTrader() {
 </div>
 
 <!-- MAIN APP -->
+
+<div id="agreementModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0d1b2a;border:2px solid #d4af37;border-radius:16px;padding:24px;width:92%;max-width:480px;max-height:85vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px">🔱</div>
+      <div style="font-size:18px;font-weight:700;color:#d4af37">Chanakya AI — User Agreement</div>
+      <div style="font-size:11px;color:#8090a8;margin-top:4px">Please read and accept before continuing</div>
+    </div>
+    <div style="background:#0a0f1a;border-radius:8px;padding:12px;font-size:10px;color:#c0c8d8;line-height:1.6;max-height:300px;overflow-y:auto;margin-bottom:16px">
+      <b style="color:#d4af37">1. DISCLAIMER</b><br>
+      Chanakya AI provides AI-generated market insights for educational and informational purposes only. It is NOT a SEBI registered investment advisor.<br><br>
+      <b style="color:#d4af37">2. TRADING RISK</b><br>
+      All trading in stocks, derivatives, and commodities involves substantial risk of loss. Past performance does not guarantee future results. You may lose all or more than your initial investment.<br><br>
+      <b style="color:#d4af37">3. NO GUARANTEE</b><br>
+      Chanakya AI signals, predictions, and recommendations are AI-generated and may be incorrect. We make no guarantee of accuracy, completeness, or profitability.<br><br>
+      <b style="color:#d4af37">4. USER RESPONSIBILITY</b><br>
+      All investment decisions are solely your responsibility. Chanakya AI and its developers shall not be held liable for any financial losses.<br><br>
+      <b style="color:#d4af37">5. SUBSCRIPTION TERMS</b><br>
+      Demo accounts are valid for 15 days and are device-locked. Subscription fees are non-refundable. Features vary by subscription tier.<br><br>
+      <b style="color:#d4af37">6. DATA PRIVACY</b><br>
+      Your data is securely stored and never shared with third parties. Broker credentials are encrypted and used only for market connectivity.<br><br>
+      <b style="color:#d4af37">7. COMPLIANCE</b><br>
+      Users must comply with all applicable SEBI, NSE, BSE, and MCX regulations. Chanakya AI is not responsible for regulatory violations by users.<br><br>
+      <b style="color:#d4af37">8. GOVERNING LAW</b><br>
+      This agreement is governed by the laws of India. Any disputes shall be subject to the jurisdiction of Indian courts.
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <input type="checkbox" id="agreeCheck" style="width:16px;height:16px;cursor:pointer">
+      <label for="agreeCheck" style="font-size:11px;color:#e0e8f0;cursor:pointer">I have read, understood, and agree to the Chanakya AI User Agreement and Terms of Service</label>
+    </div>
+    <button class="btn btn-gold" onclick="acceptAgreement()" style="width:100%;padding:12px;font-size:13px;font-weight:700">✅ I Accept — Continue to Chanakya AI</button>
+    <div style="text-align:center;margin-top:8px">
+      <span style="font-size:9px;color:#8090a8">By accepting, you confirm you are 18+ and understand the risks of trading</span>
+    </div>
+  </div>
+</div>
+
 <div id="mainApp">
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -714,6 +751,18 @@ async function api(path, method, body) {
     if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/v5/login";return;}
     return await r.json();
   } catch(e) { return {success:false,error:String(e)}; }
+}
+
+
+function showAgreement() {
+  document.getElementById('agreementModal').style.display='flex';
+}
+
+async function acceptAgreement() {
+  var chk = document.getElementById('agreeCheck');
+  document.getElementById('agreementModal').style.display='none';
+  await api('/agree','POST');
+  startApp();
 }
 
 async function doLogin() {
@@ -1726,8 +1775,9 @@ async function createUser() {
     var d = await api("/status");
     if(d.success) {
       USER_ROLE = d.role;
-      document.getElementById("loginPage").style.display="none";
-      document.getElementById("mainApp").style.display="flex";
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('mainApp').style.display='flex';
+      if(d.show_agreement) { showAgreement(); return; }
       document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
       if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
       startApp();

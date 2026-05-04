@@ -87,8 +87,27 @@ def login():
                 (now, username, device_fp))
             conn.commit()
             conn.close()
+        # Demo auto-reset — new session trades clear
+        if role == "demo":
+            try:
+                import sqlite3 as sq3, datetime
+                from config.subscriptions import days_remaining
+                user_full = get_user(username) or {}
+                created = user_full.get("created_at","")
+                days_left = days_remaining(created, "demo")
+                if days_left <= 0:
+                    conn = sq3.connect("data/chanakya_v5.db")
+                    conn.execute("DELETE FROM trades WHERE username=?", (username,))
+                    conn.execute("DELETE FROM sessions WHERE username=?", (username,))
+                    conn.commit(); conn.close()
+                    return jsonify({"success":False,
+                        "error":"Demo period expired (15 days). Please upgrade to continue.",
+                        "upgrade":True})
+            except: pass
         token = create_session(username)
-        return jsonify({"success":True,"token":token,"role":role,"username":username})
+        agreed = (user.get("role") not in ["demo","premium"]) or bool(data.get("agreed"))
+        return jsonify({"success":True,"token":token,"role":role,"username":username,
+            "show_agreement":not user.get("agreed_terms",False)})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
@@ -805,8 +824,20 @@ def reset_user_data(username):
         return jsonify({"success":True,"message":msg})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+@app.route("/api/agree", methods=["POST"])
+@require_auth
+def accept_agreement():
+    try:
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        conn.execute("UPDATE users SET agreed_terms=1 WHERE username=?", (request.username,))
+        conn.commit(); conn.close()
+        return jsonify({"success":True})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
 
