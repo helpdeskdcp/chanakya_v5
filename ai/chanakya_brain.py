@@ -178,6 +178,14 @@ def build_market_context(analysis, ltps):
             opt = analysis["options"]
             lines.append(f"  OPTIONS: PCR={opt.get('pcr')} Bias={opt.get('bias')} MaxPain={opt.get('max_pain')} ATM={opt.get('atm_strike')}")
             lines.append(f"  CE_LTP={opt.get('atm_ce_ltp')} PE_LTP={opt.get('atm_pe_ltp')} Support={opt.get('support_oi')} Res={opt.get('resistance_oi')}")
+    # News context
+    try:
+        from ai.news_sentiment import get_live_news, analyze_sentiment
+        news = get_live_news()
+        if news:
+            ov = analyze_sentiment(news[:5])
+            lines.append("NEWS: "+ov.get("label","NEUTRAL")+" "+ov.get("reason",""))
+    except: pass
     return "\n".join(lines)
 
 def get_user_context(username=None, role="demo"):
