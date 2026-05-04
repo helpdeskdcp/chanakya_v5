@@ -156,10 +156,17 @@ def get_trades():
         from trading.paper_engine import get_open_trades, get_all_trades
         from broker.global_broker import get_broker
         mode = request.args.get("mode","open")
-        if mode == "open":
-            trades = get_open_trades(request.username)
+        role = request.user.get("role","demo")
+        view_user = request.args.get("user", request.username)
+        # Admin can see all or specific user trades
+        if role in ["developer","administrator"]:
+            target = view_user
         else:
-            trades = get_all_trades(request.username)
+            target = request.username
+        if mode == "open":
+            trades = get_open_trades(target)
+        else:
+            trades = get_all_trades(target)
         # Add live LTP to each trade
         try:
             broker = get_broker()

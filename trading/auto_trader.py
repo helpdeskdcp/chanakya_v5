@@ -8,7 +8,7 @@ MIN_SCORE        = 65
 MONITOR_INTERVAL = 10
 SCAN_INTERVAL    = 300
 MAX_OPEN_TRADES  = 3
-AUTO_USERNAME    = "system"
+AUTO_USERNAME    = "avinash"
 DB_PATH          = "data/chanakya_v5.db"
 
 _state = {
@@ -54,7 +54,7 @@ def _monitor_positions():
                 if not ltp or ltp <= 0: continue
                 entry=float(t["entry_price"]); sl=float(t["sl_price"]); target=float(t["target_price"])
                 qty=int(t.get("qty",1)); sym=t["symbol"]; dirn=t["direction"]
-                tid=t["id"]; mode=t.get("mode","PAPER"); user=t.get("username","system")
+                tid=t["id"]; mode=t.get("mode","PAPER"); user=t.get("username","avinash")
                 hit_sl     = (dirn=="BUY" and ltp<=sl)     or (dirn=="SELL" and ltp>=sl)
                 hit_target = (dirn=="BUY" and ltp>=target)  or (dirn=="SELL" and ltp<=target)
                 if hit_target or hit_sl:
