@@ -736,6 +736,7 @@ function showPage(id, el) {
   if(id==="chart") initChart();
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
+  if(id==="news") { setTimeout(function(){ loadNews(); }, 300); }
   if(id==="settings") loadBrokerSettings();
   if(id==="symbols") loadAdminSymbols();
   if(id==="appsettings") loadAppSettings();
