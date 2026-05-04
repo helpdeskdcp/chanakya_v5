@@ -751,3 +751,44 @@ if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
+@app.route("/api/admin/users/<username>/stats")
+@require_role("developer","administrator")
+def user_stats(username):
+    try:
+        from auth.user_manager import get_user
+        from trading.paper_engine import get_all_trades, get_pnl_summary
+        user = get_user(username)
+        if not user: return jsonify({"success":False,"error":"User not found"})
+        trades = get_all_trades(username, limit=100)
+        pnl = get_pnl_summary(username)
+        safe_user = {k:v for k,v in user.items() if k not in ["password_hash","broker_totp"]}
+        return jsonify({"success":True,"user":safe_user,"stats":pnl,"recent_trades":trades[:10]})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/users/<username>/reset", methods=["POST"])
+@require_role("developer","administrator")
+def reset_user_data(username):
+    try:
+        import sqlite3 as sq
+        if username == "avinash":
+            return jsonify({"success":False,"error":"Cannot reset avinash"})
+        data = request.json or {}
+        reset_type = data.get("type","trades")
+        conn = sq.connect("data/chanakya_v5.db")
+        if reset_type == "trades":
+            conn.execute("DELETE FROM trades WHERE username=?", (username,))
+            msg = "Trades reset"
+        elif reset_type == "session":
+            conn.execute("DELETE FROM sessions WHERE username=?", (username,))
+            msg = "Sessions reset"
+        elif reset_type == "all":
+            conn.execute("DELETE FROM trades WHERE username=?", (username,))
+            conn.execute("DELETE FROM sessions WHERE username=?", (username,))
+            msg = "All data reset"
+        else: msg = "Nothing done"
+        conn.commit(); conn.close()
+        return jsonify({"success":True,"message":msg})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
