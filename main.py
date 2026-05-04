@@ -65,50 +65,12 @@ def login():
         data = request.json or {}
         username = data.get("username","").strip().lower()
         password = data.get("password","").strip()
-        device_fp = data.get("device_fp","").strip()
         from auth.user_manager import verify_password, create_session, get_user
         if not verify_password(username, password):
             return jsonify({"success":False,"error":"Invalid credentials"})
-        user = get_user(username) or {}
-        role = user.get("role","demo")
-        # Demo device lock
-        if role == "demo" and device_fp:
-            import sqlite3 as sq3, datetime
-            conn = sq3.connect("data/chanakya_v5.db")
-            existing = conn.execute("SELECT * FROM demo_devices WHERE device_fp=? AND username!=?",
-                (device_fp, username)).fetchone()
-            if existing:
-                conn.close()
-                return jsonify({"success":False,"error":"Demo already used on another account. Please upgrade to continue."})
-            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            conn.execute("INSERT OR IGNORE INTO demo_devices (username,device_fp,first_seen,last_seen) VALUES (?,?,?,?)",
-                (username, device_fp, now, now))
-            conn.execute("UPDATE demo_devices SET last_seen=? WHERE username=? AND device_fp=?",
-                (now, username, device_fp))
-            conn.commit()
-            conn.close()
-        # Demo auto-reset — new session trades clear
-        if role == "demo":
-            try:
-                import sqlite3 as sq3, datetime
-                from config.subscriptions import days_remaining
-                user_full = get_user(username) or {}
-                created = user_full.get("created_at","")
-                days_left = days_remaining(created, "demo")
-                if days_left <= 0:
-                    conn = sq3.connect("data/chanakya_v5.db")
-                    conn.execute("DELETE FROM trades WHERE username=?", (username,))
-                    conn.execute("DELETE FROM sessions WHERE username=?", (username,))
-                    conn.commit(); conn.close()
-                    return jsonify({"success":False,
-                        "error":"Demo period expired (15 days). Please upgrade to continue.",
-                        "upgrade":True})
-            except: pass
         token = create_session(username)
-        agreed = (user.get("role") not in ["demo","premium"]) or bool(data.get("agreed"))
-        skip_agreement = role in ["developer","administrator"]
-        return jsonify({"success":True,"token":token,"role":role,"username":username,
-            "show_agreement":False if skip_agreement else not user.get("agreed_terms",False)})
+        user = get_user(username) or {}
+        return jsonify({"success":True,"token":token,"role":user.get("role"),"username":username})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
@@ -298,8 +260,6 @@ def update_user_role(username):
         data = request.json or {}
         role = data.get("role","demo")
         from auth.user_manager import update_role
-        if username == "avinash" and role not in ["developer","administrator"]:
-            return jsonify({"success":False,"error":"avinash role cannot be changed"})
         ok = update_role(username, role)
         return jsonify({"success":ok})
     except Exception as e:
@@ -785,60 +745,7 @@ def admin_download_pdf_report():
         logger.error(f"Admin PDF report error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route("/api/admin/users/<username>/stats")
-@require_role("developer","administrator")
-def user_stats(username):
-    try:
-        from auth.user_manager import get_user
-        from trading.paper_engine import get_all_trades, get_pnl_summary
-        user = get_user(username)
-        if not user: return jsonify({"success":False,"error":"User not found"})
-        trades = get_all_trades(username, limit=100)
-        pnl = get_pnl_summary(username)
-        safe_user = {k:v for k,v in user.items() if k not in ["password_hash","broker_totp"]}
-        return jsonify({"success":True,"user":safe_user,"stats":pnl,"recent_trades":trades[:10]})
-    except Exception as e:
-        return jsonify({"success":False,"error":str(e)})
-
-@app.route("/api/admin/users/<username>/reset", methods=["POST"])
-@require_role("developer","administrator")
-def reset_user_data(username):
-    try:
-        import sqlite3 as sq
-        if username == "avinash":
-            return jsonify({"success":False,"error":"Cannot reset avinash"})
-        data = request.json or {}
-        reset_type = data.get("type","trades")
-        conn = sq.connect("data/chanakya_v5.db")
-        if reset_type == "trades":
-            conn.execute("DELETE FROM trades WHERE username=?", (username,))
-            msg = "Trades reset"
-        elif reset_type == "session":
-            conn.execute("DELETE FROM sessions WHERE username=?", (username,))
-            msg = "Sessions reset"
-        elif reset_type == "all":
-            conn.execute("DELETE FROM trades WHERE username=?", (username,))
-            conn.execute("DELETE FROM sessions WHERE username=?", (username,))
-            msg = "All data reset"
-        else: msg = "Nothing done"
-        conn.commit(); conn.close()
-        return jsonify({"success":True,"message":msg})
-    except Exception as e:
-        return jsonify({"success":False,"error":str(e)})
-@app.route("/api/agree", methods=["POST"])
-@require_auth
-def accept_agreement():
-    try:
-        import sqlite3 as sq
-        conn = sq.connect("data/chanakya_v5.db")
-        conn.execute("UPDATE users SET agreed_terms=1 WHERE username=?", (request.username,))
-        conn.commit(); conn.close()
-        return jsonify({"success":True})
-    except Exception as e:
-        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
-
-

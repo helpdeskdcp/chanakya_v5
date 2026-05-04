@@ -222,43 +222,6 @@ async function toggleAutoTrader() {
 </div>
 
 <!-- MAIN APP -->
-
-<div id="agreementModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#0d1b2a;border:2px solid #d4af37;border-radius:16px;padding:24px;width:92%;max-width:480px;max-height:85vh;overflow-y:auto">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:32px">🔱</div>
-      <div style="font-size:18px;font-weight:700;color:#d4af37">Chanakya AI — User Agreement</div>
-      <div style="font-size:11px;color:#8090a8;margin-top:4px">Please read and accept before continuing</div>
-    </div>
-    <div style="background:#0a0f1a;border-radius:8px;padding:12px;font-size:10px;color:#c0c8d8;line-height:1.6;max-height:300px;overflow-y:auto;margin-bottom:16px">
-      <b style="color:#d4af37">1. DISCLAIMER</b><br>
-      Chanakya AI provides AI-generated market insights for educational and informational purposes only. It is NOT a SEBI registered investment advisor.<br><br>
-      <b style="color:#d4af37">2. TRADING RISK</b><br>
-      All trading in stocks, derivatives, and commodities involves substantial risk of loss. Past performance does not guarantee future results. You may lose all or more than your initial investment.<br><br>
-      <b style="color:#d4af37">3. NO GUARANTEE</b><br>
-      Chanakya AI signals, predictions, and recommendations are AI-generated and may be incorrect. We make no guarantee of accuracy, completeness, or profitability.<br><br>
-      <b style="color:#d4af37">4. USER RESPONSIBILITY</b><br>
-      All investment decisions are solely your responsibility. Chanakya AI and its developers shall not be held liable for any financial losses.<br><br>
-      <b style="color:#d4af37">5. SUBSCRIPTION TERMS</b><br>
-      Demo accounts are valid for 15 days and are device-locked. Subscription fees are non-refundable. Features vary by subscription tier.<br><br>
-      <b style="color:#d4af37">6. DATA PRIVACY</b><br>
-      Your data is securely stored and never shared with third parties. Broker credentials are encrypted and used only for market connectivity.<br><br>
-      <b style="color:#d4af37">7. COMPLIANCE</b><br>
-      Users must comply with all applicable SEBI, NSE, BSE, and MCX regulations. Chanakya AI is not responsible for regulatory violations by users.<br><br>
-      <b style="color:#d4af37">8. GOVERNING LAW</b><br>
-      This agreement is governed by the laws of India. Any disputes shall be subject to the jurisdiction of Indian courts.
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <input type="checkbox" id="agreeCheck" style="width:16px;height:16px;cursor:pointer">
-      <label for="agreeCheck" style="font-size:11px;color:#e0e8f0;cursor:pointer">I have read, understood, and agree to the Chanakya AI User Agreement and Terms of Service</label>
-    </div>
-    <button class="btn btn-gold" onclick="acceptAgreement()" style="width:100%;padding:12px;font-size:13px;font-weight:700">✅ I Accept — Continue to Chanakya AI</button>
-    <div style="text-align:center;margin-top:8px">
-      <span style="font-size:9px;color:#8090a8">By accepting, you confirm you are 18+ and understand the risks of trading</span>
-    </div>
-  </div>
-</div>
-
 <div id="mainApp">
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -658,10 +621,7 @@ async function toggleAutoTrader() {
     <div id="pg-admin" class="hidden">
       <div class="card">
         <div class="card-header">👑 User Management
-          <div style="display:flex;gap:6px">
-            <input id="userSearch" class="inp" placeholder="🔍 Search user..." style="margin:0;width:150px;font-size:11px;padding:4px 8px" oninput="filterUsers()">
-            <button class="btn btn-green" onclick="showAddUser()" style="font-size:10px;padding:4px 8px">+ Add</button>
-          </div>
+          <button class="btn btn-green" onclick="showAddUser()" style="font-size:10px;padding:4px 10px">+ Add User</button>
         </div>
         <div id="addUserForm" class="hidden" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px">
           <input class="inp" id="nuUser" placeholder="Username" style="margin:0">
@@ -676,20 +636,10 @@ async function toggleAutoTrader() {
           </select>
           <button class="btn btn-green" onclick="createUser()">Add</button>
         </div>
-        <table class="tbl" id="userTable">
-          <thead><tr><th>Username</th><th>Role</th><th>Trades</th><th>P&L</th><th>Win%</th><th>Actions</th></tr></thead>
-          <tbody id="userTbody"><tr><td colspan="6" style="text-align:center;color:#8090a8;padding:16px">Loading...</td></tr></tbody>
+        <table class="tbl">
+          <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Action</th></tr></thead>
+          <tbody id="userTable"><tr><td colspan="5" style="text-align:center;color:#8090a8;padding:16px">Loading...</td></tr></tbody>
         </table>
-      </div>
-      <!-- User Stats Modal -->
-      <div id="userModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center">
-        <div style="background:#0d1b2a;border:1px solid #1e3a5f;border-radius:12px;padding:20px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto">
-          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-            <span style="font-weight:700;color:#d4af37" id="modalTitle">User Stats</span>
-            <button onclick="closeModal()" style="background:none;border:none;color:#ff5252;cursor:pointer;font-size:18px">✕</button>
-          </div>
-          <div id="modalContent"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -753,25 +703,11 @@ async function api(path, method, body) {
   } catch(e) { return {success:false,error:String(e)}; }
 }
 
-
-function showAgreement() {
-  document.getElementById('agreementModal').style.display='flex';
-}
-
-async function acceptAgreement() {
-  var chk = document.getElementById('agreeCheck');
-  document.getElementById('agreementModal').style.display='none';
-  await api('/agree','POST');
-  startApp();
-}
-
 async function doLogin() {
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
-  // Generate device fingerprint
-  var fp = btoa([navigator.userAgent, screen.width, screen.height, navigator.language, navigator.platform].join('|')).substr(0,32);
-  var d = await api("/login","POST",{username:u,password:p,device_fp:fp});
+  var d = await api("/login","POST",{username:u,password:p});
   if(d.success) {
     TOKEN = d.token; USER_ROLE = d.role;
     localStorage.setItem("ch_token",TOKEN);
@@ -1080,9 +1016,7 @@ function renderExpiryCards() {
     var isToday = expInfo && expInfo.isToday;
     var dateStr = expInfo ? (isToday ? '🔴 TODAY' : formatDate(expInfo.date)) : val;
     if(isToday) todayExpiries.push(cfg.name);
-    var borderClr = isToday ? cfg.color : 'var(--border)';
-    var boxShadow = isToday ? ';box-shadow:0 0 8px '+cfg.color+'44' : '';
-    return "<div style='background:#0a0f1a;border:1px solid "+borderClr+";border-radius:8px;padding:10px;text-align:center"+boxShadow+">"+
+    return "<div style='background:#0a0f1a;border:1px solid "+(isToday?cfg.color:'var(--border)')+";border-radius:8px;padding:10px;text-align:center"+(isToday?';box-shadow:0 0 8px '+cfg.color+'44':'')+">"+
       "<div style='font-size:10px;color:"+cfg.color+";font-weight:700;margin-bottom:2px'>"+cfg.name+"</div>"+
       "<div style='display:flex;gap:4px;justify-content:center;margin-bottom:4px'>"+
         "<span style='font-size:8px;background:"+cfg.color+"22;color:"+cfg.color+";border-radius:3px;padding:1px 4px'>"+cfg.exchange+"</span>"+
@@ -1655,100 +1589,6 @@ async function loadUsers() {
   }).join("");
 }
 
-
-var _allUsers = [];
-
-async function loadUsers() {
-  var d = await api('/admin/users');
-  _allUsers = d.users||[];
-  renderUsers(_allUsers);
-}
-
-function filterUsers() {
-  var q = document.getElementById('userSearch').value.toLowerCase();
-  var filtered = q ? _allUsers.filter(function(u){
-    return u.username.toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q) || u.role.toLowerCase().includes(q);
-  }) : _allUsers;
-  renderUsers(filtered);
-}
-
-function renderUsers(users) {
-  var tb = document.getElementById('userTbody');
-  if(!users.length){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#8090a8;padding:16px">No users found</td></tr>';
-    return;
-  }
-  tb.innerHTML = users.map(function(u){
-    var roleClr = {developer:'#d4af37',administrator:'#d4af37',platinum:'#00c8ff',gold:'#ffd700',silver:'#c0c0c0',premium:'#00e676',demo:'#8090a8'}[u.role]||'#8090a8';
-    var trades = u.total_trades||0;
-    var pnl = (u.total_pnl||0).toFixed(0);
-    var pnlClr = pnl>=0?'#00e676':'#ff5252';
-    var win = (u.win_rate||0).toFixed(0);
-    var isAvinash = u.username==='avinash';
-    return '<tr>'+
-      '<td><b style="color:#e0e8f0">'+u.username+'</b>'+
-        (u.email?'<br><span style="font-size:9px;color:#8090a8">'+u.email+'</span>':'')+'</td>'+
-      '<td><select onchange="changeRole(''+u.username+'',this.value)" style="background:#0a0f1a;color:'+roleClr+';border:1px solid #1e3a5f;border-radius:4px;font-size:10px;padding:2px"'+(isAvinash?' disabled':'')+'>'+
-        ['demo','premium','silver','gold','platinum','administrator'].map(function(r){return '<option value="'+r+'"'+(r===u.role?' selected':'')+'>'+r.toUpperCase()+'</option>';}).join('')+
-      '</select></td>'+
-      '<td style="color:#8090a8">'+trades+'</td>'+
-      '<td style="color:'+pnlClr+'">₹'+pnl+'</td>'+
-      '<td style="color:#8090a8">'+win+'%</td>'+
-      '<td style="display:flex;gap:4px">'+
-        '<button class="btn btn-blue" onclick="viewStats(''+u.username+'')" style="font-size:9px;padding:3px 6px">📊</button>'+
-        (isAvinash?'':
-          '<button class="btn" onclick="resetUser(''+u.username+'','trades')" style="font-size:9px;padding:3px 6px;background:#ff525222;color:#ff5252;border:1px solid #ff5252">🗑️</button>'+
-          '<button class="btn" onclick="resetUser(''+u.username+'','all')" style="font-size:9px;padding:3px 6px;background:#ff000022;color:#ff5252;border:1px solid #ff0000">⚠️</button>'
-        )+
-      '</td>'+
-    '</tr>';
-  }).join('');
-}
-
-async function viewStats(username) {
-  document.getElementById('modalTitle').textContent = '📊 '+username+' — Stats';
-  document.getElementById('modalContent').innerHTML = '<div style="color:#d4af37">Loading...</div>';
-  document.getElementById('userModal').style.display='flex';
-  var d = await api('/admin/users/'+username+'/stats');
-  if(!d.success){document.getElementById('modalContent').innerHTML='<div style="color:#ff5252">'+d.error+'</div>';return;}
-  var s = d.stats||{};
-  var u = d.user||{};
-  var trades = d.recent_trades||[];
-  var pnlClr = (s.total_pnl||0)>=0?'#00e676':'#ff5252';
-  document.getElementById('modalContent').innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
-      '<div style="background:#0a0f1a;padding:8px;border-radius:6px"><div style="font-size:9px;color:#8090a8">Role</div><div style="font-weight:700;color:#d4af37">'+u.role+'</div></div>'+
-      '<div style="background:#0a0f1a;padding:8px;border-radius:6px"><div style="font-size:9px;color:#8090a8">Total P&L</div><div style="font-weight:700;color:'+pnlClr+'">₹'+(s.total_pnl||0).toFixed(0)+'</div></div>'+
-      '<div style="background:#0a0f1a;padding:8px;border-radius:6px"><div style="font-size:9px;color:#8090a8">Win Rate</div><div style="font-weight:700;color:#00c8ff">'+(s.win_rate||0).toFixed(1)+'%</div></div>'+
-      '<div style="background:#0a0f1a;padding:8px;border-radius:6px"><div style="font-size:9px;color:#8090a8">Total Trades</div><div style="font-weight:700;color:#e0e8f0">'+(s.total_trades||0)+'</div></div>'+
-    '</div>'+
-    '<div style="font-size:11px;font-weight:600;color:#8090a8;margin-bottom:6px">Recent Trades</div>'+
-    (trades.length?
-      trades.slice(0,5).map(function(t){
-        var pc = (t.pnl||0)>=0?'#00e676':'#ff5252';
-        return '<div style="padding:6px;background:#0a0f1a;border-radius:4px;margin-bottom:4px;font-size:10px">'+
-          '<span style="color:'+(t.direction==='BUY'?'#00e676':'#ff5252')+'">'+t.direction+'</span> '+
-          '<b>'+t.symbol+'</b> ₹'+t.entry_price+
-          ' → <span style="color:'+pc+'">₹'+(t.pnl||0).toFixed(0)+'</span>'+
-          ' <span style="color:#8090a8;float:right">'+t.status+'</span>'+
-        '</div>';
-      }).join(''):
-      '<div style="color:#8090a8;text-align:center;padding:8px">No trades</div>'
-    );
-}
-
-function closeModal() {
-  document.getElementById('userModal').style.display='none';
-}
-
-async function resetUser(username, type) {
-  var msg = type==='all' ? 'ALL data (trades + sessions)' : 'trades';
-  if(!confirm('Reset '+msg+' for '+username+'?')) return;
-  var d = await api('/admin/users/'+username+'/reset','POST',{type:type});
-  if(d.success){toast('✅ '+d.message+' for '+username,'#1e3a5f');loadUsers();}
-  else toast('❌ '+d.error,'#ff0000');
-}
-
 async function changeRole(username, role) {
   if(!role||role==="Action") return;
   var d = await api("/admin/users/"+username+"/role","POST",{role:role});
@@ -1777,15 +1617,11 @@ async function createUser() {
     var d = await api("/status");
     if(d.success) {
       USER_ROLE = d.role;
-      document.getElementById('loginPage').style.display='none';
-      document.getElementById('mainApp').style.display='flex';
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("mainApp").style.display="flex";
       document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
       if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
-      if(d.show_agreement && !["developer","administrator"].includes(d.role)) {
-        showAgreement();
-      } else {
-        startApp();
-      }
+      startApp();
     } else { TOKEN=""; localStorage.removeItem("ch_token"); }
   }
 })();
