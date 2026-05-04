@@ -572,6 +572,26 @@ async function toggleAutoTrader() {
       </div>
     </div>
 
+
+    <!-- NEWS SENTIMENT -->
+    <div id="pg-news" class="hidden">
+      <div class="card">
+        <div class="card-header">📰 Chanakya News Intelligence™
+          <button class="btn btn-blue" onclick="loadNews()" id="newsBtn" style="font-size:10px;padding:4px 10px">🔄 Refresh</button>
+        </div>
+        <div id="sentimentBadge" style="display:flex;gap:12px;padding:6px 0 10px;flex-wrap:wrap"></div>
+        <div id="headlinesList" style="margin-bottom:12px">
+          <div style="color:#8090a8;text-align:center;padding:16px">Loading news...</div>
+        </div>
+        <div class="card-header" style="margin-top:8px">🔍 Stock News Search
+          <div style="display:flex;gap:6px">
+            <input id="newsSymbol" class="inp" placeholder="NIFTY / CRUDEOIL" style="margin:0;width:140px;padding:4px 8px;font-size:11px">
+            <button class="btn btn-blue" onclick="loadStockNews()" style="font-size:10px;padding:4px 10px">Search</button>
+          </div>
+        </div>
+        <div id="stockSentiment" style="padding:8px 0"></div>
+      </div>
+    </div>
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
@@ -1246,6 +1266,81 @@ function setBottomNav(id) {
 }
 
 var _predTimer = null;
+
+
+async function loadNews() {
+  var btn = document.getElementById('newsBtn');
+  if(btn){btn.textContent='⏳...';btn.disabled=true;}
+  // Headlines
+  var h = await api('/news/headlines');
+  var news = h.news||[];
+  var hl = document.getElementById('headlinesList');
+  if(news.length) {
+    hl.innerHTML = news.map(function(n,i){
+      return '<div style="padding:6px 0;border-bottom:1px solid #1e3a5f;display:flex;gap:8px;align-items:flex-start">' +
+        '<span style="color:#d4af37;font-size:10px;min-width:18px">'+(i+1)+'</span>' +
+        '<div>' +
+          '<div style="font-size:11px;color:#e0e8f0;font-weight:600">'+n.title+'</div>' +
+          (n.desc?'<div style="font-size:9px;color:#8090a8;margin-top:2px">'+n.desc.substr(0,120)+'...</div>':'') +
+          (n.time?'<div style="font-size:8px;color:#8090a8;margin-top:2px">'+n.time.substr(0,25)+'</div>':'') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } else {
+    hl.innerHTML = '<div style="color:#ff5252;padding:8px">No news found</div>';
+  }
+  // Sentiment
+  var s = await api('/news/sentiment');
+  var ov = (s.data||{}).overall||{};
+  var clr = ov.score>=65?'#00e676':ov.score<=35?'#ff5252':'#d4af37';
+  var badge = document.getElementById('sentimentBadge');
+  badge.innerHTML =
+    '<div style="background:#1e3a5f;border:1px solid '+clr+';border-radius:8px;padding:6px 12px">' +
+      '<div style="font-size:10px;color:#8090a8">Market Sentiment</div>' +
+      '<div style="font-size:18px;font-weight:700;color:'+clr+'">'+ov.label+'</div>' +
+    '</div>' +
+    '<div style="background:#0d1b2a;border:1px solid #1e3a5f;border-radius:8px;padding:6px 12px">' +
+      '<div style="font-size:10px;color:#8090a8">Score</div>' +
+      '<div style="font-size:18px;font-weight:700;color:'+clr+'">'+ov.score+'/100</div>' +
+    '</div>' +
+    '<div style="background:#0d1b2a;border:1px solid #1e3a5f;border-radius:8px;padding:6px 12px;max-width:300px">' +
+      '<div style="font-size:10px;color:#8090a8">AI Analysis</div>' +
+      '<div style="font-size:10px;color:#e0e8f0">'+ov.reason+'</div>' +
+      '<div style="font-size:9px;color:#d4af37;margin-top:2px">📰 '+ov.key_news+'</div>' +
+    '</div>' +
+    '<div style="background:#0d1b2a;border:1px solid #1e3a5f;border-radius:8px;padding:6px 12px">' +
+      '<div style="font-size:10px;color:#8090a8">Headlines</div>' +
+      '<div style="font-size:16px;font-weight:700;color:#00c8ff">'+(s.data||{}).news_count+'</div>' +
+    '</div>';
+  if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;}
+}
+
+async function loadStockNews() {
+  var sym = document.getElementById('newsSymbol').value.trim().toUpperCase();
+  if(!sym) return;
+  var el = document.getElementById('stockSentiment');
+  el.innerHTML = '<div style="color:#d4af37">⏳ Analyzing '+sym+' news...</div>';
+  var d = await api('/news/sentiment?symbol='+sym+'&force=1');
+  var stocks = (d.data||{}).stocks||{};
+  var s = stocks[sym];
+  if(s) {
+    var clr = s.score>=65?'#00e676':s.score<=35?'#ff5252':'#d4af37';
+    el.innerHTML =
+      '<div style="background:#1e3a5f;border:1px solid '+clr+';border-radius:8px;padding:10px;margin-top:4px">' +
+        '<div style="display:flex;gap:16px;align-items:center">' +
+          '<div><div style="font-size:11px;color:#8090a8">'+sym+'</div>' +
+          '<div style="font-size:20px;font-weight:700;color:'+clr+'">'+s.label+'</div></div>' +
+          '<div><div style="font-size:10px;color:#8090a8">Score</div>' +
+          '<div style="font-size:18px;font-weight:700;color:'+clr+'">'+s.score+'</div></div>' +
+          '<div style="flex:1"><div style="font-size:10px;color:#8090a8">Reason</div>' +
+          '<div style="font-size:10px;color:#e0e8f0">'+s.reason+'</div></div>' +
+        '</div>' +
+        '<div style="font-size:9px;color:#d4af37;margin-top:6px">📰 '+s.key_news+'</div>' +
+      '</div>';
+  } else {
+    el.innerHTML = '<div style="color:#8090a8;padding:8px">No specific news for '+sym+' found</div>';
+  }
+}
 
 async function scanPredictions() {
   var btn = document.getElementById("predBtn");
