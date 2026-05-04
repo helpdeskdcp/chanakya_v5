@@ -1777,15 +1777,13 @@ async function createUser() {
       USER_ROLE = d.role;
       document.getElementById('loginPage').style.display='none';
       document.getElementById('mainApp').style.display='flex';
-      if(['developer','administrator'].includes(d.role)) { startApp(); return; }
-      if(d.show_agreement && !['developer','administrator'].includes(d.role)) {
+      document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
+      if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
+      if(d.show_agreement && !["developer","administrator"].includes(d.role)) {
         showAgreement();
       } else {
         startApp();
       }
-      document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
-      if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
-      startApp();
     } else { TOKEN=""; localStorage.removeItem("ch_token"); }
   }
 })();
