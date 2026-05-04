@@ -65,12 +65,30 @@ def login():
         data = request.json or {}
         username = data.get("username","").strip().lower()
         password = data.get("password","").strip()
+        device_fp = data.get("device_fp","").strip()
         from auth.user_manager import verify_password, create_session, get_user
         if not verify_password(username, password):
             return jsonify({"success":False,"error":"Invalid credentials"})
-        token = create_session(username)
         user = get_user(username) or {}
-        return jsonify({"success":True,"token":token,"role":user.get("role"),"username":username})
+        role = user.get("role","demo")
+        # Demo device lock
+        if role == "demo" and device_fp:
+            import sqlite3 as sq3, datetime
+            conn = sq3.connect("data/chanakya_v5.db")
+            existing = conn.execute("SELECT * FROM demo_devices WHERE device_fp=? AND username!=?",
+                (device_fp, username)).fetchone()
+            if existing:
+                conn.close()
+                return jsonify({"success":False,"error":"Demo already used on another account. Please upgrade to continue."})
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            conn.execute("INSERT OR IGNORE INTO demo_devices (username,device_fp,first_seen,last_seen) VALUES (?,?,?,?)",
+                (username, device_fp, now, now))
+            conn.execute("UPDATE demo_devices SET last_seen=? WHERE username=? AND device_fp=?",
+                (now, username, device_fp))
+            conn.commit()
+            conn.close()
+        token = create_session(username)
+        return jsonify({"success":True,"token":token,"role":role,"username":username})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 

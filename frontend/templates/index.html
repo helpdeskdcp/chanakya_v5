@@ -720,7 +720,9 @@ async function doLogin() {
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
-  var d = await api("/login","POST",{username:u,password:p});
+  // Generate device fingerprint
+  var fp = btoa([navigator.userAgent, screen.width, screen.height, navigator.language, navigator.platform].join('|')).substr(0,32);
+  var d = await api("/login","POST",{username:u,password:p,device_fp:fp});
   if(d.success) {
     TOKEN = d.token; USER_ROLE = d.role;
     localStorage.setItem("ch_token",TOKEN);
