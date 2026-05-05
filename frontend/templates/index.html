@@ -1990,17 +1990,19 @@ function calcOptions(){
   var maxLoss = cost;
   var maxProfit = type==='CE' ? 'Unlimited' : '₹'+(strike-prem > 0 ? ((strike-prem)*lotSize*qty).toFixed(0) : 0);
 
-  // Moneyness
+  // Moneyness — ATM zone = within 1 strike interval
+  var interval = parseFloat(document.getElementById('oInterval').value)||50;
   var diff = spot - strike;
+  var absDiff = Math.abs(diff);
   var money='', moneyClr='#8090a8';
-  if(type==='CE'){
+  if(absDiff <= interval/2) {
+    money='⚡ ATM'; moneyClr='#d4af37';
+  } else if(type==='CE') {
     if(diff > 0){money='✅ ITM'; moneyClr='#00e676';}
-    else if(diff < 0){money='❌ OTM'; moneyClr='#ff5252';}
-    else{money='⚡ ATM'; moneyClr='#d4af37';}
+    else{money='❌ OTM'; moneyClr='#ff5252';}
   } else {
     if(diff < 0){money='✅ ITM'; moneyClr='#00e676';}
-    else if(diff > 0){money='❌ OTM'; moneyClr='#ff5252';}
-    else{money='⚡ ATM'; moneyClr='#d4af37';}
+    else{money='❌ OTM'; moneyClr='#ff5252';}
   }
 
   document.getElementById('oMoney').textContent = money;
