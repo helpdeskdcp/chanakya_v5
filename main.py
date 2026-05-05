@@ -918,8 +918,20 @@ def scalping_scan():
         rm = RiskManager()
         results = []
         import datetime as dt
+        from datetime import datetime
+        import pytz
+        IST = pytz.timezone("Asia/Kolkata")
+        now_ist = datetime.now(IST)
+        now_h = now_ist.hour; now_m = now_ist.minute
+        # Market hours
+        nse_open = (now_h==9 and now_m>=15) or (10<=now_h<=15) or (now_h==15 and now_m<=30)
+        mcx_open = (now_h>=9 and now_h<=23) or now_h==0
         today = dt.date.today()
         for sym in SYMS:
+            # Skip NSE symbols when NSE closed
+            if sym["exchange"]=="NSE" and not nse_open: continue
+            # Skip MCX when MCX closed
+            if sym["exchange"]=="MCX" and not mcx_open: continue
             raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
             if not raw or len(raw)<22: continue
             candles=[{"o":float(c[1]),"h":float(c[2]),"l":float(c[3]),
@@ -927,7 +939,9 @@ def scalping_scan():
             sig = generate_signal(candles)
             conf = adaptive_confidence(sig["score"],sig["active_strategy"],sym["name"])
             sig["confidence"]=conf
-            if sig["signal"]=="NO_TRADE" or conf<60: continue
+            # MCX lower threshold (thinner market but still tradeable)
+            min_conf = 55 if sym["exchange"]=="MCX" else 62
+            if sig["signal"]=="NO_TRADE" or conf<min_conf: continue
             tp = rm.calculate_trade(sig["signal"],sig["price"],sig["atr"],sym["lot"])
             # Option selection
             opt_type = "CE" if sig["signal"]=="BUY_CE" else "PE"
