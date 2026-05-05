@@ -934,7 +934,15 @@ def mythos_scan():
             if sym["exchange"]=="MCX" and not mcx_open: continue
             try:
                 time.sleep(0.5)
-                raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+                # Reconnect + retry
+                if not broker.is_connected(): broker.connect()
+                raw = None
+                for _att in range(3):
+                    try:
+                        raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+                        if raw and len(raw)>=30: break
+                    except: pass
+                    broker.connect(); import time; time.sleep(2)
                 if not raw or len(raw)<30: continue
                 candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
                           "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
