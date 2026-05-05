@@ -137,7 +137,9 @@ def scan_all(broker=None):
                 sig["exchange"] = stock["exchange"]
                 sig["type"] = stock["type"]
                 sig["token"] = stock["token"]
-                if sig["score"] >= 50 and not sig["fake"]:
+                # SMC filter: Smart Money confirmation required
+                smc = sig.get("smc_score", 0)
+                if sig["score"] >= 50 and not sig["fake"] and smc >= 45:
                     signals.append(sig)
             except Exception as e:
                 logger.debug(f"scan {stock['symbol']}: {e}")
