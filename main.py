@@ -672,7 +672,7 @@ def autotrader_toggle():
 # ── Auto start position monitor on boot ───────────────
 try:
     from trading.auto_trader import start as at_start
-    at_start(mode="PAPER", auto_trade=False)
+    at_start(mode="PAPER", auto_trade=True)
     logger.info("Auto Trader monitor started")
 except Exception as e:
     logger.warning(f"Auto trader start failed: {e}")
