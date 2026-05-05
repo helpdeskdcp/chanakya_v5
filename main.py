@@ -901,6 +901,119 @@ def get_option_ltp():
                        "name":best.get("symbol",""),"strike":strike,"type":opt_type})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/mythos/scan")
+@require_auth
+def mythos_scan():
+    """Chanakya Mythos Engine — 3-layer AI signal"""
+    try:
+        from ai.feature_engine import compute_features
+        from ai.decision_engine import get_engine
+        from broker.global_broker import get_broker
+        import time, datetime, pytz
+
+        broker = get_broker()
+        engine = get_engine()
+        IST = pytz.timezone("Asia/Kolkata")
+        now = datetime.datetime.now(IST)
+        now_h = now.hour
+
+        nse_open = (now_h==9 and now.minute>=15) or (10<=now_h<=15)
+        mcx_open = 9<=now_h<=23
+
+        SYMS = [
+            {"name":"NIFTY",   "token":"99926000","exchange":"NSE","lot":65},
+            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30},
+            {"name":"CRUDEOIL","token":"488290",  "exchange":"MCX","lot":100},
+            {"name":"NATURALGAS","token":"488505","exchange":"MCX","lot":1250},
+        ]
+
+        results = []
+        for sym in SYMS:
+            if sym["exchange"]=="NSE" and not nse_open: continue
+            if sym["exchange"]=="MCX" and not mcx_open: continue
+            try:
+                time.sleep(0.5)
+                raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+                if not raw or len(raw)<30: continue
+                candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
+                          "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+                features = compute_features(candles, sym["name"])
+                if not features: continue
+                fusion = engine.fuse(features, candles)
+                if fusion["signal"]=="NO_TRADE" or fusion["score"]<58: continue
+                # Option selection
+                opt_type = "CE" if fusion["signal"]=="BUY_CE" else "PE"
+                interval = 100 if sym["name"]=="BANKNIFTY" else 50 if sym["name"] in ["NIFTY","CRUDEOIL"] else 10
+                atm = round(features["price"]/interval)*interval
+                opt_ltp=None; opt_sym=None; opt_tok=None
+                try:
+                    import json as jj, datetime as dt2
+                    today = dt2.date.today()
+                    with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                    EXCH={"NIFTY":"NFO","BANKNIFTY":"NFO","FINNIFTY":"NFO",
+                          "CRUDEOIL":"MCX","NATURALGAS":"MCX"}
+                    pexch=EXCH.get(sym["name"],"NFO")
+                    strike_s=str(int(atm))
+                    matches=[s for s in scrips
+                             if s.get("exch_seg","").upper()==pexch
+                             and s.get("symbol","").upper().startswith(sym["name"].upper())
+                             and s.get("symbol","").upper().endswith(strike_s+opt_type)]
+                    def ekey(s):
+                        try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+                        except: return dt2.date(2099,1,1)
+                    future=[s for s in matches if ekey(s)>=today and ekey(s).year<2090]
+                    if future:
+                        future.sort(key=ekey)
+                        best=future[0]
+                        opt_ltp=broker.get_ltp(pexch,best.get("symbol",""),str(best.get("token","")))
+                        opt_sym=best.get("symbol"); opt_tok=str(best.get("token"))
+                except: pass
+
+                opt_entry=opt_ltp or 0
+                results.append({
+                    "symbol":sym["name"],
+                    "signal":fusion["signal"],
+                    "score": fusion["score"],
+                    "risk":  fusion.get("risk","MEDIUM"),
+                    "price": features["price"],
+                    "rsi":   features["rsi14"],
+                    "ema_trend": "BULL" if features["ema_trend"]==1 else "BEAR",
+                    "vwap_dist": features["vwap_dist_pct"],
+                    "vol_ratio": features["vol_ratio"],
+                    "structure": features["structure"],
+                    "reasons":fusion.get("reasons",[]),
+                    # 3-layer details
+                    "layer1_rule":  {"signal":fusion["rule"]["signal"],"score":fusion["rule"]["score"]},
+                    "layer2_ml":    {"signal":fusion["ml"]["signal"],"confidence":fusion["ml"]["confidence"],"available":fusion["ml"].get("ml_available",False)},
+                    "layer3_llm":   {"approved":fusion["llm"]["approved"],"reason":fusion["llm"].get("reason",""),"risk":fusion["llm"].get("risk","MEDIUM")},
+                    # Option
+                    "opt_symbol":opt_sym,"opt_token":opt_tok,
+                    "opt_ltp":opt_ltp,"opt_strike":atm,
+                    "opt_type":opt_type,"opt_lot":sym["lot"],
+                    "opt_entry":opt_entry,
+                    "opt_sl":   round(opt_entry*0.70,2) if opt_entry else 0,
+                    "opt_target":round(opt_entry*1.40,2) if opt_entry else 0,
+                    "opt_trail": round(opt_entry*0.85,2) if opt_entry else 0,
+                    "opt_exchange":EXCH.get(sym["name"],"NFO"),
+                })
+            except Exception as e:
+                logger.warning("Mythos %s: %s", sym["name"], e)
+        return jsonify({"success":True,"signals":results,"count":len(results),
+                       "safety":{"consecutive_losses":engine.consecutive_losses,
+                                  "daily_trades":engine.daily_trades}})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/mythos/retrain", methods=["POST"])
+@require_role("developer","administrator")
+def mythos_retrain():
+    try:
+        from ai.auto_trainer import retrain_from_trades
+        result = retrain_from_trades()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 @app.route("/api/scalping/scan")
 @require_auth
 def scalping_scan():
