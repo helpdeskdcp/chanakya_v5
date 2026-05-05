@@ -1904,6 +1904,7 @@ function generateStrikes() {
   }).join('');
   document.getElementById('oStrike').value = atm;
   calcOptions();
+  document.getElementById('optResult').style.display='grid';
 }
 
 function onStrikeSelect() {
@@ -1920,7 +1921,8 @@ function calcOptions(){
   var type=document.getElementById('oType').value;
   var lotSize=parseFloat(document.getElementById('oLot').value)||50;
   var qty=parseFloat(document.getElementById('oQty').value)||1;
-  if(!spot||!strike||!prem)return;
+  if(!spot||!strike)return;
+  if(!prem){prem=0;}
   var intrinsic=type==='CE'?Math.max(0,spot-strike):Math.max(0,strike-spot);
   var timeVal=Math.max(0,prem-intrinsic);
   var be=type==='CE'?strike+prem:strike-prem;
