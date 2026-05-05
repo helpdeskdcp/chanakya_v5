@@ -901,6 +901,77 @@ def get_option_ltp():
                        "name":best.get("symbol",""),"strike":strike,"type":opt_type})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+@app.route("/api/scalping/scan")
+@require_auth
+def scalping_scan():
+    try:
+        from scalping_engine.strategy import generate_signal
+        from scalping_engine.risk_manager import RiskManager
+        from scalping_engine.ai_engine import adaptive_confidence
+        from broker.global_broker import get_broker
+        broker = get_broker()
+        SYMS = [
+            {"name":"NIFTY","token":"99926000","exchange":"NSE","lot":65},
+            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30},
+            {"name":"CRUDEOIL","token":"488290","exchange":"MCX","lot":100},
+        ]
+        rm = RiskManager()
+        results = []
+        for sym in SYMS:
+            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+            if not raw or len(raw)<22: continue
+            candles=[{"o":float(c[1]),"h":float(c[2]),"l":float(c[3]),
+                      "c":float(c[4]),"v":float(c[5]) if len(c)>5 else 0} for c in raw]
+            sig = generate_signal(candles)
+            conf = adaptive_confidence(sig["score"],sig["active_strategy"],sym["name"])
+            sig["confidence"]=conf
+            if sig["signal"]!="NO_TRADE" and conf>=60:
+                tp = rm.calculate_trade(sig["signal"],sig["price"],sig["atr"],sym["lot"])
+                results.append({
+                    "symbol":sym["name"],"signal":sig["signal"],
+                    "price":sig["price"],"score":conf,
+                    "strategy":sig["active_strategy"],
+                    "sl":tp["sl"],"target":tp["target"],"qty":tp["qty"],
+                    "rsi":sig["rsi"],"trend":sig["trend"],
+                    "reasons":sig["reasons"],"rr":tp["rr"],
+                })
+        return jsonify({"success":True,"signals":results,"count":len(results)})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/scalping/stats")
+@require_auth
+def scalping_stats():
+    try:
+        from scalping_engine.ai_engine import get_performance_stats, get_strategy_weights
+        return jsonify({"success":True,
+                       "stats":get_performance_stats(),
+                       "weights":get_strategy_weights()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/scalping/backtest", methods=["POST"])
+@require_role("developer","administrator")
+def scalping_backtest():
+    try:
+        from scalping_engine.backtest import run_backtest
+        from broker.global_broker import get_broker
+        broker = get_broker()
+        SYMS = [
+            {"name":"NIFTY","token":"99926000","exchange":"NSE"},
+            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE"},
+        ]
+        candles_by_sym = {}
+        for sym in SYMS:
+            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",5)
+            if raw:
+                candles_by_sym[sym["name"]] = [
+                    {"o":float(c[1]),"h":float(c[2]),"l":float(c[3]),
+                     "c":float(c[4]),"v":float(c[5]) if len(c)>5 else 0} for c in raw]
+        results = run_backtest(candles_by_sym)
+        return jsonify({"success":True,"results":results})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -908,4 +979,5 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
 
