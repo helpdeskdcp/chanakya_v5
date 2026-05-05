@@ -612,6 +612,88 @@ async function toggleAutoTrader() {
         <div id="stockSentiment" style="padding:8px 0"></div>
       </div>
     </div>
+
+    <!-- CALCULATOR -->
+    <div id="pg-calculator" class="hidden">
+      <div class="card">
+        <div class="card-header">🧮 Price Level Calculator
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-blue" onclick="addCalcRow()" style="font-size:10px;padding:4px 8px">+ Add Row</button>
+            <button class="btn btn-green" onclick="calcAll()" style="font-size:10px;padding:4px 8px">⚡ Calculate All</button>
+            <button class="btn btn-red" onclick="clearCalc()" style="font-size:10px;padding:4px 8px">🗑️ Clear</button>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#8090a8;padding:4px 0 8px">
+          Formula: Median = (High - Low) / 2
+        </div>
+
+        <!-- Quick LTP fetch -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <select id="calcSymbol" class="inp" style="margin:0;width:140px;font-size:11px;padding:4px">
+            <option value="NIFTY|99926000|NSE">NIFTY</option>
+            <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
+            <option value="CRUDEOIL|488290|MCX">CRUDEOIL</option>
+            <option value="NATURALGAS|488505|MCX">NATURALGAS</option>
+            <option value="GOLD|67694|MCX">GOLD</option>
+          </select>
+          <button class="btn btn-blue" onclick="fetchLTP()" style="font-size:10px;padding:4px 10px">📡 Fetch LTP</button>
+          <span id="ltpDisplay" style="color:#00c8ff;font-size:12px;padding:4px 8px;align-self:center"></span>
+        </div>
+
+        <!-- Table -->
+        <div style="overflow-x:auto">
+        <table class="tbl" id="calcTable">
+          <thead>
+            <tr>
+              <th style="width:120px">Symbol</th>
+              <th style="width:110px">High (₹)</th>
+              <th style="width:110px">Low (₹)</th>
+              <th style="width:120px;color:#d4af37">Median = (H-L)/2</th>
+              <th style="width:110px;color:#00e676">Mid Price</th>
+              <th style="width:110px;color:#00c8ff">Range</th>
+              <th style="width:80px">Remove</th>
+            </tr>
+          </thead>
+          <tbody id="calcBody">
+            <!-- Rows added dynamically -->
+          </tbody>
+        </table>
+        </div>
+
+        <!-- Summary -->
+        <div id="calcSummary" style="margin-top:12px;padding:10px;background:#0a0f1a;border-radius:8px;display:none">
+          <div style="font-size:11px;font-weight:700;color:#d4af37;margin-bottom:6px">📊 Summary</div>
+          <div id="calcSummaryContent" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+        </div>
+      </div>
+
+      <!-- Formula Reference Card -->
+      <div class="card" style="margin-top:8px">
+        <div class="card-header">📐 Formula Reference</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px">
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+            <div style="color:#d4af37;font-weight:700;margin-bottom:4px">Median</div>
+            <div style="color:#e0e8f0;font-family:monospace">= (High - Low) / 2</div>
+            <div style="color:#8090a8;margin-top:2px">Half the range</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+            <div style="color:#00e676;font-weight:700;margin-bottom:4px">Mid Price</div>
+            <div style="color:#e0e8f0;font-family:monospace">= (High + Low) / 2</div>
+            <div style="color:#8090a8;margin-top:2px">Centre of range</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+            <div style="color:#00c8ff;font-weight:700;margin-bottom:4px">Range</div>
+            <div style="color:#e0e8f0;font-family:monospace">= High - Low</div>
+            <div style="color:#8090a8;margin-top:2px">Total price range</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+            <div style="color:#ff9800;font-weight:700;margin-bottom:4px">Range %</div>
+            <div style="color:#e0e8f0;font-family:monospace">= Range / Low × 100</div>
+            <div style="color:#8090a8;margin-top:2px">Volatility %</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
@@ -780,6 +862,7 @@ function showPage(id, el) {
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
   if(id==="news") { setTimeout(function(){ loadNews(); }, 300); }
+  if(id==="calculator") { if(_calcRows===0) addCalcRow(); }
   if(id==="settings") loadBrokerSettings();
   if(id==="symbols") loadAdminSymbols();
   if(id==="appsettings") loadAppSettings();
@@ -1387,6 +1470,103 @@ async function loadStockNews() {
       '</div>';
   } else {
     el.innerHTML = '<div style="color:#8090a8;padding:8px">No specific news for '+sym+' found</div>';
+  }
+}
+
+
+var _calcRows = 0;
+
+function addCalcRow(sym, hi, lo) {
+  _calcRows++;
+  var id = _calcRows;
+  var sym = sym||'';
+  var hi = hi||'';
+  var lo = lo||'';
+  var row = '<tr id="calcRow'+id+'">'+
+    '<td><input class="inp" style="margin:0;width:100%;font-size:11px;padding:4px" value="'+sym+'" placeholder="Symbol" oninput="calcRow('+id+')"></td>'+
+    '<td><input class="inp" id="hi'+id+'" style="margin:0;width:100%;font-size:11px;padding:4px;color:#ff5252" type="number" value="'+hi+'" placeholder="High" oninput="calcRow('+id+')"></td>'+
+    '<td><input class="inp" id="lo'+id+'" style="margin:0;width:100%;font-size:11px;padding:4px;color:#00e676" type="number" value="'+lo+'" placeholder="Low" oninput="calcRow('+id+')"></td>'+
+    '<td id="med'+id+'" style="color:#d4af37;font-weight:700;font-size:13px;text-align:center">-</td>'+
+    '<td id="mid'+id+'" style="color:#00e676;font-size:12px;text-align:center">-</td>'+
+    '<td id="rng'+id+'" style="color:#00c8ff;font-size:12px;text-align:center">-</td>'+
+    '<td style="text-align:center"><button onclick="removeRow('+id+')" style="background:none;border:none;color:#ff5252;cursor:pointer;font-size:16px">×</button></td>'+
+  '</tr>';
+  document.getElementById('calcBody').innerHTML += row;
+  if(hi && lo) calcRow(id);
+}
+
+function calcRow(id) {
+  var hi = parseFloat(document.getElementById('hi'+id).value)||0;
+  var lo = parseFloat(document.getElementById('lo'+id).value)||0;
+  if(!hi || !lo || hi<=lo) {
+    document.getElementById('med'+id).textContent='-';
+    document.getElementById('mid'+id).textContent='-';
+    document.getElementById('rng'+id).textContent='-';
+    return;
+  }
+  var median = ((hi-lo)/2).toFixed(2);
+  var mid    = ((hi+lo)/2).toFixed(2);
+  var range  = (hi-lo).toFixed(2);
+  var rangePct = ((hi-lo)/lo*100).toFixed(2);
+  document.getElementById('med'+id).textContent = '₹'+median;
+  document.getElementById('mid'+id).textContent = '₹'+mid;
+  document.getElementById('rng'+id).textContent = '₹'+range+' ('+rangePct+'%)';
+  updateSummary();
+}
+
+function calcAll() {
+  for(var i=1;i<=_calcRows;i++){
+    if(document.getElementById('hi'+i)) calcRow(i);
+  }
+  updateSummary();
+}
+
+function removeRow(id) {
+  var row = document.getElementById('calcRow'+id);
+  if(row) row.remove();
+  updateSummary();
+}
+
+function clearCalc() {
+  document.getElementById('calcBody').innerHTML='';
+  document.getElementById('calcSummary').style.display='none';
+  _calcRows=0;
+}
+
+function updateSummary() {
+  var medians=[]; var mids=[];
+  for(var i=1;i<=_calcRows;i++){
+    var hEl=document.getElementById('hi'+i); var lEl=document.getElementById('lo'+i);
+    if(!hEl||!lEl) continue;
+    var h=parseFloat(hEl.value)||0; var l=parseFloat(lEl.value)||0;
+    if(h>l){medians.push((h-l)/2); mids.push((h+l)/2);}
+  }
+  if(!medians.length){document.getElementById('calcSummary').style.display='none';return;}
+  var avgMed=(medians.reduce(function(a,b){return a+b;},0)/medians.length).toFixed(2);
+  var avgMid=(mids.reduce(function(a,b){return a+b;},0)/mids.length).toFixed(2);
+  var maxMed=Math.max.apply(null,medians).toFixed(2);
+  document.getElementById('calcSummary').style.display='block';
+  document.getElementById('calcSummaryContent').innerHTML=
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Avg Median</div><div style="font-size:16px;font-weight:700;color:#d4af37">₹'+avgMed+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Avg Mid Price</div><div style="font-size:16px;font-weight:700;color:#00e676">₹'+avgMid+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Max Median</div><div style="font-size:16px;font-weight:700;color:#00c8ff">₹'+maxMed+'</div></div>';
+}
+
+async function fetchLTP() {
+  var symVal = document.getElementById('calcSymbol').value;
+  var parts = symVal.split('|');
+  var sym=parts[0]; var tok=parts[1]; var exch=parts[2];
+  var d = await api('/chart?symbol='+sym+'&token='+tok+'&exchange='+exch);
+  if(d.success && d.ltp) {
+    document.getElementById('ltpDisplay').textContent = sym+': ₹'+d.ltp;
+    // Auto-add row with LTP as reference
+    var ltp = d.ltp;
+    var candles = d.candles||[];
+    var hi=0; var lo=999999;
+    candles.slice(-20).forEach(function(c){if(c.h>hi)hi=c.h; if(c.l<lo)lo=c.l;});
+    if(hi>0 && lo<999999) addCalcRow(sym, hi.toFixed(2), lo.toFixed(2));
+  } else {
+    document.getElementById('ltpDisplay').textContent = 'Error fetching';
   }
 }
 
