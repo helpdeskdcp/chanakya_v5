@@ -793,6 +793,26 @@ def google_auth():
         return jsonify({"success":True,"token":token,"role":role,"username":username,"email":email})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+def _prediction_scheduler():
+    """हर 10 min predictions background मध्ये refresh"""
+    import time, logging
+    log = logging.getLogger("scheduler")
+    time.sleep(60)  # startup नंतर 1 min wait
+    while True:
+        try:
+            from broker.global_broker import get_broker
+            from ai.predictor import run_scan
+            from data_stream.cache import set as cset
+            broker = get_broker()
+            if broker and broker.is_connected():
+                sigs = run_scan(broker)
+                if sigs:
+                    cset("predictions", sigs, ttl=600)
+                    log.info("Auto predictions: %d signals", len(sigs))
+        except Exception as e:
+            log.error("Prediction scheduler: %s", e)
+        time.sleep(600)  # 10 min
+
 def _startup_train():
     """Auto-train ML model in background at startup"""
     import time, logging
@@ -815,4 +835,5 @@ if __name__ == "__main__":
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     import threading
     threading.Thread(target=_startup_train, daemon=True).start()
+    threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
