@@ -1943,10 +1943,34 @@ function generateStrikes() {
   document.getElementById('optResult').style.display='grid';
 }
 
-function onStrikeSelect() {
+async function onStrikeSelect() {
   var val = document.getElementById('oStrikeSelect').value;
   document.getElementById('oStrike').value = val;
+  // Auto-fetch premium for selected strike
+  await fetchStrikePremium(val);
   calcOptions();
+}
+
+async function fetchStrikePremium(strike) {
+  var idx = document.getElementById('oIndex').value.split('|');
+  var sym = idx[0];
+  var type = document.getElementById('oType').value;
+  document.getElementById('oPrem').placeholder = '⏳ Fetching...';
+  try {
+    var d = await api('/option/ltp?symbol='+sym+'&strike='+strike+'&type='+type);
+    if(d.success && d.ltp && d.ltp > 0) {
+      document.getElementById('oPrem').value = d.ltp.toFixed(2);
+      document.getElementById('oLiveSpot').textContent =
+        sym+' Spot:₹'+document.getElementById('oSpot').value+
+        ' | '+type+' '+strike+': ₹'+d.ltp;
+      document.getElementById('oPrem').placeholder = 'Premium';
+      calcOptions();
+    } else {
+      document.getElementById('oPrem').placeholder = 'Enter manually';
+    }
+  } catch(e) {
+    document.getElementById('oPrem').placeholder = 'Enter manually';
+  }
 }
 
 // ─── OPTIONS CALCULATOR ───

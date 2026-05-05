@@ -830,6 +830,46 @@ def _startup_train():
     except Exception as e:
         log.error("ML auto-train error: %s", e)
 
+@app.route("/api/option/ltp")
+@require_auth
+def get_option_ltp():
+    try:
+        symbol   = request.args.get("symbol","NIFTY")
+        strike   = request.args.get("strike","24000")
+        opt_type = request.args.get("type","CE")
+        expiry   = request.args.get("expiry","")
+        from broker.global_broker import get_broker
+        broker = get_broker()
+        if not broker or not broker.is_connected():
+            return jsonify({"success":False,"error":"Broker not connected"})
+        # Search scrip master for option token
+        import json, os
+        scrip_path = "data/scrip_master.json"
+        if not os.path.exists(scrip_path):
+            return jsonify({"success":False,"error":"Scrip master not found"})
+        with open(scrip_path) as f:
+            scrips = json.load(f)
+        # Find matching option
+        strike_int = str(int(float(strike)))
+        matches = []
+        for s in scrips:
+            name = s.get("name","").upper()
+            sym  = s.get("symbol","").upper()
+            if (symbol.upper() in name or symbol.upper() in sym):
+                if strike_int in name and opt_type.upper() in name:
+                    matches.append(s)
+        if not matches:
+            return jsonify({"success":False,"error":"Option not found for "+symbol+" "+strike+" "+opt_type})
+        # Get nearest expiry
+        matches.sort(key=lambda x: x.get("expiry",""))
+        best = matches[0]
+        token = best.get("token") or best.get("symboltoken","")
+        exch  = best.get("exch_seg","NFO")
+        ltp = broker.get_ltp(exch, best.get("symbol",""), str(token))
+        return jsonify({"success":True,"ltp":ltp,"token":token,
+                       "name":best.get("symbol",""),"strike":strike,"type":opt_type})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -837,3 +877,4 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
