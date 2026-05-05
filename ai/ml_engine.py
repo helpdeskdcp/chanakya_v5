@@ -56,6 +56,34 @@ def get_model():
             logger.error("XGBoost init: %s", e)
     return _model
 
+MODEL_PATH = "data/ml_model.pkl"
+
+def save_model():
+    try:
+        import pickle, os
+        os.makedirs("data", exist_ok=True)
+        with open(MODEL_PATH, "wb") as f:
+            pickle.dump(_model, f)
+    except Exception as e:
+        logger.error("save_model: %s", e)
+
+def load_model():
+    global _model, _trained
+    try:
+        import pickle, os
+        if os.path.exists(MODEL_PATH):
+            with open(MODEL_PATH, "rb") as f:
+                _model = pickle.load(f)
+            _trained = True
+            logger.info("ML model loaded from disk ✅")
+            return True
+    except Exception as e:
+        logger.error("load_model: %s", e)
+    return False
+
+# Auto-load on import
+load_model()
+
 def train_model(broker, symbols=None):
     global _trained
     try:
@@ -89,6 +117,7 @@ def train_model(broker, symbols=None):
         model.fit(np.array(X), np.array(y))
         _trained = True
         logger.info("XGBoost trained: %d samples", len(X))
+        save_model()
         return True
     except Exception as e:
         logger.error("train_model: %s", e)
