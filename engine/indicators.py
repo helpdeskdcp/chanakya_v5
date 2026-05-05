@@ -24,9 +24,16 @@ def rsi(closes, period=14):
 def macd(closes):
     try:
         if len(closes) < 26: return 0, 0
-        e12 = ema(closes, 12); e26 = ema(closes, 26)
-        m = e12 - e26
-        return round(m, 2), round(m*0.15, 2)
+        # Proper MACD: signal = 9-EMA of macd_line, histogram = macd - signal
+        macd_vals = []
+        for i in range(26, len(closes)+1):
+            e12i = ema(closes[:i], 12)
+            e26i = ema(closes[:i], 26)
+            macd_vals.append(e12i - e26i)
+        macd_line = macd_vals[-1] if macd_vals else 0
+        signal_line = ema(macd_vals, 9) if len(macd_vals) >= 9 else macd_vals[-1] if macd_vals else 0
+        histogram = macd_line - signal_line
+        return round(macd_line, 2), round(histogram, 2)
     except: return 0, 0
 
 def vwap(candles):

@@ -72,7 +72,7 @@ def predict_symbol(symbol, token, exchange, broker):
         now = datetime.now(IST)
         h,mn = now.hour,now.minute
         nse_open = (9,15)<=(h,mn)<=(15,30) and now.weekday()<5
-        mcx_open = ((9,0)<=(h,mn) or (h,mn)<=(23,30)) and now.weekday()<5
+        mcx_open = (9,0)<=(h,mn)<=(23,30) and now.weekday()<5
         is_open = (exchange=="NSE" and nse_open) or (exchange=="MCX" and mcx_open)
         # allow scan always
         for interval,tf,days in INTERVALS:
@@ -88,8 +88,10 @@ def predict_symbol(symbol, token, exchange, broker):
         bull = sum(1 for v in results.values() if v["trend"]=="UP")
         bear = sum(1 for v in results.values() if v["trend"]=="DOWN")
         total = len(results)
-        if bull>=3: overall="BULLISH"; direction="BUY"
-        elif bear>=3: overall="BEARISH"; direction="SELL"
+        # Dynamic threshold: 60% of available TFs must agree
+        threshold = max(2, round(total * 0.6))
+        if bull>=threshold: overall="BULLISH"; direction="BUY"
+        elif bear>=threshold: overall="BEARISH"; direction="SELL"
         else: return None
         scores = [v["score"] for v in results.values()]
         conf = int(sum(scores)/len(scores))

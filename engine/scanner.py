@@ -38,23 +38,31 @@ def _analyze(candles, symbol):
         st     = supertrend(candles)
         vol_avg = sum(vols)/len(vols)
         vol_ratio = round(vols[-1]/vol_avg,2) if vol_avg>0 else 1
-        # Score
-        score = 0
-        if e9>e21: score+=25
-        if 45<r<72: score+=20
-        if mh>0: score+=15
-        if ltp>vw: score+=20
-        if vol_ratio>=1.2: score+=10
-        if st=="UP": score+=10
-        # Direction
+        # Direction first — then score direction-aware
         direction = "BUY" if e9>e21 and r<70 else "SELL"
+        # Score aligned to direction
+        score = 0
+        if direction=="BUY":
+            if e9>e21: score+=25
+            if 40<r<70: score+=20
+            if mh>0: score+=15
+            if ltp>vw: score+=20
+            if vol_ratio>=1.2: score+=10
+            if st=="UP": score+=10
+        else:  # SELL
+            if e9<e21: score+=25
+            if 30<r<60: score+=20
+            if mh<0: score+=15
+            if ltp<vw: score+=20
+            if vol_ratio>=1.2: score+=10
+            if st=="DOWN": score+=10
         sl = round(ltp-1.5*at,1) if direction=="BUY" else round(ltp+1.5*at,1)
         target = round(ltp+3*at,1) if direction=="BUY" else round(ltp-3*at,1)
         rr = round(abs(target-ltp)/abs(ltp-sl),1) if ltp!=sl else 0
         # Fake filter
         fake = []
-        if vol_ratio<0.7: fake.append("LowVol")
-        if abs(mh)<0.01: fake.append("WeakMACD")
+        if vol_ratio<0.5: fake.append("LowVol")
+        if abs(mh)<0.001: fake.append("WeakMACD")
         return {"symbol":symbol,"ltp":ltp,"direction":direction,
                 "entry":ltp,"sl":sl,"target":target,"rr":rr,
                 "score":score,"rsi":r,"vwap":vw,"vwap_bias":"ABOVE" if ltp>vw else "BELOW",

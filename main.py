@@ -788,7 +788,26 @@ def google_auth():
         return jsonify({"success":True,"token":token,"role":role,"username":username,"email":email})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+def _startup_train():
+    """Auto-train ML model in background at startup"""
+    import time, logging
+    log = logging.getLogger("startup")
+    time.sleep(15)  # Wait for broker to connect
+    try:
+        from broker.global_broker import get_broker
+        from ai.ml_engine import train_model
+        broker = get_broker()
+        if broker and broker.is_connected():
+            ok = train_model(broker)
+            log.info("ML auto-train: %s", "✅ done" if ok else "❌ failed")
+        else:
+            log.warning("ML auto-train skipped: broker not connected")
+    except Exception as e:
+        log.error("ML auto-train error: %s", e)
+
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
+    import threading
+    threading.Thread(target=_startup_train, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
