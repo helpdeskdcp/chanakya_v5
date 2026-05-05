@@ -176,3 +176,31 @@ def run_scan(broker=None):
     except Exception as e:
         logger.error("run_scan: %s", e)
         return []
+
+def get_math_context(symbol, ltp, atr, rsi, ema9, ema21):
+    """SEBI Math Framework context for AI"""
+    capital = 100000  # default
+    risk_pct = 2
+    sl_pts = atr * 1.5 if atr else ltp * 0.01
+    pos_size = int((capital * risk_pct / 100) / sl_pts) if sl_pts > 0 else 1
+
+    # Expectancy (assuming 60% WR, 1:2 RR)
+    win_rate = 0.60
+    rr = 2.0
+    expectancy = (win_rate * rr) - ((1 - win_rate) * 1)
+
+    # EMA signal
+    ema_signal = "BULLISH" if ema9 > ema21 else "BEARISH"
+
+    # RSI context
+    rsi_ctx = "OVERBOUGHT" if rsi > 70 else "OVERSOLD" if rsi < 30 else "NEUTRAL"
+
+    # VWAP proxy
+    vwap_bias = "ABOVE_VWAP_BULLISH" if ltp > ema21 else "BELOW_VWAP_BEARISH"
+
+    return (
+        f"MATH_CONTEXT: PosSiz={pos_size} ExpectancyR={expectancy:.2f} "
+        f"ATR={atr:.2f} SL={sl_pts:.2f} "
+        f"EMA={ema_signal} RSI={rsi:.0f}({rsi_ctx}) "
+        f"VWAP_BIAS={vwap_bias}"
+    )

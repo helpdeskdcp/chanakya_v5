@@ -157,6 +157,68 @@ def get_live_ltps(broker):
     except: pass
     return ltps
 
+
+SEBI_TRADING_MATH = """
+=== CHANAKYA NEURAL ENGINE — SEBI MATH FRAMEWORK ===
+
+1. EXPECTANCY = (Win% × Avg_Win) - (Loss% × Avg_Loss)
+   Positive expectancy = profitable strategy
+   Target: Expectancy > 0.5R per trade
+
+2. POSITION SIZE = (Capital × Risk%) / Stop_Loss_Points
+   Max Risk per trade: 2% of capital
+   Kelly Criterion: f = (bp - q) / b (advanced sizing)
+
+3. PROBABILITY FRAMEWORK:
+   Win Rate > 60% with 1:2 RR = High Edge System
+   Breakeven WR = 1 / (1 + RR_ratio)
+   At 1:2 RR → breakeven at 33.3% win rate
+
+4. OPTIONS GREEKS:
+   Delta (Δ): Price change per ₹1 move (CE: 0-1, PE: -1 to 0)
+   Theta (Θ): Daily time decay loss (negative for buyers)
+   Gamma (Γ): Rate of Delta change (high near ATM at expiry)
+   Vega (v): Premium change per 1% IV change
+   ATM option loses 1/3 value in last week (Theta decay)
+
+5. VOLATILITY:
+   IV > HV → Options expensive (sell strategy)
+   IV < HV → Options cheap (buy strategy)
+   VIX > 20 → High fear, good for contrarian buys
+
+6. BLACK-SCHOLES (Option Fair Price):
+   C = S×N(d1) - K×e^(-rt)×N(d2)
+   Use: Compare market premium vs fair value
+
+7. EMA FORMULA: EMA = Price×k + EMA_prev×(1-k)
+   k = 2/(period+1)
+   EMA crossover = trend change signal
+
+8. RSI FORMULA: RSI = 100 - (100/(1+RS))
+   RS = Avg_Gain/Avg_Loss (14 periods)
+   RSI>70 = Overbought, RSI<30 = Oversold
+
+9. ATR (Average True Range):
+   TR = max(High-Low, |High-Prev_Close|, |Low-Prev_Close|)
+   ATR = 14-period avg of TR
+   Use: Dynamic stop-loss = Entry ± 1.5×ATR
+
+10. VWAP = Σ(Price×Volume) / Σ(Volume)
+    Price > VWAP = Bullish bias
+    Price < VWAP = Bearish bias
+    Best for intraday entries
+
+11. PIVOT POINTS:
+    PP = (H+L+C)/3
+    R1=2×PP-L, R2=PP+(H-L), R3=H+2×(PP-L)
+    S1=2×PP-H, S2=PP-(H-L), S3=L-2×(H-PP)
+
+12. FIBONACCI LEVELS:
+    23.6%, 38.2%, 50%, 61.8%(Golden), 78.6%
+    Extensions: 127.2%, 161.8%(Target)
+    61.8% = strongest retracement level
+"""
+
 def build_market_context(analysis, ltps):
     now = datetime.now(IST)
     h,mn = now.hour, now.minute
@@ -291,6 +353,14 @@ RESPONSE RULES:
 3. ALWAYS ML confidence % if available  
 4. Explain WHY in simple terms
 5. Reply in SAME language as user (Marathi/Hindi/English mix ok)
+6. Use SEBI math framework for analysis:
+   - Always mention Expectancy when discussing strategy
+   - Quote Probability % with Win Rate context
+   - Explain Greeks for options questions (Delta/Theta/Gamma/Vega)
+   - Use ATR for stop-loss recommendations
+   - VWAP for intraday bias
+   - Fibonacci for targets/support
+7. For predictions: mention probability %, expected move, IV context
 6. NEWS context madhe asel tar respond madhe mention karo: "📰 News: [sentiment] - [key point]"
 7. News sentiment BUY/SELL bias varti influence karato
 6. Max 6 lines — powerful and concise
