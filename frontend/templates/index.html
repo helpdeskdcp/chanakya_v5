@@ -616,84 +616,227 @@ async function toggleAutoTrader() {
 
     <!-- CALCULATOR -->
     <div id="pg-calculator" class="hidden">
-      <div class="card">
-        <div class="card-header">🧮 Price Level Calculator
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-blue" onclick="addCalcRow()" style="font-size:10px;padding:4px 8px">+ Add Row</button>
-            <button class="btn btn-green" onclick="calcAll()" style="font-size:10px;padding:4px 8px">⚡ Calculate All</button>
-            <button class="btn btn-red" onclick="clearCalc()" style="font-size:10px;padding:4px 8px">🗑️ Clear</button>
+
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-blue" onclick="switchCalc('median')" id="tab-median" style="font-size:10px;padding:5px 10px">📊 Median</button>
+        <button class="btn" onclick="switchCalc('pivot')" id="tab-pivot" style="font-size:10px;padding:5px 10px;background:#1e3a5f;color:#8090a8;border:1px solid #1e3a5f">🎯 Pivot</button>
+        <button class="btn" onclick="switchCalc('risk')" id="tab-risk" style="font-size:10px;padding:5px 10px;background:#1e3a5f;color:#8090a8;border:1px solid #1e3a5f">⚡ Risk</button>
+        <button class="btn" onclick="switchCalc('options')" id="tab-options" style="font-size:10px;padding:5px 10px;background:#1e3a5f;color:#8090a8;border:1px solid #1e3a5f">📈 Options</button>
+        <button class="btn" onclick="switchCalc('fibo')" id="tab-fibo" style="font-size:10px;padding:5px 10px;background:#1e3a5f;color:#8090a8;border:1px solid #1e3a5f">🌀 Fibonacci</button>
+      </div>
+
+      <!-- MEDIAN CALC -->
+      <div id="calc-median">
+        <div class="card">
+          <div class="card-header">📊 Price Level Calculator
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-blue" onclick="addCalcRow()" style="font-size:10px;padding:4px 8px">+ Row</button>
+              <button class="btn btn-green" onclick="calcAll()" style="font-size:10px;padding:4px 8px">⚡ Calc</button>
+              <button class="btn btn-red" onclick="clearCalc()" style="font-size:10px;padding:4px 8px">🗑️</button>
+            </div>
           </div>
-        </div>
-        <div style="font-size:10px;color:#8090a8;padding:4px 0 8px">
-          Formula: Median = (High - Low) / 2
-        </div>
-
-        <!-- Quick LTP fetch -->
-        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-          <select id="calcSymbol" class="inp" style="margin:0;width:140px;font-size:11px;padding:4px">
-            <option value="NIFTY|99926000|NSE">NIFTY</option>
-            <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
-            <option value="CRUDEOIL|488290|MCX">CRUDEOIL</option>
-            <option value="NATURALGAS|488505|MCX">NATURALGAS</option>
-            <option value="GOLD|67694|MCX">GOLD</option>
-          </select>
-          <button class="btn btn-blue" onclick="fetchLTP()" style="font-size:10px;padding:4px 10px">📡 Fetch LTP</button>
-          <span id="ltpDisplay" style="color:#00c8ff;font-size:12px;padding:4px 8px;align-self:center"></span>
-        </div>
-
-        <!-- Table -->
-        <div style="overflow-x:auto">
-        <table class="tbl" id="calcTable">
-          <thead>
-            <tr>
-              <th style="width:120px">Symbol</th>
-              <th style="width:110px">High (₹)</th>
-              <th style="width:110px">Low (₹)</th>
-              <th style="width:120px;color:#d4af37">Median = (H-L)/2</th>
-              <th style="width:110px;color:#00e676">Mid Price</th>
-              <th style="width:110px;color:#00c8ff">Range</th>
-              <th style="width:80px">Remove</th>
-            </tr>
-          </thead>
-          <tbody id="calcBody">
-            <!-- Rows added dynamically -->
-          </tbody>
-        </table>
-        </div>
-
-        <!-- Summary -->
-        <div id="calcSummary" style="margin-top:12px;padding:10px;background:#0a0f1a;border-radius:8px;display:none">
-          <div style="font-size:11px;font-weight:700;color:#d4af37;margin-bottom:6px">📊 Summary</div>
-          <div id="calcSummaryContent" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+            <select id="calcSymbol" class="inp" style="margin:0;width:130px;font-size:11px;padding:4px">
+              <option value="NIFTY|99926000|NSE">NIFTY</option>
+              <option value="BANKNIFTY|99926009|NSE">BANKNIFTY</option>
+              <option value="CRUDEOIL|488290|MCX">CRUDEOIL</option>
+              <option value="NATURALGAS|488505|MCX">NATURALGAS</option>
+              <option value="GOLD|67694|MCX">GOLD</option>
+            </select>
+            <button class="btn btn-blue" onclick="fetchLTP()" style="font-size:10px;padding:4px 8px">📡 Fetch</button>
+            <span id="ltpDisplay" style="color:#00c8ff;font-size:11px;padding:4px;align-self:center"></span>
+          </div>
+          <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr>
+              <th>Symbol</th><th>High ₹</th><th>Low ₹</th>
+              <th style="color:#d4af37">Median</th>
+              <th style="color:#00e676">Mid</th>
+              <th style="color:#00c8ff">Range</th>
+              <th>✕</th>
+            </tr></thead>
+            <tbody id="calcBody"></tbody>
+          </table>
+          </div>
+          <div id="calcSummary" style="display:none;margin-top:8px;padding:8px;background:#0a0f1a;border-radius:8px">
+            <div id="calcSummaryContent" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Formula Reference Card -->
-      <div class="card" style="margin-top:8px">
-        <div class="card-header">📐 Formula Reference</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px">
-          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
-            <div style="color:#d4af37;font-weight:700;margin-bottom:4px">Median</div>
-            <div style="color:#e0e8f0;font-family:monospace">= (High - Low) / 2</div>
-            <div style="color:#8090a8;margin-top:2px">Half the range</div>
+      <!-- PIVOT CALC -->
+      <div id="calc-pivot" style="display:none">
+        <div class="card">
+          <div class="card-header">🎯 Pivot Point Calculator</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">High ₹</div>
+              <input class="inp" id="pHigh" type="number" placeholder="24100" style="margin:0" oninput="calcPivot()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Low ₹</div>
+              <input class="inp" id="pLow" type="number" placeholder="23900" style="margin:0" oninput="calcPivot()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Close ₹</div>
+              <input class="inp" id="pClose" type="number" placeholder="24000" style="margin:0" oninput="calcPivot()"></div>
           </div>
-          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
-            <div style="color:#00e676;font-weight:700;margin-bottom:4px">Mid Price</div>
-            <div style="color:#e0e8f0;font-family:monospace">= (High + Low) / 2</div>
-            <div style="color:#8090a8;margin-top:2px">Centre of range</div>
-          </div>
-          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
-            <div style="color:#00c8ff;font-weight:700;margin-bottom:4px">Range</div>
-            <div style="color:#e0e8f0;font-family:monospace">= High - Low</div>
-            <div style="color:#8090a8;margin-top:2px">Total price range</div>
-          </div>
-          <div style="background:#0a0f1a;padding:8px;border-radius:6px">
-            <div style="color:#ff9800;font-weight:700;margin-bottom:4px">Range %</div>
-            <div style="color:#e0e8f0;font-family:monospace">= Range / Low × 100</div>
-            <div style="color:#8090a8;margin-top:2px">Volatility %</div>
+          <div id="pivotResult" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div style="background:#0a0f1a;padding:10px;border-radius:8px;border-left:3px solid #d4af37">
+                <div style="font-size:10px;color:#8090a8">Pivot Point</div>
+                <div id="pp" style="font-size:20px;font-weight:700;color:#d4af37">-</div>
+              </div>
+              <div style="background:#0a0f1a;padding:10px;border-radius:8px;border-left:3px solid #8090a8">
+                <div style="font-size:10px;color:#8090a8">Median (H-L)/2</div>
+                <div id="pMed" style="font-size:20px;font-weight:700;color:#8090a8">-</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">
+              <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+                <div style="font-size:9px;color:#ff5252;font-weight:700">RESISTANCE</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:4px">R3</div><div id="r3" style="color:#ff5252;font-weight:700">-</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:2px">R2</div><div id="r2" style="color:#ff7070;font-weight:700">-</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:2px">R1</div><div id="r1" style="color:#ff9090;font-weight:700">-</div>
+              </div>
+              <div style="background:#0a0f1a;padding:8px;border-radius:6px;border:1px solid #d4af37">
+                <div style="font-size:9px;color:#d4af37;font-weight:700">PIVOT</div>
+                <div id="ppC" style="color:#d4af37;font-size:18px;font-weight:700;margin-top:20px">-</div>
+              </div>
+              <div style="background:#0a0f1a;padding:8px;border-radius:6px">
+                <div style="font-size:9px;color:#00e676;font-weight:700">SUPPORT</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:4px">S1</div><div id="s1" style="color:#90ff90;font-weight:700">-</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:2px">S2</div><div id="s2" style="color:#70ff70;font-weight:700">-</div>
+                <div style="font-size:10px;color:#8090a8;margin-top:2px">S3</div><div id="s3" style="color:#00e676;font-weight:700">-</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- RISK CALC -->
+      <div id="calc-risk" style="display:none">
+        <div class="card">
+          <div class="card-header">⚡ Risk Management Calculator</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Capital ₹</div>
+              <input class="inp" id="rCap" type="number" placeholder="100000" style="margin:0" oninput="calcRisk()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Risk % per trade</div>
+              <input class="inp" id="rPct" type="number" placeholder="2" value="2" style="margin:0" oninput="calcRisk()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Entry Price ₹</div>
+              <input class="inp" id="rEntry" type="number" placeholder="24000" style="margin:0" oninput="calcRisk()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Stop Loss ₹</div>
+              <input class="inp" id="rSL" type="number" placeholder="23900" style="margin:0" oninput="calcRisk()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Target ₹</div>
+              <input class="inp" id="rTgt" type="number" placeholder="24200" style="margin:0" oninput="calcRisk()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Lot Size</div>
+              <input class="inp" id="rLot" type="number" placeholder="1" value="1" style="margin:0" oninput="calcRisk()"></div>
+          </div>
+          <div id="riskResult" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Max Risk ₹</div>
+              <div id="rMaxRisk" style="font-size:18px;font-weight:700;color:#ff5252">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Position Size (Qty)</div>
+              <div id="rQty" style="font-size:18px;font-weight:700;color:#d4af37">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Risk:Reward</div>
+              <div id="rRR" style="font-size:18px;font-weight:700;color:#00c8ff">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Max Profit ₹</div>
+              <div id="rProfit" style="font-size:18px;font-weight:700;color:#00e676">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Break-even</div>
+              <div id="rBE" style="font-size:18px;font-weight:700;color:#ff9800">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Capital Required ₹</div>
+              <div id="rCapReq" style="font-size:18px;font-weight:700;color:#8090a8">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPTIONS CALC -->
+      <div id="calc-options" style="display:none">
+        <div class="card">
+          <div class="card-header">📈 Options Calculator</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Spot Price ₹</div>
+              <input class="inp" id="oSpot" type="number" placeholder="24000" style="margin:0" oninput="calcOptions()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Strike Price ₹</div>
+              <input class="inp" id="oStrike" type="number" placeholder="24000" style="margin:0" oninput="calcOptions()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Premium ₹</div>
+              <input class="inp" id="oPrem" type="number" placeholder="150" style="margin:0" oninput="calcOptions()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Type</div>
+              <select class="inp" id="oType" style="margin:0" onchange="calcOptions()">
+                <option value="CE">CE (Call)</option>
+                <option value="PE">PE (Put)</option>
+              </select>
+            </div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Lot Size</div>
+              <input class="inp" id="oLot" type="number" placeholder="50" style="margin:0" oninput="calcOptions()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Qty (Lots)</div>
+              <input class="inp" id="oQty" type="number" placeholder="1" value="1" style="margin:0" oninput="calcOptions()"></div>
+          </div>
+          <div id="optResult" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Moneyness</div>
+              <div id="oMoney" style="font-size:16px;font-weight:700;color:#d4af37">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Intrinsic Value</div>
+              <div id="oIntrinsic" style="font-size:16px;font-weight:700;color:#00c8ff">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Time Value</div>
+              <div id="oTime" style="font-size:16px;font-weight:700;color:#ff9800">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Break-even</div>
+              <div id="oBE" style="font-size:16px;font-weight:700;color:#00e676">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Total Cost ₹</div>
+              <div id="oCost" style="font-size:16px;font-weight:700;color:#ff5252">-</div>
+            </div>
+            <div style="background:#0a0f1a;padding:10px;border-radius:8px">
+              <div style="font-size:10px;color:#8090a8">Max Profit Potential</div>
+              <div id="oProfit" style="font-size:16px;font-weight:700;color:#00e676">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIBONACCI CALC -->
+      <div id="calc-fibo" style="display:none">
+        <div class="card">
+          <div class="card-header">🌀 Fibonacci Retracement</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Swing High ₹</div>
+              <input class="inp" id="fHigh" type="number" placeholder="24500" style="margin:0" oninput="calcFibo()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Swing Low ₹</div>
+              <input class="inp" id="fLow" type="number" placeholder="23500" style="margin:0" oninput="calcFibo()"></div>
+            <div><div style="font-size:10px;color:#8090a8;margin-bottom:3px">Trend</div>
+              <select class="inp" id="fTrend" style="margin:0" onchange="calcFibo()">
+                <option value="up">Uptrend</option>
+                <option value="down">Downtrend</option>
+              </select>
+            </div>
+          </div>
+          <div id="fiboResult" style="display:none">
+            <table class="tbl">
+              <thead><tr>
+                <th>Level</th><th>%</th>
+                <th style="color:#d4af37">Price ₹</th>
+                <th>Type</th>
+              </tr></thead>
+              <tbody id="fiboBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
@@ -1572,6 +1715,192 @@ async function fetchLTP() {
   } else {
     document.getElementById('ltpDisplay').textContent = 'Error fetching';
   }
+}
+
+
+// ═══ CALCULATOR FUNCTIONS ═══
+var _calcRows = 0;
+var _activeCalc = 'median';
+
+function switchCalc(tab) {
+  _activeCalc = tab;
+  ['median','pivot','risk','options','fibo'].forEach(function(t){
+    var el = document.getElementById('calc-'+t);
+    var btn = document.getElementById('tab-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+    if(btn) {
+      btn.style.background = t===tab ? '' : '#1e3a5f';
+      btn.style.color = t===tab ? '' : '#8090a8';
+      btn.className = t===tab ? 'btn btn-blue' : 'btn';
+      if(t!==tab){btn.style.border='1px solid #1e3a5f';}
+    }
+  });
+  if(tab==='median' && _calcRows===0) addCalcRow();
+}
+
+// ─── MEDIAN ───
+function addCalcRow(sym, hi, lo) {
+  _calcRows++;
+  var id = _calcRows;
+  var row = '<tr id="calcRow'+id+'">'+
+    '<td><input class="inp" style="margin:0;width:90px;font-size:11px;padding:3px" value="'+(sym||'')+'" placeholder="Symbol"></td>'+
+    '<td><input class="inp" id="hi'+id+'" style="margin:0;width:90px;font-size:11px;padding:3px;color:#ff5252" type="number" value="'+(hi||'')+'" placeholder="High" oninput="calcRow('+id+')"></td>'+
+    '<td><input class="inp" id="lo'+id+'" style="margin:0;width:90px;font-size:11px;padding:3px;color:#00e676" type="number" value="'+(lo||'')+'" placeholder="Low" oninput="calcRow('+id+')"></td>'+
+    '<td id="med'+id+'" style="color:#d4af37;font-weight:700;text-align:center">-</td>'+
+    '<td id="mid'+id+'" style="color:#00e676;text-align:center">-</td>'+
+    '<td id="rng'+id+'" style="color:#00c8ff;text-align:center">-</td>'+
+    '<td style="text-align:center"><button onclick="removeRow('+id+')" style="background:none;border:none;color:#ff5252;cursor:pointer">×</button></td>'+
+  '</tr>';
+  document.getElementById('calcBody').innerHTML += row;
+  if(hi && lo) calcRow(id);
+}
+function calcRow(id) {
+  var hi=parseFloat(document.getElementById('hi'+id).value)||0;
+  var lo=parseFloat(document.getElementById('lo'+id).value)||0;
+  if(!hi||!lo||hi<=lo){
+    ['med','mid','rng'].forEach(function(x){document.getElementById(x+id).textContent='-';});
+    return;
+  }
+  document.getElementById('med'+id).textContent = '₹'+((hi-lo)/2).toFixed(2);
+  document.getElementById('mid'+id).textContent = '₹'+((hi+lo)/2).toFixed(2);
+  var rng=(hi-lo).toFixed(2); var pct=((hi-lo)/lo*100).toFixed(1);
+  document.getElementById('rng'+id).textContent = '₹'+rng+' ('+pct+'%)';
+  updateSummary();
+}
+function calcAll(){for(var i=1;i<=_calcRows;i++){if(document.getElementById('hi'+i))calcRow(i);}}
+function removeRow(id){var r=document.getElementById('calcRow'+id);if(r)r.remove();updateSummary();}
+function clearCalc(){document.getElementById('calcBody').innerHTML='';document.getElementById('calcSummary').style.display='none';_calcRows=0;}
+function updateSummary(){
+  var m=[],md=[];
+  for(var i=1;i<=_calcRows;i++){
+    var h=document.getElementById('hi'+i),l=document.getElementById('lo'+i);
+    if(!h||!l)continue;
+    var hi=parseFloat(h.value)||0,lo=parseFloat(l.value)||0;
+    if(hi>lo){m.push((hi-lo)/2);md.push((hi+lo)/2);}
+  }
+  if(!m.length){document.getElementById('calcSummary').style.display='none';return;}
+  var am=(m.reduce(function(a,b){return a+b;},0)/m.length).toFixed(2);
+  var amd=(md.reduce(function(a,b){return a+b;},0)/md.length).toFixed(2);
+  var mm=Math.max.apply(null,m).toFixed(2);
+  document.getElementById('calcSummary').style.display='block';
+  document.getElementById('calcSummaryContent').innerHTML=
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Avg Median</div><div style="font-size:16px;font-weight:700;color:#d4af37">₹'+am+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Avg Mid</div><div style="font-size:16px;font-weight:700;color:#00e676">₹'+amd+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center"><div style="font-size:9px;color:#8090a8">Max Median</div><div style="font-size:16px;font-weight:700;color:#00c8ff">₹'+mm+'</div></div>';
+}
+async function fetchLTP() {
+  var v=document.getElementById('calcSymbol').value.split('|');
+  var d=await api('/chart?symbol='+v[0]+'&token='+v[1]+'&exchange='+v[2]);
+  if(d.success&&d.ltp){
+    document.getElementById('ltpDisplay').textContent=v[0]+': ₹'+d.ltp;
+    var candles=d.candles||[],hi=0,lo=999999;
+    candles.slice(-20).forEach(function(c){if(c.h>hi)hi=c.h;if(c.l<lo)lo=c.l;});
+    if(hi>0&&lo<999999)addCalcRow(v[0],hi.toFixed(2),lo.toFixed(2));
+  }
+}
+
+// ─── PIVOT POINTS ───
+function calcPivot(){
+  var H=parseFloat(document.getElementById('pHigh').value)||0;
+  var L=parseFloat(document.getElementById('pLow').value)||0;
+  var C=parseFloat(document.getElementById('pClose').value)||0;
+  if(!H||!L||!C)return;
+  var P=(H+L+C)/3;
+  var med=(H-L)/2;
+  var R1=2*P-L, R2=P+(H-L), R3=H+2*(P-L);
+  var S1=2*P-H, S2=P-(H-L), S3=L-2*(H-P);
+  document.getElementById('pp').textContent='₹'+P.toFixed(2);
+  document.getElementById('ppC').textContent='₹'+P.toFixed(2);
+  document.getElementById('pMed').textContent='₹'+med.toFixed(2);
+  document.getElementById('r1').textContent='₹'+R1.toFixed(2);
+  document.getElementById('r2').textContent='₹'+R2.toFixed(2);
+  document.getElementById('r3').textContent='₹'+R3.toFixed(2);
+  document.getElementById('s1').textContent='₹'+S1.toFixed(2);
+  document.getElementById('s2').textContent='₹'+S2.toFixed(2);
+  document.getElementById('s3').textContent='₹'+S3.toFixed(2);
+  document.getElementById('pivotResult').style.display='block';
+}
+
+// ─── RISK CALCULATOR ───
+function calcRisk(){
+  var cap=parseFloat(document.getElementById('rCap').value)||0;
+  var pct=parseFloat(document.getElementById('rPct').value)||2;
+  var entry=parseFloat(document.getElementById('rEntry').value)||0;
+  var sl=parseFloat(document.getElementById('rSL').value)||0;
+  var tgt=parseFloat(document.getElementById('rTgt').value)||0;
+  var lot=parseFloat(document.getElementById('rLot').value)||1;
+  if(!cap||!entry||!sl)return;
+  var maxRisk=cap*pct/100;
+  var riskPerUnit=Math.abs(entry-sl);
+  var qty=riskPerUnit>0?Math.floor(maxRisk/riskPerUnit/lot)*lot:0;
+  var rr=tgt>0&&sl>0?Math.abs(tgt-entry)/Math.abs(entry-sl):0;
+  var profit=qty*(tgt-entry);
+  var capReq=qty*entry;
+  document.getElementById('rMaxRisk').textContent='₹'+maxRisk.toFixed(0);
+  document.getElementById('rQty').textContent=qty+' units';
+  document.getElementById('rRR').textContent='1:'+rr.toFixed(2);
+  document.getElementById('rProfit').textContent='₹'+(qty*Math.abs(tgt-entry)).toFixed(0);
+  document.getElementById('rBE').textContent='₹'+entry.toFixed(2);
+  document.getElementById('rCapReq').textContent='₹'+capReq.toFixed(0);
+  document.getElementById('riskResult').style.display='grid';
+}
+
+// ─── OPTIONS CALCULATOR ───
+function calcOptions(){
+  var spot=parseFloat(document.getElementById('oSpot').value)||0;
+  var strike=parseFloat(document.getElementById('oStrike').value)||0;
+  var prem=parseFloat(document.getElementById('oPrem').value)||0;
+  var type=document.getElementById('oType').value;
+  var lotSize=parseFloat(document.getElementById('oLot').value)||50;
+  var qty=parseFloat(document.getElementById('oQty').value)||1;
+  if(!spot||!strike||!prem)return;
+  var intrinsic=type==='CE'?Math.max(0,spot-strike):Math.max(0,strike-spot);
+  var timeVal=Math.max(0,prem-intrinsic);
+  var be=type==='CE'?strike+prem:strike-prem;
+  var money='';
+  if(type==='CE'){money=spot>strike?'ITM (In The Money)':spot<strike?'OTM (Out The Money)':'ATM';}
+  else{money=spot<strike?'ITM (In The Money)':spot>strike?'OTM (Out The Money)':'ATM';}
+  var cost=prem*lotSize*qty;
+  document.getElementById('oMoney').textContent=money;
+  document.getElementById('oIntrinsic').textContent='₹'+intrinsic.toFixed(2);
+  document.getElementById('oTime').textContent='₹'+timeVal.toFixed(2);
+  document.getElementById('oBE').textContent='₹'+be.toFixed(2);
+  document.getElementById('oCost').textContent='₹'+cost.toFixed(0);
+  document.getElementById('oProfit').textContent=type==='CE'?'Unlimited (above ₹'+be.toFixed(0)+')':'Max ₹'+(be*lotSize*qty).toFixed(0);
+  document.getElementById('optResult').style.display='grid';
+}
+
+// ─── FIBONACCI ───
+function calcFibo(){
+  var H=parseFloat(document.getElementById('fHigh').value)||0;
+  var L=parseFloat(document.getElementById('fLow').value)||0;
+  var trend=document.getElementById('fTrend').value;
+  if(!H||!L||H<=L)return;
+  var diff=H-L;
+  var levels=[
+    {pct:0,   label:'0%',      type:'Start'},
+    {pct:23.6,label:'23.6%',   type:'Weak Retracement'},
+    {pct:38.2,label:'38.2%',   type:'Moderate Support'},
+    {pct:50,  label:'50%',     type:'Key Level'},
+    {pct:61.8,label:'61.8%',   type:'Strong Support (Golden)'},
+    {pct:78.6,label:'78.6%',   type:'Deep Retracement'},
+    {pct:100, label:'100%',    type:'Full Retracement'},
+    {pct:127.2,label:'127.2%', type:'Extension 1'},
+    {pct:161.8,label:'161.8%', type:'Extension 2 (Golden)'},
+  ];
+  var html='';
+  levels.forEach(function(lv){
+    var price=trend==='up'?H-(diff*lv.pct/100):L+(diff*lv.pct/100);
+    var clr=lv.pct===61.8||lv.pct===161.8?'#d4af37':lv.pct===50?'#00c8ff':lv.pct===38.2||lv.pct===78.6?'#00e676':'#8090a8';
+    html+='<tr>'+
+      '<td style="color:'+clr+';font-weight:'+( lv.pct===61.8||lv.pct===50?'700':'400')+'">'+lv.label+'</td>'+
+      '<td style="color:#8090a8">'+lv.pct+'%</td>'+
+      '<td style="color:'+clr+';font-weight:700">₹'+price.toFixed(2)+'</td>'+
+      '<td style="color:#8090a8;font-size:9px">'+lv.type+'</td>'+
+    '</tr>';
+  });
+  document.getElementById('fiboBody').innerHTML=html;
+  document.getElementById('fiboResult').style.display='block';
 }
 
 async function scanPredictions() {
