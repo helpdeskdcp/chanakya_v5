@@ -867,8 +867,23 @@ def get_option_ltp():
                     matches.append(s)
         if not matches:
             return jsonify({"success":False,"error":"Option not found: "+symbol+" "+strike+" "+opt_type})
-        # Sort by nearest expiry (shortest symbol = nearest expiry usually)
-        matches.sort(key=lambda x: len(x.get("symbol","")))
+        # Sort by nearest expiry using expiry date field
+        import datetime
+        today = datetime.date.today()
+        def expiry_key(s):
+            exp = s.get("expiry","")
+            try:
+                # Format: DDMMMYYYY e.g. 29MAY2026
+                return datetime.datetime.strptime(exp, "%d%b%Y").date()
+            except:
+                try:
+                    return datetime.datetime.strptime(exp, "%Y-%m-%d").date()
+                except:
+                    return datetime.date(2099,1,1)
+        # Filter only future expiries
+        future = [s for s in matches if expiry_key(s) >= today]
+        if future: matches = future
+        matches.sort(key=expiry_key)
         best = matches[0]
         token = str(best.get("token") or best.get("symboltoken",""))
         exch  = best.get("exch_seg","NFO")
