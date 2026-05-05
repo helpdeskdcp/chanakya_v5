@@ -57,6 +57,31 @@ def _monitor_positions():
                 tid=t["id"]; mode=t.get("mode","PAPER"); user=t.get("username","avinash")
                 hit_sl     = (dirn=="BUY" and ltp<=sl)     or (dirn=="SELL" and ltp>=sl)
                 hit_target = (dirn=="BUY" and ltp>=target)  or (dirn=="SELL" and ltp<=target)
+
+                # ── Trailing SL logic ──────────────────────────
+                if not hit_sl and not hit_target:
+                    risk = abs(entry - sl)  # initial risk per unit
+                    profit = (ltp - entry) if dirn=="BUY" else (entry - ltp)
+                    if risk > 0:
+                        if profit >= risk * 2.0:
+                            # Profit > 2R → trail SL to +1R (lock profit)
+                            new_sl = round(entry + risk * 1.0, 2) if dirn=="BUY" else round(entry - risk * 1.0, 2)
+                            if (dirn=="BUY" and new_sl > sl) or (dirn=="SELL" and new_sl < sl):
+                                conn2 = sqlite3.connect(DB_PATH)
+                                conn2.execute("UPDATE trades SET sl_price=?,updated_at=? WHERE id=?",
+                                    (new_sl, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tid))
+                                conn2.commit(); conn2.close()
+                                _log(f"📈 TRAIL SL: {sym} {dirn} SL {sl}→{new_sl} (profit={profit:+.1f})")
+                        elif profit >= risk * 1.0:
+                            # Profit > 1R → trail SL to breakeven
+                            new_sl = round(entry, 2)
+                            if (dirn=="BUY" and new_sl > sl) or (dirn=="SELL" and new_sl < sl):
+                                conn2 = sqlite3.connect(DB_PATH)
+                                conn2.execute("UPDATE trades SET sl_price=?,updated_at=? WHERE id=?",
+                                    (new_sl, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tid))
+                                conn2.commit(); conn2.close()
+                                _log(f"⚖️ BREAKEVEN SL: {sym} {dirn} SL→{new_sl}")
+
                 if hit_target or hit_sl:
                     reason = "TARGET" if hit_target else "STOPLOSS"
                     pnl = round((ltp-entry)*qty if dirn=="BUY" else (entry-ltp)*qty, 2)
@@ -82,7 +107,30 @@ def _scan_and_trade():
             _state["last_scan"] = datetime.datetime.now().strftime("%H:%M:%S")
             auto=_state["auto_trade"]; mode=_state["mode"]; open_count=_state["open_count"]
         signals = scan_all(broker)
-        good = [s for s in (signals or []) if (s.get("score") or 0) >= MIN_SCORE]
+        # MTF predictor signals पण merge करतो
+        try:
+            from data_stream.cache import get as cget
+            pred = cget("predictions") or []
+            for p in pred:
+                if p.get("confidence",0) >= MIN_SCORE and p.get("rr",0) >= 1.8:
+                    # scanner format मध्ये convert
+                    signals.append({
+                        "symbol": p["symbol"], "direction": p["direction"],
+                        "entry": p["entry"], "sl": p["sl"], "target": p["target"],
+                        "score": p["confidence"], "exchange": p.get("exchange","NSE"),
+                        "token": "", "type": "prediction", "fake": p.get("fake",[]),
+                        "rr": p.get("rr",2.0)
+                    })
+        except: pass
+        # Deduplicate by symbol
+        seen_syms = set()
+        deduped = []
+        for s in signals:
+            k = s["symbol"]+s["direction"]
+            if k not in seen_syms:
+                seen_syms.add(k); deduped.append(s)
+        signals = deduped
+        good = [s for s in (signals or []) if (s.get("score") or 0) >= MIN_SCORE and not s.get("fake")]
         _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
         for sig in good:
             sym=sig["symbol"]; score=sig.get("score",0); dirn=sig["direction"]
