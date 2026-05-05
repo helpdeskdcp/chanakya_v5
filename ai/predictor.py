@@ -47,15 +47,26 @@ def analyze_tf(candles, tf):
         if e9>e21 and r<72: trend="UP"
         elif e9<e21 and r>28: trend="DOWN"
         else: trend="SIDEWAYS"
+        # Direction first, then direction-aware scoring
+        if e9>e21 and r<72: trend_dir="UP"
+        elif e9<e21 and r>28: trend_dir="DOWN"
+        else: trend_dir="SIDEWAYS"
         score = 0
-        if e9>e21: score+=25
-        if 45<r<72: score+=20
-        if mh>0: score+=15
-        if ltp>vw: score+=20
-        if vol_ratio>=1.2: score+=10
+        if trend_dir=="UP":
+            if e9>e21: score+=25
+            if 40<r<72: score+=20
+            if mh>0: score+=15
+            if ltp>vw: score+=20
+            if vol_ratio>=1.2: score+=10
+        elif trend_dir=="DOWN":
+            if e9<e21: score+=25
+            if 28<r<60: score+=20
+            if mh<0: score+=15
+            if ltp<vw: score+=20
+            if vol_ratio>=1.2: score+=10
         fake = []
-        if vol_ratio<0.7: fake.append("LowVol")
-        if abs(mh)<0.01: fake.append("WeakMACD")
+        if vol_ratio<0.5: fake.append("LowVol")
+        if abs(mh)<0.001: fake.append("WeakMACD")
         return {"tf":tf,"ltp":ltp,"rsi":round(r,1),"trend":trend,
                 "vwap_bias":"ABOVE" if ltp>vw else "BELOW",
                 "macd":"BULL" if mh>0 else "BEAR",
@@ -104,7 +115,7 @@ def predict_symbol(symbol, token, exchange, broker):
         all_fake = []
         for v in results.values(): all_fake.extend(v.get("fake",[]))
         if all_fake: conf -= len(set(all_fake))*10
-        conf = max(30, min(95, conf))
+        conf = max(45, min(95, conf))
         # Groq verdict
         verdict = ""
         try:
@@ -131,7 +142,7 @@ def predict_symbol(symbol, token, exchange, broker):
                 ml_conf = predict_confidence(base_candles)
                 # Blend MTF score with ML confidence
                 conf = int(conf * 0.6 + ml_conf * 100 * 0.4)
-                conf = max(30, min(95, conf))
+                conf = max(45, min(95, conf))
         except: pass
         return {"symbol":symbol,"exchange":exchange,"direction":direction,
                 "ltp":ltp,"entry":ltp,"sl":sl,"target":target,"rr":rr,
