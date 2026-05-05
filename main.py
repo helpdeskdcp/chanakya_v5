@@ -911,9 +911,10 @@ def scalping_scan():
         from broker.global_broker import get_broker
         broker = get_broker()
         SYMS = [
-            {"name":"NIFTY","token":"99926000","exchange":"NSE","lot":65},
-            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30},
-            {"name":"CRUDEOIL","token":"488290","exchange":"MCX","lot":100},
+            {"name":"NIFTY","token":"99926000","exchange":"NSE","lot":65,"interval":50},
+            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30,"interval":100},
+            {"name":"CRUDEOIL","token":"488290","exchange":"MCX","lot":100,"interval":50},
+            {"name":"NATURALGAS","token":"488505","exchange":"MCX","lot":1250,"interval":10},
         ]
         rm = RiskManager()
         results = []
