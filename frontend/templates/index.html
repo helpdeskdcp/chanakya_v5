@@ -1939,8 +1939,8 @@ function generateStrikes() {
     return '<option value="'+s.val+'"'+( s.val===atm?' selected':'')+'>₹'+s.label+'</option>';
   }).join('');
   document.getElementById('oStrike').value = atm;
-  calcOptions();
-  document.getElementById('optResult').style.display='grid';
+  // Auto-fetch ATM premium
+  fetchStrikePremium(atm);
 }
 
 async function onStrikeSelect() {
