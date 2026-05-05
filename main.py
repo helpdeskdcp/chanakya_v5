@@ -293,12 +293,17 @@ def predictions():
         from data_stream.cache import get as cget, set as cset
         from broker.global_broker import get_broker
         force = request.args.get("force","0")=="1"
-        sigs = None if force else cget("predictions")
-        if not sigs:
+        sigs = cget("predictions")
+        if force or not sigs:
             import threading
             from ai.predictor import run_scan
-            sigs = run_scan(get_broker())
-            if sigs: cset("predictions", sigs, ttl=300)
+            def _bg():
+                r = run_scan(get_broker())
+                if r: cset("predictions", r, ttl=300)
+            threading.Thread(target=_bg, daemon=True).start()
+            if not sigs:
+                return jsonify({"success":True,"signals":[],"total":0,
+                                "message":"Scan started — retry in 60s"})
         return jsonify({"success":True,"signals":sigs or [],"total":len(sigs or [])})
     except Exception as e:
         return jsonify({"success":False,"error":str(e),"signals":[]})
