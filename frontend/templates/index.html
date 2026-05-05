@@ -252,6 +252,7 @@ async function toggleAutoTrader() {
       <div class="nav-item" onclick="showPage('news',this)">📰 News AI</div>
       <div class="nav-item" onclick="showPage('history',this)">📋 History</div>
       <div class="nav-item" onclick="showPage('prediction',this)">🔮 Predictions</div>
+      <div class="nav-item" onclick="showPage('scalping',this)">🎯 Scalping AI</div>
     </div>
     <div class="nav-group">
       <div class="nav-label">Settings</div>
@@ -856,6 +857,54 @@ async function toggleAutoTrader() {
       </div>
 
     </div>
+
+    <!-- SCALPING AI -->
+    <div id="pg-scalping" class="hidden">
+      <div class="card">
+        <div class="card-header">🎯 Chanakya Scalping Engine™
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-green" onclick="runScalpingScan()" id="scalpBtn" style="font-size:10px;padding:4px 8px">⚡ Scan Now</button>
+            <button class="btn btn-blue" onclick="runBacktest()" style="font-size:10px;padding:4px 8px">📊 Backtest</button>
+          </div>
+        </div>
+        <div id="scalpStats" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center">
+            <div style="font-size:9px;color:#8090a8">Total Trades</div>
+            <div id="sTotal" style="font-size:18px;font-weight:700;color:#e0e8f0">0</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center">
+            <div style="font-size:9px;color:#8090a8">Win Rate</div>
+            <div id="sWR" style="font-size:18px;font-weight:700;color:#00e676">0%</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center">
+            <div style="font-size:9px;color:#8090a8">Total PnL</div>
+            <div id="sPnL" style="font-size:18px;font-weight:700;color:#00e676">₹0</div>
+          </div>
+          <div style="background:#0a0f1a;padding:8px;border-radius:6px;text-align:center">
+            <div style="font-size:9px;color:#8090a8">Signals Found</div>
+            <div id="sCount" style="font-size:18px;font-weight:700;color:#d4af37">0</div>
+          </div>
+        </div>
+
+        <!-- Strategy Weights -->
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;color:#8090a8;margin-bottom:6px">🧠 Self-Learning Weights</div>
+          <div id="scalpWeights" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px"></div>
+        </div>
+
+        <!-- Signals -->
+        <div style="font-size:11px;font-weight:700;color:#d4af37;margin-bottom:6px">⚡ Live Signals</div>
+        <div id="scalpSignals">
+          <div style="color:#8090a8;text-align:center;padding:16px">Click Scan to find signals</div>
+        </div>
+      </div>
+
+      <!-- Backtest Results -->
+      <div class="card" id="backtestCard" style="display:none;margin-top:8px">
+        <div class="card-header">📊 Backtest Results</div>
+        <div id="backtestResults"></div>
+      </div>
+    </div>
     <!-- AI CHAT -->
     <div id="pg-aichat" class="hidden">
       <div class="card">
@@ -1027,6 +1076,7 @@ function showPage(id, el) {
   if(id==="history") loadHistory();
   if(id==="prediction") scanPredictions();
   if(id==="news") { setTimeout(function(){ loadNews(); }, 300); }
+  if(id==="scalping") { setTimeout(runScalpingScan, 500); }
   if(id==="calculator") { if(_calcRows===0) addCalcRow(); }
   if(id==="settings") loadBrokerSettings();
   if(id==="symbols") loadAdminSymbols();
@@ -2047,6 +2097,98 @@ function calcFibo(){
   });
   document.getElementById('fiboBody').innerHTML=html;
   document.getElementById('fiboResult').style.display='block';
+}
+
+
+async function runScalpingScan() {
+  var btn = document.getElementById('scalpBtn');
+  btn.textContent='⏳ Scanning...'; btn.disabled=true;
+  document.getElementById('sCount').textContent='...';
+
+  // Load stats
+  var stats_d = await api('/scalping/stats');
+  if(stats_d.success) {
+    var s = stats_d.stats;
+    var w = stats_d.weights;
+    document.getElementById('sTotal').textContent = s.total_trades||0;
+    var wrClr = (s.win_rate||0)>=60?'#00e676':(s.win_rate||0)>=40?'#d4af37':'#ff5252';
+    document.getElementById('sWR').textContent = (s.win_rate||0)+'%';
+    document.getElementById('sWR').style.color = wrClr;
+    var pnlClr = (s.total_pnl||0)>=0?'#00e676':'#ff5252';
+    document.getElementById('sPnL').textContent = '₹'+(s.total_pnl||0);
+    document.getElementById('sPnL').style.color = pnlClr;
+
+    // Weights
+    var wHtml = '';
+    Object.keys(w).forEach(function(strat){
+      var wt = w[strat];
+      var clr = wt.weight>=1.2?'#00e676':wt.weight<=0.8?'#ff5252':'#d4af37';
+      wHtml += '<div style="background:#0a0f1a;padding:8px;border-radius:6px">'+
+        '<div style="font-size:9px;color:#8090a8">'+strat+'</div>'+
+        '<div style="font-size:12px;font-weight:700;color:'+clr+'">W:'+wt.weight.toFixed(2)+'</div>'+
+        '<div style="font-size:9px;color:#8090a8">WR:'+(wt.win_rate*100).toFixed(0)+'% '+'PnL:₹'+wt.total_pnl.toFixed(0)+'</div>'+
+      '</div>';
+    });
+    document.getElementById('scalpWeights').innerHTML = wHtml;
+  }
+
+  // Scan
+  var d = await api('/scalping/scan');
+  document.getElementById('sCount').textContent = d.count||0;
+  var el = document.getElementById('scalpSignals');
+  if(d.success && d.signals && d.signals.length) {
+    el.innerHTML = d.signals.map(function(s){
+      var clr = s.signal==='BUY_CE'?'#00e676':'#ff5252';
+      var scoreClr = s.score>=80?'#00e676':s.score>=65?'#d4af37':'#ff9800';
+      return '<div style="background:#0a0f1a;border:1px solid '+(s.signal==='BUY_CE'?'#00e676':'#ff5252')+';border-radius:8px;padding:10px;margin-bottom:6px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+          '<span style="font-size:14px;font-weight:700;color:'+clr+'">'+s.signal+' '+s.symbol+'</span>'+
+          '<span style="background:'+scoreClr+';color:#000;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">'+s.score+'%</span>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:10px">'+
+          '<div><span style="color:#8090a8">Entry</span><br><b style="color:#e0e8f0">₹'+s.price+'</b></div>'+
+          '<div><span style="color:#8090a8">SL</span><br><b style="color:#ff5252">₹'+s.sl+'</b></div>'+
+          '<div><span style="color:#8090a8">Target</span><br><b style="color:#00e676">₹'+s.target+'</b></div>'+
+          '<div><span style="color:#8090a8">RSI</span><br><b style="color:#00c8ff">'+s.rsi+'</b></div>'+
+          '<div><span style="color:#8090a8">Strategy</span><br><b style="color:#d4af37">'+s.strategy+'</b></div>'+
+          '<div><span style="color:#8090a8">RR</span><br><b style="color:#00c8ff">1:'+s.rr+'</b></div>'+
+        '</div>'+
+        (s.reasons?'<div style="font-size:9px;color:#8090a8;margin-top:4px">📌 '+s.reasons.join(' | ')+'</div>':'')+
+      '</div>';
+    }).join('');
+  } else {
+    el.innerHTML = '<div style="color:#8090a8;text-align:center;padding:16px">⏳ No signals — Market scanning...</div>';
+  }
+  btn.textContent='⚡ Scan Now'; btn.disabled=false;
+}
+
+async function runBacktest() {
+  var card = document.getElementById('backtestCard');
+  var el = document.getElementById('backtestResults');
+  card.style.display='block';
+  el.innerHTML='<div style="color:#d4af37;padding:8px">⏳ Running backtest...</div>';
+  var d = await api('/scalping/backtest','POST',{});
+  if(d.success && d.results) {
+    var html='';
+    Object.keys(d.results).forEach(function(sym){
+      var r = d.results[sym];
+      var retClr = r.return_pct>=0?'#00e676':'#ff5252';
+      html+='<div style="background:#0a0f1a;padding:10px;border-radius:8px;margin-bottom:6px">'+
+        '<div style="font-weight:700;color:#d4af37;margin-bottom:6px">'+sym+'</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:10px">'+
+          '<div><span style="color:#8090a8">Trades</span><br><b>'+r.total_trades+'</b></div>'+
+          '<div><span style="color:#8090a8">Win Rate</span><br><b style="color:#00e676">'+r.win_rate+'%</b></div>'+
+          '<div><span style="color:#8090a8">Return</span><br><b style="color:'+retClr+'">'+r.return_pct+'%</b></div>'+
+          '<div><span style="color:#8090a8">PnL</span><br><b style="color:'+retClr+'">₹'+r.total_pnl+'</b></div>'+
+          '<div><span style="color:#8090a8">Max DD</span><br><b style="color:#ff9800">'+r.max_drawdown_pct+'%</b></div>'+
+          '<div><span style="color:#8090a8">Expectancy</span><br><b style="color:#00c8ff">'+r.expectancy+'</b></div>'+
+        '</div>'+
+      '</div>';
+    });
+    el.innerHTML = html;
+  } else {
+    el.innerHTML = '<div style="color:#ff5252">Backtest failed: '+(d.error||'Unknown')+'</div>';
+  }
 }
 
 async function scanPredictions() {
