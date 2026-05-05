@@ -1294,6 +1294,47 @@ def scalping_monitor():
         return jsonify({"success":True,"trades":result,"count":len(result)})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+@app.route("/api/mythos/debug")
+@require_auth
+def mythos_debug():
+    try:
+        from ai.feature_engine import compute_features
+        from ai.decision_engine import ChanakyaDecisionEngine
+        from broker.global_broker import get_broker
+        import time, datetime, pytz
+
+        broker = get_broker()
+        IST = pytz.timezone("Asia/Kolkata")
+        now = datetime.datetime.now(IST)
+        mcx_open = 9 <= now.hour <= 23
+        debug = {"time": now.strftime("%H:%M"), "mcx_open": mcx_open,
+                 "broker_connected": broker.is_connected()}
+
+        # Test CRUDEOIL
+        if not broker.is_connected(): broker.connect()
+        time.sleep(0.5)
+        raw = broker.get_candles("488290","MCX","FIVE_MINUTE",2)
+        debug["crudeoil_candles"] = len(raw) if raw else 0
+
+        if raw and len(raw) >= 30:
+            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
+                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+            features = compute_features(candles, "CRUDEOIL")
+            debug["features_ok"] = features is not None
+            if features:
+                debug["rsi"] = features["rsi14"]
+                debug["vwap_dist"] = features["vwap_dist_pct"]
+                debug["structure"] = features["structure"]
+                eng = ChanakyaDecisionEngine()
+                fusion = eng.fuse(features)
+                debug["signal"] = fusion["signal"]
+                debug["score"] = fusion["score"]
+                debug["rule"] = {"signal":fusion["rule"]["signal"],"score":fusion["rule"]["score"]}
+                debug["threshold_pass"] = fusion["score"] >= 42 and fusion["signal"] != "NO_TRADE"
+        return jsonify({"success":True,"debug":debug})
+    except Exception as e:
+        import traceback
+        return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-500:]})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -1301,6 +1342,7 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
 
 
 
