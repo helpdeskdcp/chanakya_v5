@@ -933,10 +933,18 @@ def scalping_scan():
             if sym["exchange"]=="NSE" and not nse_open: continue
             # Skip MCX when MCX closed
             if sym["exchange"]=="MCX" and not mcx_open: continue
-            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+            import time
+            time.sleep(0.3)  # Rate limit protection
+            raw = None
+            for attempt in range(3):
+                try:
+                    raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+                    if raw and len(raw)>=22: break
+                    time.sleep(1)
+                except: time.sleep(1)
             if not raw or len(raw)<22: continue
-            candles=[{"o":float(c[1]),"h":float(c[2]),"l":float(c[3]),
-                      "c":float(c[4]),"v":float(c[5]) if len(c)>5 else 0} for c in raw]
+            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
+                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
             sig = generate_signal(candles)
             conf = adaptive_confidence(sig["score"],sig["active_strategy"],sym["name"])
             sig["confidence"]=conf
