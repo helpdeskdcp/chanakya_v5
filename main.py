@@ -873,15 +873,14 @@ def get_option_ltp():
         def expiry_key(s):
             exp = s.get("expiry","")
             try:
-                # Format: DDMMMYYYY e.g. 29MAY2026
                 return datetime.datetime.strptime(exp, "%d%b%Y").date()
             except:
                 try:
                     return datetime.datetime.strptime(exp, "%Y-%m-%d").date()
                 except:
                     return datetime.date(2099,1,1)
-        # Filter only future expiries
-        future = [s for s in matches if expiry_key(s) >= today]
+        # Filter only future expiries with valid parseable dates (not old format)
+        future = [s for s in matches if expiry_key(s) >= today and expiry_key(s).year < 2090]
         if future: matches = future
         matches.sort(key=expiry_key)
         best = matches[0]
