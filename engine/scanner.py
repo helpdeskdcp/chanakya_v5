@@ -24,6 +24,7 @@ WATCHLIST = [
 def _analyze(candles, symbol):
     try:
         from engine.indicators import ema, rsi, macd, vwap, atr, supertrend
+        from engine.smart_money import smc_score, market_structure, detect_bos, volume_profile
         if len(candles) < 10: return None
         closes = [float(c[4]) for c in candles]
         highs  = [float(c[2]) for c in candles]
@@ -38,9 +39,11 @@ def _analyze(candles, symbol):
         st     = supertrend(candles)
         vol_avg = sum(vols)/len(vols)
         vol_ratio = round(vols[-1]/vol_avg,2) if vol_avg>0 else 1
-        # Direction first — then score direction-aware
+
+        # Direction first
         direction = "BUY" if e9>e21 and r<70 else "SELL"
-        # Score aligned to direction
+
+        # Classic score (max 100)
         score = 0
         if direction=="BUY":
             if e9>e21: score+=25
@@ -49,25 +52,50 @@ def _analyze(candles, symbol):
             if ltp>vw: score+=20
             if vol_ratio>=1.2: score+=10
             if st=="UP": score+=10
-        else:  # SELL
+        else:
             if e9<e21: score+=25
             if 30<r<60: score+=20
             if mh<0: score+=15
             if ltp<vw: score+=20
             if vol_ratio>=1.2: score+=10
             if st=="DOWN": score+=10
-        sl = round(ltp-1.5*at,1) if direction=="BUY" else round(ltp+1.5*at,1)
-        target = round(ltp+3*at,1) if direction=="BUY" else round(ltp-3*at,1)
+
+        # Smart Money Score (max 100)
+        smc, smc_details = smc_score(candles, direction)
+        ms  = smc_details.get("structure","UNKNOWN")
+        bos = smc_details.get("bos","NONE")
+        vp  = smc_details.get("vp",{})
+
+        # Blended score: 50% classic + 50% SMC
+        final_score = round(score * 0.5 + smc * 0.5)
+
+        # Smart SL/Target using Order Blocks + ATR
+        ob = smc_details.get("ob",{})
+        if direction=="BUY":
+            bull_ob = ob.get("bull_ob")
+            sl = round(bull_ob["low"] - at*0.3, 1) if bull_ob else round(ltp-1.5*at,1)
+            target = round(ltp+3*at,1)
+        else:
+            bear_ob = ob.get("bear_ob")
+            sl = round(bear_ob["high"] + at*0.3, 1) if bear_ob else round(ltp+1.5*at,1)
+            target = round(ltp-3*at,1)
+
         rr = round(abs(target-ltp)/abs(ltp-sl),1) if ltp!=sl else 0
+
         # Fake filter
         fake = []
         if vol_ratio<0.5: fake.append("LowVol")
         if abs(mh)<0.001: fake.append("WeakMACD")
+        if ms in ["CHOPPY","RANGING"] and smc < 20: fake.append("ChoppyMkt")
+
         return {"symbol":symbol,"ltp":ltp,"direction":direction,
                 "entry":ltp,"sl":sl,"target":target,"rr":rr,
-                "score":score,"rsi":r,"vwap":vw,"vwap_bias":"ABOVE" if ltp>vw else "BELOW",
+                "score":final_score,"classic_score":score,"smc_score":smc,
+                "rsi":r,"vwap":vw,"vwap_bias":"ABOVE" if ltp>vw else "BELOW",
                 "ema_cross":"BULL" if e9>e21 else "BEAR",
-                "vol_ratio":vol_ratio,"fake":fake,"atr":at}
+                "vol_ratio":vol_ratio,"fake":fake,"atr":at,
+                "structure":ms,"bos":bos,
+                "poc":vp.get("poc",0),"vah":vp.get("vah",0),"val":vp.get("val",0)}
     except Exception as e:
         logger.debug(f"analyze {symbol}: {e}"); return None
 
