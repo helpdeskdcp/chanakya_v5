@@ -63,7 +63,10 @@ def reversal_signal(closes, highs, lows, rsi_val, vwap_val, atr_val):
         score += 30; reasons.append(f"RSI_Oversold={rsi_val}")
     elif rsi_val < 40:
         score += 15; reasons.append(f"RSI_NearOversold={rsi_val}")
-    if price < vwap_val * 0.998:
+    vwap_gap = (vwap_val - price) / vwap_val * 100 if vwap_val > 0 else 0
+    if vwap_gap > 1.5:
+        score += 35; reasons.append(f"BigVWAP_Gap={vwap_gap:.1f}%")
+    elif price < vwap_val * 0.998:
         score += 20; reasons.append("Below_VWAP")
     if len(lows)>2 and lows[-1] > lows[-2]:
         score += 20; reasons.append("HigherLow")
@@ -75,11 +78,11 @@ def reversal_signal(closes, highs, lows, rsi_val, vwap_val, atr_val):
     if candle_range > 0 and candle_body/candle_range > 0.6 and closes[-1]>closes[-2]:
         score += 10; reasons.append("BullCandle")
 
-    if score >= 55 and rsi_val < 42:
+    if score >= 55 and rsi_val < 52:
         return {"signal":"BUY_CE","score":score,"reasons":reasons,"strategy":"REVERSAL"}
 
     # Overbought reversal → BUY PE
-    if rsi_val > 68:
+    if rsi_val > 62:
         score2 = 30+(10 if rsi_val>75 else 0)
         if price > vwap_val * 1.002: score2+=20
         if len(highs)>2 and highs[-1]<highs[-2]: score2+=20; reasons.append("LowerHigh")
