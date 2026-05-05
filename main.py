@@ -849,23 +849,30 @@ def get_option_ltp():
             return jsonify({"success":False,"error":"Scrip master not found"})
         with open(scrip_path) as f:
             scrips = json.load(f)
-        # Find matching option
+        # Find matching option — format: NIFTY29MAY2424000CE
         strike_int = str(int(float(strike)))
+        sym_up = symbol.upper()
+        otype  = opt_type.upper()
         matches = []
         for s in scrips:
-            name = s.get("name","").upper()
-            sym  = s.get("symbol","").upper()
-            if (symbol.upper() in name or symbol.upper() in sym):
-                if strike_int in name and opt_type.upper() in name:
+            ssym = s.get("symbol","").upper()
+            # Symbol contains: SYMBOL + EXPIRY + STRIKE + TYPE
+            if ssym.startswith(sym_up) and ssym.endswith(strike_int+otype):
+                matches.append(s)
+        if not matches:
+            # Fallback: loose search
+            for s in scrips:
+                ssym = s.get("symbol","").upper()
+                if sym_up in ssym and strike_int in ssym and otype in ssym:
                     matches.append(s)
         if not matches:
-            return jsonify({"success":False,"error":"Option not found for "+symbol+" "+strike+" "+opt_type})
-        # Get nearest expiry
-        matches.sort(key=lambda x: x.get("expiry",""))
+            return jsonify({"success":False,"error":"Option not found: "+symbol+" "+strike+" "+opt_type})
+        # Sort by nearest expiry (shortest symbol = nearest expiry usually)
+        matches.sort(key=lambda x: len(x.get("symbol","")))
         best = matches[0]
-        token = best.get("token") or best.get("symboltoken","")
+        token = str(best.get("token") or best.get("symboltoken",""))
         exch  = best.get("exch_seg","NFO")
-        ltp = broker.get_ltp(exch, best.get("symbol",""), str(token))
+        ltp = broker.get_ltp(exch, best.get("symbol",""), token)
         return jsonify({"success":True,"ltp":ltp,"token":token,
                        "name":best.get("symbol",""),"strike":strike,"type":opt_type})
     except Exception as e:
