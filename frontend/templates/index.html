@@ -1910,8 +1910,14 @@ async function fetchOptionsData() {
         }
       }
     }
-  } catch(e) { console.log('Options chain error:', e); }
-
+  } catch(e) {
+    console.log('Options chain error:', e);
+  }
+  // If premium not fetched, show hint
+  var prem = document.getElementById('oPrem').value;
+  if(!prem || prem=='0') {
+    document.getElementById('oLiveSpot').textContent += ' | ⚠️ Enter Premium manually';
+  }
   calcOptions();
 }
 
@@ -1953,20 +1959,35 @@ function calcOptions(){
   var qty=parseFloat(document.getElementById('oQty').value)||1;
   if(!spot||!strike)return;
   if(!prem){prem=0;}
-  var intrinsic=type==='CE'?Math.max(0,spot-strike):Math.max(0,strike-spot);
-  var timeVal=Math.max(0,prem-intrinsic);
-  var be=type==='CE'?strike+prem:strike-prem;
-  var money='';
-  if(type==='CE'){money=spot>strike?'ITM (In The Money)':spot<strike?'OTM (Out The Money)':'ATM';}
-  else{money=spot<strike?'ITM (In The Money)':spot>strike?'OTM (Out The Money)':'ATM';}
-  var cost=prem*lotSize*qty;
-  document.getElementById('oMoney').textContent=money;
-  document.getElementById('oIntrinsic').textContent='₹'+intrinsic.toFixed(2);
-  document.getElementById('oTime').textContent='₹'+timeVal.toFixed(2);
-  document.getElementById('oBE').textContent='₹'+be.toFixed(2);
-  document.getElementById('oCost').textContent='₹'+cost.toFixed(0);
-  document.getElementById('oProfit').textContent=type==='CE'?'Unlimited (above ₹'+be.toFixed(0)+')':'Max ₹'+(be*lotSize*qty).toFixed(0);
-  document.getElementById('optResult').style.display='grid';
+  var intrinsic = type==='CE' ? Math.max(0, spot-strike) : Math.max(0, strike-spot);
+  var timeVal = prem > 0 ? Math.max(0, prem-intrinsic) : 0;
+  var be = type==='CE' ? strike+prem : strike-prem;
+  var cost = prem * lotSize * qty;
+  var maxLoss = cost;
+  var maxProfit = type==='CE' ? 'Unlimited' : '₹'+(strike-prem > 0 ? ((strike-prem)*lotSize*qty).toFixed(0) : 0);
+
+  // Moneyness
+  var diff = spot - strike;
+  var money='', moneyClr='#8090a8';
+  if(type==='CE'){
+    if(diff > 0){money='✅ ITM'; moneyClr='#00e676';}
+    else if(diff < 0){money='❌ OTM'; moneyClr='#ff5252';}
+    else{money='⚡ ATM'; moneyClr='#d4af37';}
+  } else {
+    if(diff < 0){money='✅ ITM'; moneyClr='#00e676';}
+    else if(diff > 0){money='❌ OTM'; moneyClr='#ff5252';}
+    else{money='⚡ ATM'; moneyClr='#d4af37';}
+  }
+
+  document.getElementById('oMoney').textContent = money;
+  document.getElementById('oMoney').style.color = moneyClr;
+  document.getElementById('oIntrinsic').textContent = '₹'+intrinsic.toFixed(2);
+  document.getElementById('oTime').textContent = prem>0 ? '₹'+timeVal.toFixed(2) : 'Enter Premium';
+  document.getElementById('oTime').style.color = prem>0 ? '#ff9800' : '#8090a8';
+  document.getElementById('oBE').textContent = prem>0 ? '₹'+be.toFixed(2) : 'Enter Premium';
+  document.getElementById('oCost').textContent = prem>0 ? '₹'+cost.toFixed(0) : 'Enter Premium';
+  document.getElementById('oProfit').textContent = maxProfit;
+  document.getElementById('optResult').style.display = 'grid';
 }
 
 // ─── FIBONACCI ───
