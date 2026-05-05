@@ -767,9 +767,9 @@ async function toggleAutoTrader() {
           <!-- Index selector -->
           <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
             <select id="oIndex" class="inp" style="margin:0;width:130px;font-size:11px;padding:4px" onchange="fetchOptionsData()">
-              <option value="NIFTY|99926000|NSE|50">NIFTY (Lot:50)</option>
-              <option value="BANKNIFTY|99926009|NSE|15">BANKNIFTY (Lot:15)</option>
-              <option value="FINNIFTY|99926037|NSE|40">FINNIFTY (Lot:40)</option>
+              <option value="NIFTY|99926000|NSE|75">NIFTY (Lot:75)</option>
+              <option value="BANKNIFTY|99926009|NSE|30">BANKNIFTY (Lot:30)</option>
+              <option value="FINNIFTY|99926037|NSE|65">FINNIFTY (Lot:65)</option>
               <option value="CRUDEOIL|488290|MCX|100">CRUDEOIL (Lot:100)</option>
               <option value="NATURALGAS|488505|MCX|1250">NATGAS (Lot:1250)</option>
             </select>
@@ -1871,18 +1871,44 @@ async function fetchOptionsData() {
   var idx = document.getElementById('oIndex').value.split('|');
   var sym=idx[0], tok=idx[1], exch=idx[2], lot=idx[3];
   document.getElementById('oLiveSpot').textContent = '⏳ Loading...';
+
+  // Step 1: Get spot price
   var d = await api('/chart?symbol='+sym+'&token='+tok+'&exchange='+exch);
-  if(d.success && d.ltp) {
-    _oSpotPrice = d.ltp;
-    document.getElementById('oSpot').value = d.ltp;
-    document.getElementById('oLot').value = lot;
-    document.getElementById('oLiveSpot').textContent = sym+" Spot: ₹"+d.ltp;
-    document.getElementById('oInterval').value = sym==='BANKNIFTY'?100:sym==='CRUDEOIL'?50:sym==='NATURALGAS'?10:50;
-    generateStrikes();
-    calcOptions();
-  } else {
+  if(!d.success || !d.ltp) {
     document.getElementById('oLiveSpot').textContent = 'Error: '+d.error;
+    return;
   }
+  _oSpotPrice = d.ltp;
+  document.getElementById('oSpot').value = d.ltp;
+  document.getElementById('oLot').value = lot;
+  document.getElementById('oLiveSpot').textContent = sym+' Spot: ₹'+d.ltp;
+  var interval = sym==='BANKNIFTY'?100:sym==='CRUDEOIL'?50:sym==='NATURALGAS'?10:50;
+  document.getElementById('oInterval').value = interval;
+  generateStrikes();
+
+  // Step 2: Get ATM premium from options chain
+  try {
+    var atm = Math.round(d.ltp/interval)*interval;
+    var type = document.getElementById('oType').value;
+    var oc = await api('/options-chain?symbol='+sym);
+    if(oc.success && oc.chain) {
+      var chain = oc.chain;
+      // Find ATM strike premium
+      var atmData = null;
+      chain.forEach(function(row){
+        if(row.strike === atm) atmData = row;
+      });
+      if(atmData) {
+        var prem = type==='CE' ? (atmData.ce_ltp||atmData.CE||0) : (atmData.pe_ltp||atmData.PE||0);
+        if(prem > 0) {
+          document.getElementById('oPrem').value = prem.toFixed(2);
+          document.getElementById('oLiveSpot').textContent = sym+' Spot:₹'+d.ltp+' | ATM '+type+':₹'+prem;
+        }
+      }
+    }
+  } catch(e) { console.log('Options chain error:', e); }
+
+  calcOptions();
 }
 
 function generateStrikes() {
