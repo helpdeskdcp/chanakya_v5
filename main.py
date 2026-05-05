@@ -853,14 +853,24 @@ def get_option_ltp():
         strike_int = str(int(float(strike)))
         sym_up = symbol.upper()
         otype  = opt_type.upper()
+        # Correct exchange per symbol
+        EXCH_MAP = {
+            "NIFTY":"NFO", "BANKNIFTY":"NFO", "FINNIFTY":"NFO",
+            "MIDCPNIFTY":"NFO", "SENSEX":"BFO",
+            "CRUDEOIL":"MCX", "NATURALGAS":"MCX",
+            "GOLD":"MCX", "SILVER":"MCX", "COPPER":"MCX",
+        }
+        preferred_exch = EXCH_MAP.get(sym_up, "")
         matches = []
         for s in scrips:
             ssym = s.get("symbol","").upper()
-            # Symbol contains: SYMBOL + EXPIRY + STRIKE + TYPE
+            exch = s.get("exch_seg","").upper()
+            # Filter by correct exchange
+            if preferred_exch and exch != preferred_exch: continue
             if ssym.startswith(sym_up) and ssym.endswith(strike_int+otype):
                 matches.append(s)
         if not matches:
-            # Fallback: loose search
+            # Fallback without exchange filter
             for s in scrips:
                 ssym = s.get("symbol","").upper()
                 if sym_up in ssym and strike_int in ssym and otype in ssym:
