@@ -767,7 +767,7 @@ async function toggleAutoTrader() {
           <!-- Index selector -->
           <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
             <select id="oIndex" class="inp" style="margin:0;width:130px;font-size:11px;padding:4px" onchange="fetchOptionsData()">
-              <option value="NIFTY|99926000|NSE|75">NIFTY (Lot:75)</option>
+              <option value="NIFTY|99926000|NSE|65">NIFTY (Lot:65)</option>
               <option value="BANKNIFTY|99926009|NSE|30">BANKNIFTY (Lot:30)</option>
               <option value="FINNIFTY|99926037|NSE|65">FINNIFTY (Lot:65)</option>
               <option value="CRUDEOIL|488290|MCX|100">CRUDEOIL (Lot:100)</option>
@@ -1882,7 +1882,11 @@ async function fetchOptionsData() {
   document.getElementById('oSpot').value = d.ltp;
   document.getElementById('oLot').value = lot;
   document.getElementById('oLiveSpot').textContent = sym+' Spot: ₹'+d.ltp;
-  var interval = sym==='BANKNIFTY'?100:sym==='CRUDEOIL'?50:sym==='NATURALGAS'?10:50;
+  var intervals = {
+      'NIFTY':50, 'BANKNIFTY':100, 'FINNIFTY':50,
+      'CRUDEOIL':50, 'NATURALGAS':10, 'GOLD':100
+    };
+    var interval = intervals[sym] || 50;
   document.getElementById('oInterval').value = interval;
   generateStrikes();
 
