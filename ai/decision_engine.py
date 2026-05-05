@@ -58,9 +58,9 @@ class ChanakyaDecisionEngine:
         if structure <= -1:    bear_score += 10; reasons.append("LH_LL")
         if mom5 < -0.002:      bear_score += 10; reasons.append("Momentum-")
 
-        if bull_score > bear_score and bull_score >= 40:
+        if bull_score > bear_score and bull_score >= 35:
             direction = "BUY_CE"; score = bull_score
-        elif bear_score > bull_score and bear_score >= 40:
+        elif bear_score > bull_score and bear_score >= 35:
             direction = "BUY_PE"; score = bear_score
         else:
             direction = "NO_TRADE"; score = max(bull_score, bear_score)
@@ -156,7 +156,11 @@ ADJUSTMENT: [+10/-10/0] (confidence adjustment)"""
                 "adjustment": int(adj.group(1)) if adj else 0,
             }
         except Exception as e:
-            return {"approved":True,"confidence":65,"reason":str(e),"risk":"MEDIUM","adjustment":0}
+            err = str(e)
+            # Rate limit — approve with reduced confidence
+            if '429' in err or 'rate' in err.lower():
+                return {"approved":True,"confidence":60,"reason":"LLM_RateLimit_Bypassed","risk":"MEDIUM","adjustment":-5}
+            return {"approved":True,"confidence":60,"reason":err,"risk":"MEDIUM","adjustment":0}
 
     def fuse(self, features, candles=None):
         """
@@ -188,6 +192,9 @@ ADJUSTMENT: [+10/-10/0] (confidence adjustment)"""
         ml_score   = ml['confidence'] if ml['signal'] != "NO_TRADE" else 0
         llm_score  = llm['confidence'] if llm['approved'] else 0
 
+        # Adjust weights if ML unavailable
+        if not ml.get('ml_available', False):
+            rule_w = 0.55; ml_w = 0.10; llm_w = 0.35
         fused_score = int(
             rule_score * rule_w +
             ml_score   * ml_w   +
@@ -204,9 +211,9 @@ ADJUSTMENT: [+10/-10/0] (confidence adjustment)"""
         if not llm['approved']:
             final_signal = "NO_TRADE"
             fused_score = max(0, fused_score - 20)
-        elif agree_buy >= 1 and fused_score >= 58:
+        elif agree_buy >= 1 and fused_score >= 50:
             final_signal = "BUY_CE"
-        elif agree_sell >= 1 and fused_score >= 58:
+        elif agree_sell >= 1 and fused_score >= 50:
             final_signal = "BUY_PE"
         elif rule['signal'] != "NO_TRADE" and fused_score >= 65:
             final_signal = rule['signal']
