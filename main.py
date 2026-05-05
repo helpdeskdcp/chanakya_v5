@@ -917,6 +917,8 @@ def scalping_scan():
         ]
         rm = RiskManager()
         results = []
+        import datetime as dt
+        today = dt.date.today()
         for sym in SYMS:
             raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
             if not raw or len(raw)<22: continue
@@ -925,16 +927,66 @@ def scalping_scan():
             sig = generate_signal(candles)
             conf = adaptive_confidence(sig["score"],sig["active_strategy"],sym["name"])
             sig["confidence"]=conf
-            if sig["signal"]!="NO_TRADE" and conf>=60:
-                tp = rm.calculate_trade(sig["signal"],sig["price"],sig["atr"],sym["lot"])
-                results.append({
-                    "symbol":sym["name"],"signal":sig["signal"],
-                    "price":sig["price"],"score":conf,
-                    "strategy":sig["active_strategy"],
-                    "sl":tp["sl"],"target":tp["target"],"qty":tp["qty"],
-                    "rsi":sig["rsi"],"trend":sig["trend"],
-                    "reasons":sig["reasons"],"rr":tp["rr"],
-                })
+            if sig["signal"]=="NO_TRADE" or conf<60: continue
+            tp = rm.calculate_trade(sig["signal"],sig["price"],sig["atr"],sym["lot"])
+            # Option selection
+            opt_type = "CE" if sig["signal"]=="BUY_CE" else "PE"
+            interval = sym.get("interval",50)
+            atm = round(sig["price"]/interval)*interval
+            opt_ltp = None; opt_sym = None; opt_token = None
+            # Try ATM then nearby strikes
+            for strike_offset in [0, 1, -1, 2, -2]:
+                strike = atm + strike_offset*interval
+                try:
+                    import json as jj
+                    with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                    EXCH_MAP={"NIFTY":"NFO","BANKNIFTY":"NFO","FINNIFTY":"NFO",
+                               "CRUDEOIL":"MCX","NATURALGAS":"MCX"}
+                    pexch = EXCH_MAP.get(sym["name"],"NFO")
+                    strike_s = str(int(strike))
+                    matches = [s for s in scrips
+                               if s.get("exch_seg","").upper()==pexch
+                               and s.get("symbol","").upper().startswith(sym["name"].upper())
+                               and s.get("symbol","").upper().endswith(strike_s+opt_type)]
+                    import datetime as dt2
+                    def ekey(s):
+                        try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+                        except: return dt2.date(2099,1,1)
+                    future = [s for s in matches if ekey(s)>=today and ekey(s).year<2090]
+                    if not future: continue
+                    future.sort(key=ekey)
+                    best = future[0]
+                    ltp = broker.get_ltp(pexch, best.get("symbol",""), str(best.get("token","")))
+                    if ltp and ltp>0:
+                        opt_ltp=ltp; opt_sym=best.get("symbol"); opt_token=str(best.get("token"))
+                        atm=strike; break
+                except: continue
+            # Option TP with option price
+            opt_entry = opt_ltp or 0
+            opt_sl     = round(opt_entry*0.70,2) if opt_entry else 0
+            opt_target = round(opt_entry*1.40,2) if opt_entry else 0
+            opt_trail  = round(opt_entry*0.85,2) if opt_entry else 0
+            results.append({
+                "symbol":sym["name"],"signal":sig["signal"],
+                "price":sig["price"],"score":conf,
+                "strategy":sig["active_strategy"],
+                "sl":tp["sl"],"target":tp["target"],"qty":tp["qty"],
+                "rsi":sig["rsi"],"trend":sig["trend"],
+                "reasons":sig["reasons"],"rr":tp["rr"],
+                "atr":sig["atr"],
+                # Option details
+                "opt_type":opt_type,
+                "opt_symbol":opt_sym,
+                "opt_token":opt_token,
+                "opt_ltp":opt_ltp,
+                "opt_strike":atm,
+                "opt_entry":opt_entry,
+                "opt_sl":opt_sl,
+                "opt_target":opt_target,
+                "opt_trail":opt_trail,
+                "opt_lot":sym["lot"],
+                "opt_exchange":EXCH_MAP.get(sym["name"],"NFO"),
+            })
         return jsonify({"success":True,"signals":results,"count":len(results)})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
@@ -951,7 +1003,7 @@ def scalping_stats():
         return jsonify({"success":False,"error":str(e)})
 
 @app.route("/api/scalping/backtest", methods=["POST"])
-@require_role("developer","administrator")
+@require_auth
 def scalping_backtest():
     try:
         from scalping_engine.backtest import run_backtest
@@ -972,6 +1024,132 @@ def scalping_backtest():
         return jsonify({"success":True,"results":results})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+@app.route("/api/scalping/buy", methods=["POST"])
+@require_auth
+def scalping_buy():
+    try:
+        data = request.json or {}
+        sym        = data.get("opt_symbol")
+        token      = data.get("opt_token")
+        exchange   = data.get("opt_exchange","NFO")
+        qty        = int(data.get("opt_lot",1))
+        entry      = float(data.get("opt_entry",0))
+        sl         = float(data.get("opt_sl",0))
+        target     = float(data.get("opt_target",0))
+        trail      = float(data.get("opt_trail",0))
+        signal     = data.get("signal","BUY_CE")
+        index_sym  = data.get("symbol","NIFTY")
+        strategy   = data.get("strategy","BREAKOUT")
+        paper      = data.get("paper", True)
+        username   = request.username
+
+        if not sym or not entry:
+            return jsonify({"success":False,"error":"Missing params"})
+
+        import sqlite3 as sq, datetime as dt
+        conn = sq.connect("data/chanakya_v5.db")
+
+        if paper:
+            # Paper trade
+            conn.execute("""INSERT INTO trades
+                (username,symbol,direction,entry_price,sl_price,target_price,
+                 quantity,mode,status,strategy,created_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (username, sym, "BUY", entry, sl, target, qty,
+                 "PAPER","OPEN", strategy,
+                 dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            trade_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+            conn.commit(); conn.close()
+            return jsonify({"success":True,"trade_id":trade_id,"mode":"PAPER",
+                           "message":f"Paper BUY {sym} @ ₹{entry}",
+                           "sl":sl,"target":target,"trail":trail})
+        else:
+            # Live order via Angel One
+            from broker.global_broker import get_broker
+            broker = get_broker()
+            if not broker.connected:
+                return jsonify({"success":False,"error":"Broker not connected"})
+            # Place limit order
+            price_buf = round(entry * 1.002, 2)  # 0.2% buffer for limit
+            order_resp = broker.obj.placeOrder({
+                "variety":"NORMAL","tradingsymbol":sym,
+                "symboltoken":token,"transactiontype":"BUY",
+                "exchange":exchange,"ordertype":"LIMIT",
+                "producttype":"INTRADAY","duration":"DAY",
+                "price":str(price_buf),"quantity":str(qty)
+            })
+            order_id = order_resp.get("data",{}).get("orderid","")
+            conn.execute("""INSERT INTO trades
+                (username,symbol,direction,entry_price,sl_price,target_price,
+                 quantity,mode,status,strategy,order_id,created_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (username,sym,"BUY",entry,sl,target,qty,
+                 "LIVE","OPEN",strategy,order_id,
+                 dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            conn.commit(); conn.close()
+            return jsonify({"success":True,"order_id":order_id,"mode":"LIVE",
+                           "message":f"LIVE LIMIT BUY {sym} @ ₹{price_buf}",
+                           "sl":sl,"target":target})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/scalping/monitor")
+@require_auth
+def scalping_monitor():
+    """Monitor open scalping trades — check SL trail"""
+    try:
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        trades = conn.execute("""SELECT id,symbol,direction,entry_price,sl_price,
+            target_price,quantity,mode,strategy,created_at
+            FROM trades WHERE username=? AND status='OPEN'
+            ORDER BY id DESC""",
+            (request.username,)).fetchall()
+        result = []
+        from broker.global_broker import get_broker
+        broker = get_broker()
+        for t in trades:
+            tid,sym,dire,entry,sl,target,qty,mode,strat,ts = t
+            # Get current LTP
+            ltp = None
+            try:
+                # Find token from scrip master
+                import json as jj
+                with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
+                if found:
+                    s = found[0]
+                    ltp = broker.get_ltp(s.get("exch_seg","NFO"),sym,str(s.get("token","")))
+            except: pass
+
+            pnl = 0; trail_sl = sl; status_msg = "HOLD"
+            if ltp:
+                pnl = round((ltp - entry) * qty, 2)
+                # Trailing SL logic (SEBI style)
+                profit_pct = (ltp - entry) / entry * 100 if entry > 0 else 0
+                if profit_pct >= 15:
+                    trail_sl = round(ltp * 0.90, 2)  # Trail to 90% of current
+                elif profit_pct >= 10:
+                    trail_sl = round(ltp * 0.88, 2)
+                elif profit_pct >= 5:
+                    trail_sl = round(entry * 1.02, 2)  # Move to cost+2%
+                trail_sl = max(trail_sl, sl)
+                # Status
+                if ltp <= sl:       status_msg = "⚠️ SL_HIT"
+                elif ltp >= target: status_msg = "🎯 TARGET_HIT"
+                elif trail_sl > sl: status_msg = "📈 TRAILING"
+
+            result.append({
+                "id":tid,"symbol":sym,"direction":dire,
+                "entry":entry,"sl":sl,"target":target,
+                "qty":qty,"mode":mode,"strategy":strat,
+                "ltp":ltp,"pnl":pnl,"trail_sl":trail_sl,
+                "status":status_msg,"timestamp":ts
+            })
+        conn.close()
+        return jsonify({"success":True,"trades":result,"count":len(result)})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -979,5 +1157,6 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
 
 
