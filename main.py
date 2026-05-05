@@ -563,7 +563,7 @@ def get_chart():
         from engine.indicators import ema, rsi, vwap, atr
         broker = get_broker()
         if not broker or not broker.is_connected():
-            return jsonify({"success":False,"error":"Broker not connected"})
+            broker.connect()  # try reconnect
         candles = broker.get_candles(token, exchange, interval, days)
         if not candles:
             return jsonify({"success":False,"error":"No candle data"})
