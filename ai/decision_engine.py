@@ -58,6 +58,9 @@ class ChanakyaDecisionEngine:
         if structure <= -1:    bear_score += 10; reasons.append("LH_LL")
         if mom5 < -0.002:      bear_score += 10; reasons.append("Momentum-")
 
+        # RSI extreme blocks
+        if rsi > 80: bull_score = max(0, bull_score - 30)  # overbought - no CE
+        if rsi < 20: bear_score = max(0, bear_score - 30)  # oversold - no PE
         if bull_score > bear_score and bull_score >= 35:
             direction = "BUY_CE"; score = bull_score
         elif bear_score > bull_score and bear_score >= 35:

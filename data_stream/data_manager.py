@@ -56,7 +56,7 @@ class DataManager:
     def _get_broker(self):
         now = time.time()
         if self._broker and self._connected: return self._broker
-        if now - self._last_connect < 30: return self._broker
+        if now - self._last_connect < 5: return self._broker
         try:
             self._last_connect = now
             from broker.global_broker import get_broker

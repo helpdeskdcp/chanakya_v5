@@ -956,6 +956,8 @@ def scalping_scan():
         today = dt2.date.today()
 
         results = []
+        logger.info("Scalping scan: %d symbols, NSE=%s MCX=%s",
+                    len(dm.SYMBOLS), dm.is_market_open('NSE'), dm.is_market_open('MCX'))
         for sym_name, info in dm.SYMBOLS.items():
             if info["type"] == "equity": continue
             if info["exchange"] == "NSE" and not dm.is_market_open("NSE"): continue
