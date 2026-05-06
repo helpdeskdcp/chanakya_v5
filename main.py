@@ -368,8 +368,6 @@ def broker_settings():
 
 
 # ── Symbol Manager Routes ──────────────────────────────
-@app.route("/api/symbols")
-@require_auth
 @app.route("/api/admin/settings")
 @require_role("developer","administrator")
 def admin_get_settings():
