@@ -85,7 +85,7 @@ def predict_symbol(symbol, token, exchange, broker):
         nse_open = (9,15)<=(h,mn)<=(15,30) and now.weekday()<5
         mcx_open = (9,0)<=(h,mn)<=(23,30) and now.weekday()<5
         is_open = (exchange=="NSE" and nse_open) or (exchange=="MCX" and mcx_open)
-        # allow scan always
+        if not is_open: return None  # Market closed for this exchange
         for interval,tf,days in INTERVALS:
             ckey = "pred_"+symbol+"_"+tf
             candles = cget(ckey)
