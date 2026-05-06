@@ -208,14 +208,14 @@ ADJUSTMENT: [+10/-10/0] (confidence adjustment)"""
         agree_buy  = signals.count("BUY_CE")
         agree_sell = signals.count("BUY_PE")
 
+        # LLM soft rejection
         if not llm['approved']:
-            final_signal = "NO_TRADE"
-            fused_score = max(0, fused_score - 20)
-        elif agree_buy >= 1 and fused_score >= 38:
-            final_signal = "BUY_CE"
-        elif agree_sell >= 1 and fused_score >= 38:
-            final_signal = "BUY_PE"
-        elif rule['signal'] != "NO_TRADE" and fused_score >= 65:
+            fused_score = max(0, fused_score - 10)
+        if agree_buy >= 1 and fused_score >= 32:
+            final_signal = 'BUY_CE'
+        elif agree_sell >= 1 and fused_score >= 32:
+            final_signal = 'BUY_PE'
+        elif rule['signal'] != 'NO_TRADE' and fused_score >= 28:
             final_signal = rule['signal']
         else:
             final_signal = "NO_TRADE"
