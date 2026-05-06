@@ -1341,11 +1341,12 @@ def mythos_debug():
 @app.route("/api/signals/nse-index")
 @require_auth
 def signals_nse_index():
-    """NSE Index F&O signals — NIFTY/BANKNIFTY/FINNIFTY options"""
+    """NSE Index F&O — Mythos 3-layer AI Engine"""
     try:
-        from engine.scanner import NSE_INDEX, _analyze
+        from ai.feature_engine import compute_features
+        from ai.decision_engine import ChanakyaDecisionEngine
         from broker.global_broker import get_broker
-        import datetime, pytz
+        import datetime, pytz, time, json as jj, datetime as dt2
         IST = pytz.timezone("Asia/Kolkata")
         now = datetime.datetime.now(IST)
         if not ((now.hour==9 and now.minute>=15) or (10<=now.hour<=15) or
@@ -1353,34 +1354,69 @@ def signals_nse_index():
             return jsonify({"success":True,"signals":[],"market":"NSE_CLOSED",
                           "message":"NSE 9:15AM-3:30PM IST madhe open aahe"})
         broker = get_broker()
+        engine = ChanakyaDecisionEngine()
+        NSE = [
+            {"name":"NIFTY",    "token":"99926000","exchange":"NSE","lot":65,"interval":50,"min_sl":0.004},
+            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30,"interval":100,"min_sl":0.004},
+            {"name":"FINNIFTY", "token":"99926037","exchange":"NSE","lot":65,"interval":50,"min_sl":0.004},
+        ]
         results = []
-        for sym in NSE_INDEX:
+        today = dt2.date.today()
+        for sym in NSE:
+            time.sleep(0.5)
+            if not broker.is_connected(): broker.connect()
             raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
-            if not raw or len(raw)<15: continue
-            sig = _analyze(raw, sym["symbol"])
-            if not sig or sig.get("signal") not in ["BUY","SELL"]: continue
-            if sig.get("score",0) < 72: continue
-            ltp = float(raw[-1][4])
-            sl_pts = max(sig.get("atr",ltp*0.004)*2.5, ltp*sym["min_sl_pct"])
+            if not raw or len(raw)<30: continue
+            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
+                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+            features = compute_features(candles, sym["name"])
+            if not features: continue
+            fusion = engine.fuse(features)
+            if fusion["signal"]=="NO_TRADE" or fusion["score"]<60: continue
+            ltp = features["price"]
+            atr_val = features["atr14"]
+            sl_pts = max(atr_val*2.5, ltp*sym["min_sl"])
             tgt_pts = sl_pts * 2.0
-            direction = "BUY_CE" if sig["signal"]=="BUY" else "BUY_PE"
-            # Option selection
-            interval = sym["interval"]
-            atm = round(ltp/interval)*interval
+            opt_type = "CE" if fusion["signal"]=="BUY_CE" else "PE"
+            atm = round(ltp/sym["interval"])*sym["interval"]
+            # Option LTP
+            opt_ltp=None; opt_sym=None
+            try:
+                with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                strike_s=str(int(atm))
+                matches=[s for s in scrips
+                         if s.get("exch_seg","").upper()=="NFO"
+                         and s.get("symbol","").upper().startswith(sym["name"].upper())
+                         and s.get("symbol","").upper().endswith(strike_s+opt_type)]
+                def ekey(s):
+                    try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+                    except: return dt2.date(2099,1,1)
+                future=[s for s in matches if ekey(s)>=today and ekey(s).year<2090]
+                if future:
+                    future.sort(key=ekey)
+                    best=future[0]
+                    opt_ltp=broker.get_ltp("NFO",best.get("symbol",""),str(best.get("token","")))
+                    opt_sym=best.get("symbol")
+            except: pass
+            opt_entry=opt_ltp or 0
             results.append({
-                "symbol": sym["symbol"],
-                "market": "NSE_INDEX",
-                "signal": direction,
-                "score":  sig.get("score",0),
+                "symbol": sym["name"], "market":"NSE_INDEX",
+                "signal": fusion["signal"], "score": fusion["score"],
+                "risk":   fusion.get("risk","MEDIUM"),
                 "ltp":    ltp,
-                "sl":     round(ltp-sl_pts,2) if direction=="BUY_CE" else round(ltp+sl_pts,2),
-                "target": round(ltp+tgt_pts,2) if direction=="BUY_CE" else round(ltp-tgt_pts,2),
-                "sl_pts": round(sl_pts,2),
-                "rr":     "1:2",
-                "atm_strike": atm,
-                "lot": sym["lot"],
-                "opt_interval": interval,
-                "reasons": sig.get("reasons",[]),
+                "sl":     round(ltp-sl_pts,2) if fusion["signal"]=="BUY_CE" else round(ltp+sl_pts,2),
+                "target": round(ltp+tgt_pts,2) if fusion["signal"]=="BUY_CE" else round(ltp-tgt_pts,2),
+                "sl_pts": round(sl_pts,2), "rr":"1:2",
+                "rsi": features["rsi14"], "atr": atr_val,
+                "vwap_dist": features["vwap_dist_pct"],
+                "atm_strike": atm, "lot": sym["lot"],
+                "opt_symbol": opt_sym, "opt_ltp": opt_ltp,
+                "opt_sl":     round(opt_entry*0.80,2) if opt_entry else 0,
+                "opt_target": round(opt_entry*1.40,2) if opt_entry else 0,
+                "layer1": fusion["rule"]["score"],
+                "layer2": fusion["ml"]["confidence"],
+                "layer3": fusion["llm"]["approved"],
+                "reasons": fusion.get("reasons",[]),
             })
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_INDEX"})
     except Exception as e:
@@ -1389,11 +1425,12 @@ def signals_nse_index():
 @app.route("/api/signals/mcx")
 @require_auth
 def signals_mcx():
-    """MCX Commodity F&O signals — CRUDEOIL/NATGAS/GOLD"""
+    """MCX Commodity F&O — Mythos 3-layer AI Engine"""
     try:
-        from engine.scanner import MCX_COMMODITY, _analyze
+        from ai.feature_engine import compute_features
+        from ai.decision_engine import ChanakyaDecisionEngine
         from broker.global_broker import get_broker
-        import datetime, pytz
+        import datetime, pytz, time, json as jj, datetime as dt2
         IST = pytz.timezone("Asia/Kolkata")
         now = datetime.datetime.now(IST)
         mcx_open = (now.hour>=9) and (now.hour<23 or (now.hour==23 and now.minute<=30))
@@ -1401,33 +1438,67 @@ def signals_mcx():
             return jsonify({"success":True,"signals":[],"market":"MCX_CLOSED",
                           "message":"MCX 9:00AM-11:30PM IST madhe open aahe"})
         broker = get_broker()
+        engine = ChanakyaDecisionEngine()
+        MCX = [
+            {"name":"CRUDEOIL",  "token":"488290","exchange":"MCX","lot":100,"interval":50,"min_sl":0.006},
+            {"name":"NATURALGAS","token":"488505","exchange":"MCX","lot":1250,"interval":10,"min_sl":0.008},
+            {"name":"GOLD",      "token":"67694", "exchange":"MCX","lot":100,"interval":100,"min_sl":0.005},
+        ]
         results = []
-        for sym in MCX_COMMODITY:
-            import time; time.sleep(0.3)
+        today = dt2.date.today()
+        for sym in MCX:
+            time.sleep(0.5)
+            if not broker.is_connected(): broker.connect()
             raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
-            if not raw or len(raw)<15: continue
-            sig = _analyze(raw, sym["symbol"])
-            if not sig or sig.get("signal") not in ["BUY","SELL"]: continue
-            if sig.get("score",0) < 68: continue
-            ltp = float(raw[-1][4])
-            sl_pts = max(sig.get("atr",ltp*0.006)*2.5, ltp*sym["min_sl_pct"])
+            if not raw or len(raw)<30: continue
+            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
+                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+            features = compute_features(candles, sym["name"])
+            if not features: continue
+            fusion = engine.fuse(features)
+            if fusion["signal"]=="NO_TRADE" or fusion["score"]<55: continue
+            ltp = features["price"]
+            atr_val = features["atr14"]
+            sl_pts = max(atr_val*2.5, ltp*sym["min_sl"])
             tgt_pts = sl_pts * 2.0
-            direction = "BUY_CE" if sig["signal"]=="BUY" else "BUY_PE"
+            opt_type = "CE" if fusion["signal"]=="BUY_CE" else "PE"
             atm = round(ltp/sym["interval"])*sym["interval"]
+            opt_ltp=None; opt_sym=None
+            try:
+                with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                strike_s=str(int(atm))
+                matches=[s for s in scrips
+                         if s.get("exch_seg","").upper()=="MCX"
+                         and s.get("symbol","").upper().startswith(sym["name"].upper())
+                         and s.get("symbol","").upper().endswith(strike_s+opt_type)]
+                def ekey(s):
+                    try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+                    except: return dt2.date(2099,1,1)
+                future=[s for s in matches if ekey(s)>=today and ekey(s).year<2090]
+                if future:
+                    future.sort(key=ekey)
+                    best=future[0]
+                    opt_ltp=broker.get_ltp("MCX",best.get("symbol",""),str(best.get("token","")))
+                    opt_sym=best.get("symbol")
+            except: pass
+            opt_entry=opt_ltp or 0
             results.append({
-                "symbol": sym["symbol"],
-                "market": "MCX",
-                "signal": direction,
-                "score":  sig.get("score",0),
+                "symbol": sym["name"], "market":"MCX",
+                "signal": fusion["signal"], "score": fusion["score"],
+                "risk":   fusion.get("risk","MEDIUM"),
                 "ltp":    ltp,
-                "sl":     round(ltp-sl_pts,2) if direction=="BUY_CE" else round(ltp+sl_pts,2),
-                "target": round(ltp+tgt_pts,2) if direction=="BUY_CE" else round(ltp-tgt_pts,2),
-                "sl_pts": round(sl_pts,2),
-                "rr":     "1:2",
-                "atm_strike": atm,
-                "lot": sym["lot"],
-                "opt_interval": sym["interval"],
-                "reasons": sig.get("reasons",[]),
+                "sl":     round(ltp-sl_pts,2) if fusion["signal"]=="BUY_CE" else round(ltp+sl_pts,2),
+                "target": round(ltp+tgt_pts,2) if fusion["signal"]=="BUY_CE" else round(ltp-tgt_pts,2),
+                "sl_pts": round(sl_pts,2), "rr":"1:2",
+                "rsi": features["rsi14"], "atr": atr_val,
+                "atm_strike": atm, "lot": sym["lot"],
+                "opt_symbol": opt_sym, "opt_ltp": opt_ltp,
+                "opt_sl":     round(opt_entry*0.80,2) if opt_entry else 0,
+                "opt_target": round(opt_entry*1.40,2) if opt_entry else 0,
+                "layer1": fusion["rule"]["score"],
+                "layer2": fusion["ml"]["confidence"],
+                "layer3": fusion["llm"]["approved"],
+                "reasons": fusion.get("reasons",[]),
             })
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"MCX"})
     except Exception as e:
