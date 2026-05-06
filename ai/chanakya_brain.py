@@ -378,5 +378,6 @@ FORMAT (adapt based on intent):
             from ai.groq_client import ask
             full_msg = system + "\n\nUser: " + message
             reply = ask(full_msg, max_tokens=300, temperature=0.25)
+        except Exception as e:
         logger.error("chanakya_chat: %s", e)
         return "AI error: " + str(e)
