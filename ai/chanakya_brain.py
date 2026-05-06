@@ -374,10 +374,16 @@ FORMAT (adapt based on intent):
 📈 Why: [reason]
 ❓ [Smart follow-up question]"""
 
-        try:
-            from ai.groq_client import ask
-            full_msg = system + "\n\nUser: " + message
-            reply = ask(full_msg, max_tokens=300, temperature=0.25)
-        except Exception as e:
-            logger.error("chanakya_chat: %s", e)
-            return "AI error: " + str(e)
+        r = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": message}
+            ],
+            max_tokens=400,
+            temperature=0.25
+        )
+        return r.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error("chanakya_chat: %s", e)
+        return "AI error: " + str(e)

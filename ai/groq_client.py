@@ -21,6 +21,38 @@ _cache_ttl = {}       # Cache TTL
 _current_model_idx = 0
 _model_errors = {}    # Track errors per model
 
+class _RotatingClient:
+    """Wrapper that auto-rotates models on rate limit"""
+    def __init__(self, groq_client):
+        self._c = groq_client
+        self.chat = self
+        self.completions = self
+        self._model_idx = 0
+        self._errors = {}
+
+    def create(self, model=None, messages=None, max_tokens=300, temperature=0.3, **kwargs):
+        import time
+        MODELS = [
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "gemma2-9b-it",
+        ]
+        for m in MODELS:
+            if self._errors.get(m,0) >= 2: continue
+            try:
+                r = self._c.chat.completions.create(
+                    model=m, messages=messages,
+                    max_tokens=max_tokens, temperature=temperature
+                )
+                self._errors[m] = 0
+                return r
+            except Exception as e:
+                if "429" in str(e) or "rate" in str(e).lower():
+                    self._errors[m] = self._errors.get(m,0) + 1
+                    continue
+                raise
+        raise Exception("All models rate limited — try again in 15 min")
+
 def get_client():
     global _client
     if _client: return _client
@@ -28,7 +60,7 @@ def get_client():
         from groq import Groq
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key: return None
-        _client = Groq(api_key=api_key)
+        _client = _RotatingClient(Groq(api_key=api_key))
         return _client
     except Exception as e:
         logger.error("Groq init: %s", e)
