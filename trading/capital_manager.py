@@ -11,8 +11,8 @@ MAX_DAILY_LOSS_PCT  = 5.0   # Capital चा 5% daily loss limit
 MAX_TRADES_PER_DAY  = 5     # Max 5 trades per day
 MIN_RR_RATIO        = 1.8   # Minimum Risk:Reward
 
-# Paper Trading Virtual Capital
-PAPER_CAPITAL       = 500000.0  # ₹5,00,000 virtual capital for paper trading
+# Paper Trading Virtual Capital (per user)
+DEFAULT_PAPER_CAPITAL = 200000.0  # ₹2,00,000 default per user
 
 # MCX Lot Sizes
 MCX_LOT_SIZES = {
@@ -31,23 +31,109 @@ FNO_LOT_SIZES = {
     "SENSEX":    20,
 }
 
-def get_paper_capital():
-    """Paper trading virtual capital"""
+def get_paper_capital(username="avinash"):
+    """User-specific paper capital from DB"""
+    try:
+        import sqlite3, datetime
+        conn = sqlite3.connect("data/chanakya_v5.db")
+        r = conn.execute(
+            "SELECT capital, initial_capital, total_pnl FROM paper_capital WHERE username=?",
+            (username,)).fetchone()
+        conn.close()
+        if r:
+            return {
+                "available":        round(r[0], 2),
+                "net":              round(r[0], 2),
+                "initial_capital":  round(r[1], 2),
+                "total_pnl":        round(r[2], 2),
+                "collateral":       0.0,
+                "utilized":         0.0,
+                "total":            round(r[0], 2),
+                "mode":             "PAPER_VIRTUAL",
+                "username":         username,
+            }
+    except Exception as e:
+        logger.error("get_paper_capital: %s", e)
     return {
-        "available":  PAPER_CAPITAL,
-        "net":        PAPER_CAPITAL,
-        "collateral": 0.0,
-        "utilized":   0.0,
-        "total":      PAPER_CAPITAL,
-        "mode":       "PAPER_VIRTUAL",
+        "available": DEFAULT_PAPER_CAPITAL,
+        "net": DEFAULT_PAPER_CAPITAL,
+        "initial_capital": DEFAULT_PAPER_CAPITAL,
+        "total_pnl": 0.0,
+        "mode": "PAPER_VIRTUAL",
     }
 
-def get_capital(mode="PAPER"):
+def update_paper_capital(username, pnl, trade_id=None):
+    """Trade close झाल्यावर capital update"""
+    try:
+        import sqlite3, datetime
+        conn = sqlite3.connect("data/chanakya_v5.db")
+        conn.row_factory = sqlite3.Row
+        r = conn.execute(
+            "SELECT capital, total_pnl FROM paper_capital WHERE username=?",
+            (username,)).fetchone()
+        if not r:
+            # New user — create with default
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            conn.execute("""INSERT INTO paper_capital
+                (username, capital, initial_capital, total_pnl, updated_at, updated_by)
+                VALUES (?,?,?,0,?,'system')""",
+                (username, DEFAULT_PAPER_CAPITAL, DEFAULT_PAPER_CAPITAL, now))
+            conn.commit()
+            r = conn.execute(
+                "SELECT capital, total_pnl FROM paper_capital WHERE username=?",
+                (username,)).fetchone()
+        new_capital  = round(r["capital"] + pnl, 2)
+        new_total    = round(r["total_pnl"] + pnl, 2)
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn.execute("""UPDATE paper_capital SET
+            capital=?, total_pnl=?, updated_at=?, updated_by='system'
+            WHERE username=?""", (new_capital, new_total, now, username))
+        # Ledger entry
+        note = f"Trade #{trade_id}" if trade_id else "PnL update"
+        conn.execute("""INSERT INTO capital_ledger
+            (username, type, amount, balance_after, note, done_by, created_at)
+            VALUES (?,?,?,?,?,'system',?)""",
+            (username, "PNL", pnl, new_capital, note, now))
+        conn.commit(); conn.close()
+        return new_capital
+    except Exception as e:
+        logger.error("update_paper_capital: %s", e)
+        return None
+
+def admin_topup(username, amount, done_by="administrator", note="Top-up"):
+    """Admin: capital add/deduct करतो"""
+    try:
+        import sqlite3, datetime
+        conn = sqlite3.connect("data/chanakya_v5.db")
+        r = conn.execute(
+            "SELECT capital FROM paper_capital WHERE username=?",
+            (username,)).fetchone()
+        if not r:
+            return {"success": False, "error": "User not found"}
+        new_capital = round(r[0] + amount, 2)
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn.execute("""UPDATE paper_capital SET
+            capital=?, updated_at=?, updated_by=?
+            WHERE username=?""", (new_capital, now, done_by, username))
+        type_ = "TOPUP" if amount > 0 else "DEDUCT"
+        conn.execute("""INSERT INTO capital_ledger
+            (username, type, amount, balance_after, note, done_by, created_at)
+            VALUES (?,?,?,?,?,?,?)""",
+            (username, type_, amount, new_capital, note, done_by, now))
+        conn.commit(); conn.close()
+        logger.info("Admin %s: %s Rs%s → balance Rs%s", done_by, type_, amount, new_capital)
+        return {"success": True, "username": username,
+                "amount": amount, "new_capital": new_capital}
+    except Exception as e:
+        logger.error("admin_topup: %s", e)
+        return {"success": False, "error": str(e)}
+
+def get_capital(mode="PAPER", username="avinash"):
     """Mode based capital fetch"""
     if mode == "LIVE":
         cap = get_live_capital()
-        return cap if cap else get_paper_capital()
-    return get_paper_capital()
+        return cap if cap else get_paper_capital(username)
+    return get_paper_capital(username)
 
 def get_live_capital():
     """Angel One से live capital fetch करतो"""

@@ -130,16 +130,28 @@ def _adaptive_monitor():
                     if hit_tgt:
                         pnl = round(((ltp-entry) if dirn=="BUY" else (entry-ltp)) * multiplier, 2)
                         _close_trade(tid, ltp, "TARGET")
-                        msg = f"🎯 TARGET HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nLot Size: {multiplier}\nP&L: +₹{pnl}"
-                        _log(f"🎯 TARGET: {sym} PnL=+₹{pnl}")
+                        # Capital update
+                        try:
+                            from trading.capital_manager import update_paper_capital
+                            new_bal = update_paper_capital(t.get("username","avinash"), pnl, tid)
+                            bal_str = f"Balance: ₹{new_bal:,.0f}" if new_bal else ""
+                        except: bal_str = ""
+                        msg = f"🎯 TARGET HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nP&L: +₹{pnl:,.0f}\n{bal_str}"
+                        _log(f"🎯 TARGET: {sym} PnL=+₹{pnl} {bal_str}")
                         if _can_alert(f"close_{tid}"): _send_alert(msg)
                         continue
 
                     if hit_sl:
                         pnl = round(((ltp-entry) if dirn=="BUY" else (entry-ltp)) * multiplier, 2)
                         _close_trade(tid, ltp, "STOPLOSS")
-                        msg = f"🛑 STOPLOSS HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nLot Size: {multiplier}\nP&L: ₹{pnl}"
-                        _log(f"🛑 STOPLOSS: {sym} PnL=₹{pnl}")
+                        # Capital update
+                        try:
+                            from trading.capital_manager import update_paper_capital
+                            new_bal = update_paper_capital(t.get("username","avinash"), pnl, tid)
+                            bal_str = f"Balance: ₹{new_bal:,.0f}" if new_bal else ""
+                        except: bal_str = ""
+                        msg = f"🛑 STOPLOSS HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nP&L: ₹{pnl:,.0f}\n{bal_str}"
+                        _log(f"🛑 STOPLOSS: {sym} PnL=₹{pnl} {bal_str}")
                         if _can_alert(f"close_{tid}"): _send_alert(msg)
                         continue
 

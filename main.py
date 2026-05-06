@@ -584,6 +584,37 @@ def autotrader_toggle():
         return jsonify({"success":False,"error":str(e)})
 
 
+@app.route("/api/capital/topup", methods=["POST"])
+@require_role("administrator","developer")
+def capital_topup():
+    try:
+        data     = request.json or {}
+        username = data.get("username","")
+        amount   = float(data.get("amount", 0))
+        note     = data.get("note", "Admin adjustment")
+        if not username or amount == 0:
+            return jsonify({"success":False,"error":"username and amount required"})
+        from trading.capital_manager import admin_topup
+        result = admin_topup(username, amount, done_by=request.username, note=note)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/capital/ledger")
+@require_auth
+def capital_ledger():
+    try:
+        import sqlite3
+        conn = sqlite3.connect("data/chanakya_v5.db")
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT * FROM capital_ledger WHERE username=? ORDER BY id DESC LIMIT 20",
+            (request.username,)).fetchall()
+        conn.close()
+        return jsonify({"success":True,"ledger":[dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/capital")
 @require_auth
 def capital_info():
