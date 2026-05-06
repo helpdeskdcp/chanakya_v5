@@ -1338,6 +1338,140 @@ def mythos_debug():
     except Exception as e:
         import traceback
         return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-500:]})
+@app.route("/api/signals/nse-index")
+@require_auth
+def signals_nse_index():
+    """NSE Index F&O signals — NIFTY/BANKNIFTY/FINNIFTY options"""
+    try:
+        from engine.scanner import NSE_INDEX, _analyze
+        from broker.global_broker import get_broker
+        import datetime, pytz
+        IST = pytz.timezone("Asia/Kolkata")
+        now = datetime.datetime.now(IST)
+        if not ((now.hour==9 and now.minute>=15) or (10<=now.hour<=15) or
+                (now.hour==15 and now.minute<=30)):
+            return jsonify({"success":True,"signals":[],"market":"NSE_CLOSED",
+                          "message":"NSE 9:15AM-3:30PM IST madhe open aahe"})
+        broker = get_broker()
+        results = []
+        for sym in NSE_INDEX:
+            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+            if not raw or len(raw)<15: continue
+            sig = _analyze(raw, sym["symbol"])
+            if not sig or sig.get("signal") not in ["BUY","SELL"]: continue
+            if sig.get("score",0) < 72: continue
+            ltp = float(raw[-1][4])
+            sl_pts = max(sig.get("atr",ltp*0.004)*2.5, ltp*sym["min_sl_pct"])
+            tgt_pts = sl_pts * 2.0
+            direction = "BUY_CE" if sig["signal"]=="BUY" else "BUY_PE"
+            # Option selection
+            interval = sym["interval"]
+            atm = round(ltp/interval)*interval
+            results.append({
+                "symbol": sym["symbol"],
+                "market": "NSE_INDEX",
+                "signal": direction,
+                "score":  sig.get("score",0),
+                "ltp":    ltp,
+                "sl":     round(ltp-sl_pts,2) if direction=="BUY_CE" else round(ltp+sl_pts,2),
+                "target": round(ltp+tgt_pts,2) if direction=="BUY_CE" else round(ltp-tgt_pts,2),
+                "sl_pts": round(sl_pts,2),
+                "rr":     "1:2",
+                "atm_strike": atm,
+                "lot": sym["lot"],
+                "opt_interval": interval,
+                "reasons": sig.get("reasons",[]),
+            })
+        return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_INDEX"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/signals/mcx")
+@require_auth
+def signals_mcx():
+    """MCX Commodity F&O signals — CRUDEOIL/NATGAS/GOLD"""
+    try:
+        from engine.scanner import MCX_COMMODITY, _analyze
+        from broker.global_broker import get_broker
+        import datetime, pytz
+        IST = pytz.timezone("Asia/Kolkata")
+        now = datetime.datetime.now(IST)
+        mcx_open = (now.hour>=9) and (now.hour<23 or (now.hour==23 and now.minute<=30))
+        if not mcx_open:
+            return jsonify({"success":True,"signals":[],"market":"MCX_CLOSED",
+                          "message":"MCX 9:00AM-11:30PM IST madhe open aahe"})
+        broker = get_broker()
+        results = []
+        for sym in MCX_COMMODITY:
+            import time; time.sleep(0.3)
+            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+            if not raw or len(raw)<15: continue
+            sig = _analyze(raw, sym["symbol"])
+            if not sig or sig.get("signal") not in ["BUY","SELL"]: continue
+            if sig.get("score",0) < 68: continue
+            ltp = float(raw[-1][4])
+            sl_pts = max(sig.get("atr",ltp*0.006)*2.5, ltp*sym["min_sl_pct"])
+            tgt_pts = sl_pts * 2.0
+            direction = "BUY_CE" if sig["signal"]=="BUY" else "BUY_PE"
+            atm = round(ltp/sym["interval"])*sym["interval"]
+            results.append({
+                "symbol": sym["symbol"],
+                "market": "MCX",
+                "signal": direction,
+                "score":  sig.get("score",0),
+                "ltp":    ltp,
+                "sl":     round(ltp-sl_pts,2) if direction=="BUY_CE" else round(ltp+sl_pts,2),
+                "target": round(ltp+tgt_pts,2) if direction=="BUY_CE" else round(ltp-tgt_pts,2),
+                "sl_pts": round(sl_pts,2),
+                "rr":     "1:2",
+                "atm_strike": atm,
+                "lot": sym["lot"],
+                "opt_interval": sym["interval"],
+                "reasons": sig.get("reasons",[]),
+            })
+        return jsonify({"success":True,"signals":results,"count":len(results),"market":"MCX"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/signals/equity")
+@require_auth
+def signals_equity():
+    """NSE Equity signals — direct stock (no F&O)"""
+    try:
+        from engine.scanner import NSE_EQUITY, _analyze
+        from broker.global_broker import get_broker
+        import datetime, pytz
+        IST = pytz.timezone("Asia/Kolkata")
+        now = datetime.datetime.now(IST)
+        if not ((now.hour==9 and now.minute>=15) or (10<=now.hour<=15) or
+                (now.hour==15 and now.minute<=30)):
+            return jsonify({"success":True,"signals":[],"market":"NSE_CLOSED"})
+        broker = get_broker()
+        results = []
+        for sym in NSE_EQUITY:
+            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
+            if not raw or len(raw)<15: continue
+            sig = _analyze(raw, sym["symbol"])
+            if not sig or sig.get("signal") not in ["BUY","SELL"]: continue
+            if sig.get("score",0) < 75: continue  # Higher threshold for equity
+            ltp = float(raw[-1][4])
+            sl_pts = ltp * sym["min_sl_pct"]  # % based SL for equity
+            tgt_pts = sl_pts * 2.0
+            results.append({
+                "symbol": sym["symbol"],
+                "market": "NSE_EQUITY",
+                "signal": sig["signal"],
+                "score":  sig.get("score",0),
+                "ltp":    ltp,
+                "sl":     round(ltp-sl_pts,2) if sig["signal"]=="BUY" else round(ltp+sl_pts,2),
+                "target": round(ltp+tgt_pts,2) if sig["signal"]=="BUY" else round(ltp-tgt_pts,2),
+                "sl_pct": f"{sym['min_sl_pct']*100:.1f}%",
+                "note":   "Direct equity — no F&O",
+                "reasons": sig.get("reasons",[]),
+            })
+        return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_EQUITY"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -1345,6 +1479,7 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
+
 
 
 

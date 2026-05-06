@@ -2,24 +2,38 @@ import os, logging, sys
 sys.path.insert(0,'/root/chanakya_v5')
 logger = logging.getLogger(__name__)
 
-WATCHLIST = [
-    {"symbol":"NIFTY",      "token":"99926000","exchange":"NSE","type":"index"},
-    {"symbol":"BANKNIFTY",  "token":"99926009","exchange":"NSE","type":"index"},
-    {"symbol":"FINNIFTY",   "token":"99926037","exchange":"NSE","type":"index"},
-    {"symbol":"CRUDEOIL",   "token":"488290",  "exchange":"MCX","type":"commodity"},
-    {"symbol":"NATURALGAS", "token":"488505",  "exchange":"MCX","type":"commodity"},
-    {"symbol":"GOLD",       "token":"67694",   "exchange":"MCX","type":"commodity"},
-    {"symbol":"RELIANCE",   "token":"2885",    "exchange":"NSE","type":"equity"},
-    {"symbol":"TCS",        "token":"11536",   "exchange":"NSE","type":"equity"},
-    {"symbol":"INFY",       "token":"1594",    "exchange":"NSE","type":"equity"},
-    {"symbol":"WIPRO",      "token":"3787",    "exchange":"NSE","type":"equity"},
-    {"symbol":"HDFCBANK",   "token":"1333",    "exchange":"NSE","type":"equity"},
-    {"symbol":"ICICIBANK",  "token":"4963",    "exchange":"NSE","type":"equity"},
-    {"symbol":"SBIN",       "token":"3045",    "exchange":"NSE","type":"equity"},
-    {"symbol":"TATASTEEL",  "token":"3499",    "exchange":"NSE","type":"equity"},
-    {"symbol":"SUZLON",     "token":"12018",   "exchange":"NSE","type":"equity"},
-    {"symbol":"YESBANK",    "token":"11915",   "exchange":"NSE","type":"equity"},
+# ═══ NSE INDEX F&O ═══ (Weekly options, high liquidity)
+NSE_INDEX = [
+    {"symbol":"NIFTY",     "token":"99926000","exchange":"NSE","type":"index",
+     "lot":65, "interval":50, "min_sl_pct":0.004, "option_type":"weekly"},
+    {"symbol":"BANKNIFTY", "token":"99926009","exchange":"NSE","type":"index",
+     "lot":30, "interval":100,"min_sl_pct":0.004, "option_type":"weekly"},
+    {"symbol":"FINNIFTY",  "token":"99926037","exchange":"NSE","type":"index",
+     "lot":65, "interval":50, "min_sl_pct":0.004, "option_type":"weekly"},
 ]
+
+# ═══ MCX COMMODITY F&O ═══ (Monthly options, 9AM-11:30PM)
+MCX_COMMODITY = [
+    {"symbol":"CRUDEOIL",   "token":"488290","exchange":"MCX","type":"commodity",
+     "lot":100, "interval":50,"min_sl_pct":0.006,"option_type":"monthly"},
+    {"symbol":"NATURALGAS", "token":"488505","exchange":"MCX","type":"commodity",
+     "lot":1250,"interval":10,"min_sl_pct":0.008,"option_type":"monthly"},
+    {"symbol":"GOLD",       "token":"67694", "exchange":"MCX","type":"commodity",
+     "lot":100, "interval":100,"min_sl_pct":0.005,"option_type":"monthly"},
+]
+
+# ═══ NSE EQUITY ═══ (Direct stock — no F&O, different SL logic)
+NSE_EQUITY = [
+    {"symbol":"RELIANCE",  "token":"2885", "exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+    {"symbol":"TCS",       "token":"11536","exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+    {"symbol":"INFY",      "token":"1594", "exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+    {"symbol":"HDFCBANK",  "token":"1333", "exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+    {"symbol":"ICICIBANK", "token":"4963", "exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+    {"symbol":"SBIN",      "token":"3045", "exchange":"NSE","type":"equity","lot":1,"min_sl_pct":0.008},
+]
+
+# Auto-trader only uses INDEX + MCX (NOT equity for F&O signals)
+WATCHLIST = NSE_INDEX + MCX_COMMODITY  # Equity separate module madhe
 
 def _analyze(candles, symbol):
     try:
