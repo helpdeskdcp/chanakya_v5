@@ -18,7 +18,7 @@ MCX_COMMODITY = [
      "lot":100, "interval":50,"min_sl_pct":0.006,"option_type":"monthly"},
     {"symbol":"NATURALGAS", "token":"488505","exchange":"MCX","type":"commodity",
      "lot":1250,"interval":10,"min_sl_pct":0.008,"option_type":"monthly"},
-    {"symbol":"GOLD",       "token":"67694", "exchange":"MCX","type":"commodity",
+    {"symbol":"GOLDM",      "token":"67694", "exchange":"MCX","type":"commodity",
      "lot":100, "interval":100,"min_sl_pct":0.005,"option_type":"monthly"},
 ]
 
