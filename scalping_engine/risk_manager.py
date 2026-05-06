@@ -26,8 +26,12 @@ class RiskManager:
     def calculate_trade(self, signal, entry_price, atr_val, lot_size=1):
         """Calculate SL, Target, Qty using SEBI math"""
         cfg = self.cfg
-        sl_pts  = atr_val * cfg['atr_sl_multiplier']
-        tgt_pts = sl_pts  * cfg['rr_target']
+        # Minimum SL = max(ATR-based, % of price)
+        atr_based_sl = atr_val * cfg['atr_sl_multiplier']
+        min_sl_pct = 0.004 if lot_size <= 75 else 0.006  # NSE vs MCX
+        pct_based_sl = entry_price * min_sl_pct
+        sl_pts  = max(atr_based_sl, pct_based_sl)
+        tgt_pts = sl_pts * cfg['rr_target']
         is_buy  = signal == "BUY_CE"
 
         sl     = entry_price - sl_pts if is_buy else entry_price + sl_pts

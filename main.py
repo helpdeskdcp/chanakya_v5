@@ -978,7 +978,10 @@ def mythos_scan():
                         opt_sym=best.get("symbol"); opt_tok=str(best.get("token"))
                 except: pass
 
-                opt_entry=opt_ltp or 0
+                opt_entry = opt_ltp or 0
+                opt_sl     = round(opt_entry*0.80,2) if opt_entry else 0
+                opt_target = round(opt_entry*1.40,2) if opt_entry else 0
+                opt_trail  = round(opt_entry*0.90,2) if opt_entry else 0
                 results.append({
                     "symbol":sym["name"],
                     "signal":fusion["signal"],

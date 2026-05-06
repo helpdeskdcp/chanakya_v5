@@ -4,15 +4,33 @@
   "max_trades_per_day": 5,
   "max_daily_loss_pct": 5,
   "paper_mode": true,
-  "symbols": ["NIFTY", "BANKNIFTY"],
-  "timeframes": ["ONE_MINUTE", "FIVE_MINUTE", "FIFTEEN_MINUTE"],
+  "symbols": [
+    "NIFTY",
+    "BANKNIFTY"
+  ],
+  "timeframes": [
+    "ONE_MINUTE",
+    "FIVE_MINUTE",
+    "FIFTEEN_MINUTE"
+  ],
   "rr_target": 2.0,
-  "atr_sl_multiplier": 1.5,
+  "atr_sl_multiplier": 2.5,
   "min_confidence": 65,
-  "delta_range": [0.4, 0.6],
-  "strategies": ["BREAKOUT", "REVERSAL", "RANGE_BOUND"],
+  "delta_range": [
+    0.4,
+    0.6
+  ],
+  "strategies": [
+    "BREAKOUT",
+    "REVERSAL",
+    "RANGE_BOUND"
+  ],
   "vwap_period": 390,
   "rsi_period": 14,
   "ema_fast": 9,
-  "ema_slow": 21
+  "ema_slow": 21,
+  "min_sl_pct": {
+    "NSE": 0.004,
+    "MCX": 0.006
+  }
 }

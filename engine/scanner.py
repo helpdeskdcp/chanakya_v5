@@ -73,11 +73,16 @@ def _analyze(candles, symbol):
         ob = smc_details.get("ob",{})
         if direction=="BUY":
             bull_ob = ob.get("bull_ob")
-            sl = round(bull_ob["low"] - at*0.3, 1) if bull_ob else round(ltp-1.5*at,1)
+            # Minimum SL buffer (SEBI best practice)
+    min_sl_pct = 0.004 if sym in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
+    atr_sl = round(ltp - max(2.0*at, ltp*min_sl_pct), 1)
+    sl = round(bull_ob["low"] - at*0.5, 1) if bull_ob else atr_sl
             target = round(ltp+3*at,1)
         else:
             bear_ob = ob.get("bear_ob")
-            sl = round(bear_ob["high"] + at*0.3, 1) if bear_ob else round(ltp+1.5*at,1)
+            min_sl_pct = 0.004 if sym in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
+    atr_sl_sell = round(ltp + max(2.0*at, ltp*min_sl_pct), 1)
+    sl = round(bear_ob["high"] + at*0.5, 1) if bear_ob else atr_sl_sell
             target = round(ltp-3*at,1)
 
         rr = round(abs(target-ltp)/abs(ltp-sl),1) if ltp!=sl else 0
