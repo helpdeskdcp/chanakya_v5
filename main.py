@@ -943,118 +943,105 @@ def mythos_retrain():
 @app.route("/api/scalping/scan")
 @require_auth
 def scalping_scan():
+    """Scalping scan using Mythos 3-layer AI engine"""
     try:
-        from scalping_engine.strategy import generate_signal
-        from scalping_engine.risk_manager import RiskManager
-        from scalping_engine.ai_engine import adaptive_confidence
-        from broker.global_broker import get_broker
-        broker = get_broker()
-        SYMS = [
-            {"name":"NIFTY","token":"99926000","exchange":"NSE","lot":65,"interval":50},
-            {"name":"BANKNIFTY","token":"99926009","exchange":"NSE","lot":30,"interval":100},
-            {"name":"CRUDEOIL","token":"488290","exchange":"MCX","lot":100,"interval":50},
-            {"name":"NATURALGAS","token":"488505","exchange":"MCX","lot":1250,"interval":10},
-        ]
-        rm = RiskManager()
+        from ai.feature_engine import compute_features
+        from ai.decision_engine import ChanakyaDecisionEngine
+        from data_stream.data_manager import get_data_manager
+        import json as jj, datetime as dt2
+
+        dm = get_data_manager()
+        broker = dm._get_broker()
+        engine = ChanakyaDecisionEngine()
+        today = dt2.date.today()
+
         results = []
-        import datetime as dt
-        from datetime import datetime
-        import pytz
-        IST = pytz.timezone("Asia/Kolkata")
-        now_ist = datetime.now(IST)
-        now_h = now_ist.hour; now_m = now_ist.minute
-        # Market hours
-        nse_open = (now_h==9 and now_m>=15) or (10<=now_h<=15) or (now_h==15 and now_m<=30)
-        mcx_open = (now_h>=9 and now_h<=23) or now_h==0
-        today = dt.date.today()
-        for sym in SYMS:
-            # Skip NSE symbols when NSE closed
-            if sym["exchange"]=="NSE" and not nse_open: continue
-            # Skip MCX when MCX closed
-            if sym["exchange"]=="MCX" and not mcx_open: continue
-            import time
-            time.sleep(0.3)  # Rate limit protection
-            raw = None
-            for attempt in range(3):
-                try:
-                    raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
-                    if raw and len(raw)>=22: break
-                    time.sleep(1)
-                except: time.sleep(1)
-            if not raw or len(raw)<22: continue
-            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
-                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
-            sig = generate_signal(candles)
-            conf = adaptive_confidence(sig["score"],sig["active_strategy"],sym["name"])
-            sig["confidence"]=conf
-            # MCX lower threshold (thinner market but still tradeable)
-            min_conf = 55 if sym["exchange"]=="MCX" else 62
-            if sig["signal"]=="NO_TRADE" or conf<min_conf: continue
-            tp = rm.calculate_trade(sig["signal"],sig["price"],sig["atr"],sym["lot"])
-            # Option selection
-            opt_type = "CE" if sig["signal"]=="BUY_CE" else "PE"
-            interval = sym.get("interval",50)
-            atm = round(sig["price"]/interval)*interval
-            opt_ltp = None; opt_sym = None; opt_token = None
-            # Try ATM then nearby strikes
-            for strike_offset in [0, 1, -1, 2, -2]:
-                strike = atm + strike_offset*interval
-                try:
-                    import json as jj
-                    with open("data/scrip_master.json") as f: scrips=jj.load(f)
-                    EXCH_MAP={"NIFTY":"NFO","BANKNIFTY":"NFO","FINNIFTY":"NFO",
-                               "CRUDEOIL":"MCX","NATURALGAS":"MCX"}
-                    pexch = EXCH_MAP.get(sym["name"],"NFO")
-                    strike_s = str(int(strike))
-                    matches = [s for s in scrips
-                               if s.get("exch_seg","").upper()==pexch
-                               and s.get("symbol","").upper().startswith(sym["name"].upper())
-                               and s.get("symbol","").upper().endswith(strike_s+opt_type)]
-                    import datetime as dt2
-                    def ekey(s):
-                        try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
-                        except: return dt2.date(2099,1,1)
-                    future = [s for s in matches if ekey(s)>=today and ekey(s).year<2090]
-                    if not future: continue
+        for sym_name, info in dm.SYMBOLS.items():
+            if info["type"] == "equity": continue
+            if info["exchange"] == "NSE" and not dm.is_market_open("NSE"): continue
+            if info["exchange"] == "MCX" and not dm.is_market_open("MCX"): continue
+
+            candles = dm.get_candles(sym_name)
+            if not candles or len(candles) < 30: continue
+
+            features = compute_features(candles, sym_name)
+            if not features: continue
+
+            fusion = engine.fuse(features)
+            if fusion["signal"] == "NO_TRADE" or fusion["score"] < 30: continue
+
+            ltp = features["price"]
+            atr_val = features["atr14"]
+            sl_pts = max(atr_val * 2.5, ltp * info["min_sl"])
+            tgt_pts = sl_pts * 2.0
+            direction = fusion["signal"]
+            opt_type = "CE" if direction == "BUY_CE" else "PE"
+            atm = round(ltp / info["interval"]) * info["interval"]
+            opt_exch = info["opt_exchange"]
+
+            # Option fetch
+            opt_ltp=None; opt_sym=None; opt_tok=None
+            try:
+                with open("data/scrip_master.json") as f: scrips=jj.load(f)
+                strike_s = str(int(atm))
+                matches = [s for s in scrips
+                    if s.get("exch_seg","").upper()==opt_exch
+                    and s.get("symbol","").upper().startswith(sym_name.upper())
+                    and s.get("symbol","").upper().endswith(strike_s+opt_type)]
+                def ekey(s):
+                    try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+                    except: return dt2.date(2099,1,1)
+                future = [s for s in matches if ekey(s)>=today and ekey(s).year<2090]
+                if future:
                     future.sort(key=ekey)
                     best = future[0]
-                    ltp = broker.get_ltp(pexch, best.get("symbol",""), str(best.get("token","")))
-                    if ltp and ltp>0:
-                        opt_ltp=ltp; opt_sym=best.get("symbol"); opt_token=str(best.get("token"))
-                        atm=strike; break
-                except: continue
-            # Option TP with option price
+                    opt_sym = best.get("symbol")
+                    opt_tok = str(best.get("token",""))
+                    if broker:
+                        opt_ltp = broker.get_ltp(opt_exch, opt_sym, opt_tok)
+            except: pass
+
             opt_entry = opt_ltp or 0
-            opt_sl     = round(opt_entry*0.70,2) if opt_entry else 0
-            opt_target = round(opt_entry*1.40,2) if opt_entry else 0
-            opt_trail  = round(opt_entry*0.85,2) if opt_entry else 0
             results.append({
-                "symbol":sym["name"],"signal":sig["signal"],
-                "price":sig["price"],"score":conf,
-                "strategy":sig["active_strategy"],
-                "sl":tp["sl"],"target":tp["target"],"qty":tp["qty"],
-                "rsi":sig["rsi"],"trend":sig["trend"],
-                "reasons":sig["reasons"],"rr":tp["rr"],
-                "atr":sig["atr"],
-                # Option details
-                "opt_type":opt_type,
-                "opt_symbol":opt_sym,
-                "opt_token":opt_token,
-                "opt_ltp":opt_ltp,
-                "opt_strike":atm,
-                "opt_entry":opt_entry,
-                "opt_sl":opt_sl,
-                "opt_target":opt_target,
-                "opt_trail":opt_trail,
-                "opt_lot":sym["lot"],
-                "opt_exchange":EXCH_MAP.get(sym["name"],"NFO"),
+                "symbol":   sym_name,
+                "signal":   direction,
+                "score":    fusion["score"],
+                "strategy": "MYTHOS",
+                "price":    ltp,
+                "rsi":      features["rsi14"],
+                "atr":      round(atr_val, 2),
+                "trend":    "BULL" if features["ema_trend"]==1 else "BEAR",
+                "rr":       "1:2",
+                "qty":      info["lot"],
+                "sl":       round(ltp-sl_pts,2) if direction=="BUY_CE" else round(ltp+sl_pts,2),
+                "target":   round(ltp+tgt_pts,2) if direction=="BUY_CE" else round(ltp-tgt_pts,2),
+                "sl_pts":   round(sl_pts,2),
+                "reasons":  fusion.get("reasons",[]),
+                # Option fields for buy button
+                "opt_symbol":   opt_sym,
+                "opt_token":    opt_tok,
+                "opt_exchange": opt_exch,
+                "opt_lot":      info["lot"],
+                "opt_ltp":      opt_ltp,
+                "opt_entry":    opt_entry,
+                "opt_sl":       round(opt_entry*0.80,2) if opt_entry else 0,
+                "opt_target":   round(opt_entry*1.40,2) if opt_entry else 0,
+                "opt_trail":    round(opt_entry*0.90,2) if opt_entry else 0,
+                "opt_strike":   atm,
+                "opt_type":     opt_type,
+                # 3-layer scores
+                "layer1": fusion["rule"]["score"],
+                "layer2": fusion["ml"]["confidence"],
+                "layer3": fusion["llm"]["approved"],
             })
+
         return jsonify({"success":True,"signals":results,"count":len(results)})
     except Exception as e:
-        return jsonify({"success":False,"error":str(e)})
+        import traceback
+        logger.error("scalping_scan: %s", traceback.format_exc()[-300:])
+        return jsonify({"success":False,"error":str(e),"signals":[],"count":0})
 
-@app.route("/api/scalping/stats")
-@require_auth
+
 def scalping_stats():
     try:
         from scalping_engine.ai_engine import get_performance_stats, get_strategy_weights
