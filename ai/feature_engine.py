@@ -62,7 +62,16 @@ def compute_features(candles, symbol="NIFTY"):
     _today = datetime.now(_IST).strftime("%Y-%m-%d")
     _tc = [x for x in candles if str(x.get("t",""))[:10] == _today]
     if len(_tc) >= 5:
-        vwap_val = vwap([x["h"] for x in _tc],[x["l"] for x in _tc],
+        _h=[x["h"] for x in _tc]; _l=[x["l"] for x in _tc]; _c=[x["c"] for x in _tc]
+        _v=[x.get("v",0) for x in _tc]
+        _sv = sum(_v)
+        if _sv > 0:
+            _tp=[(_h[j]+_l[j]+_c[j])/3 for j in range(len(_tc))]
+            vwap_val = round(sum(_tp[j]*_v[j] for j in range(len(_tc)))/_sv, 4)
+        else:
+            # No volume (index) — use simple typical price average
+            _tp=[(_h[j]+_l[j]+_c[j])/3 for j in range(len(_tc))]
+            vwap_val = round(sum(_tp)/len(_tp), 4)
                         [x["c"] for x in _tc],[x.get("v",0) for x in _tc])
     else:
         vwap_val = vwap(highs[-60:], lows[-60:], closes[-60:], vols[-60:])
