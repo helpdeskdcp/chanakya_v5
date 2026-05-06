@@ -72,7 +72,6 @@ def compute_features(candles, symbol="NIFTY"):
             # No volume (index) — use simple typical price average
             _tp=[(_h[j]+_l[j]+_c[j])/3 for j in range(len(_tc))]
             vwap_val = round(sum(_tp)/len(_tp), 4)
-                        [x["c"] for x in _tc],[x.get("v",0) for x in _tc])
     else:
         vwap_val = vwap(highs[-60:], lows[-60:], closes[-60:], vols[-60:])
     price = closes[-1]
