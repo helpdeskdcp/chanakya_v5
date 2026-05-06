@@ -370,15 +370,6 @@ def broker_settings():
 # ── Symbol Manager Routes ──────────────────────────────
 @app.route("/api/symbols")
 @require_auth
-def get_symbols():
-    try:
-        from database.symbol_manager import get_user_symbols
-        user = request.user
-        syms = get_user_symbols(request.username, user.get("role","demo"))
-        return jsonify({"success":True,"symbols":syms,"total":len(syms)})
-    except Exception as e:
-        return jsonify({"success":False,"error":str(e)})
-
 @app.route("/api/admin/symbols")
 @require_role("developer","administrator")
 def admin_get_symbols():
