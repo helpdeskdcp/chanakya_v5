@@ -1261,7 +1261,7 @@ def signals_nse_index():
         from ai.feature_engine import compute_features
         from ai.decision_engine import ChanakyaDecisionEngine
         from data_stream.data_manager import get_data_manager
-        import json as jj, datetime as dt2
+        import json as jj, datetime as dt2, time
         dm = get_data_manager()
         if not dm.is_market_open("NSE"):
             return jsonify({"success":True,"signals":[],"market":"NSE_CLOSED",
@@ -1340,7 +1340,7 @@ def signals_mcx():
         from ai.feature_engine import compute_features
         from ai.decision_engine import ChanakyaDecisionEngine
         from data_stream.data_manager import get_data_manager
-        import json as jj, datetime as dt2
+        import json as jj, datetime as dt2, time
         dm = get_data_manager()
         if not dm.is_market_open("MCX"):
             return jsonify({"success":True,"signals":[],"market":"MCX_CLOSED",
