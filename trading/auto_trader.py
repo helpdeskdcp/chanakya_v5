@@ -131,9 +131,8 @@ def _scan_and_trade():
                 seen_syms.add(k); deduped.append(s)
         signals = deduped
         # ── Quality Filters ──────────────────────────
-        from datetime import datetime
-        import pytz
-        now_ist = datetime.now(pytz.timezone("Asia/Kolkata"))
+        import pytz as _pytz, datetime as _dt
+        now_ist = _dt.datetime.now(_pytz.timezone("Asia/Kolkata"))
         h, mn = now_ist.hour, now_ist.minute
 
         # Filter 1: पहिले 15 मिनिट skip (volatile open)
