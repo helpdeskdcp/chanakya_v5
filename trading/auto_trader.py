@@ -130,7 +130,36 @@ def _scan_and_trade():
             if k not in seen_syms:
                 seen_syms.add(k); deduped.append(s)
         signals = deduped
-        good = [s for s in (signals or []) if (s.get("score") or 0) >= MIN_SCORE and not s.get("fake")]
+        # ── Quality Filters ──────────────────────────
+        from datetime import datetime
+        import pytz
+        now_ist = datetime.now(pytz.timezone("Asia/Kolkata"))
+        h, mn = now_ist.hour, now_ist.minute
+
+        # Filter 1: पहिले 15 मिनिट skip (volatile open)
+        skip_open = (h == 9 and mn < 30)
+
+        # Filter 2: Options symbols skip
+        def is_option(sym):
+            return any(c.isdigit() for c in str(sym)) or                    any(x in str(sym) for x in ["CE","PE","FUT"])
+
+        # Filter 3: Index साठी careful (NIFTY, BANKNIFTY, FINNIFTY)
+        INDEX_SYMS = {"NIFTY","BANKNIFTY","FINNIFTY","SENSEX"}
+
+        good = []
+        for s in (signals or []):
+            sym = s.get("symbol","")
+            score = s.get("score",0)
+            if score < MIN_SCORE: continue
+            if s.get("fake"): continue
+            if is_option(sym): continue
+            if skip_open:
+                _log(f"⏳ Skip {sym} — first 15min rule")
+                continue
+            if sym in INDEX_SYMS and score < 75:
+                continue  # Index साठी high confidence required
+            good.append(s)
+
         _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
         for sig in good:
             sym=sig["symbol"]; score=sig.get("score",0); dirn=sig["direction"]
@@ -140,6 +169,12 @@ def _scan_and_trade():
             if not auto: continue
             if open_count >= MAX_OPEN_TRADES:
                 _log(f"⚠️ Max trades reached, skip {sym}"); continue
+            # Duplicate check: same symbol already open?
+            open_trades = _get_all_open_trades()
+            open_syms = [t["symbol"] for t in open_trades]
+            if sym in open_syms:
+                _log(f"⚠️ Skip {sym} — already open")
+                continue
             sig_key = f"{sym}_{dirn}_{int(entry)}"
             with _lock:
                 if sig_key in _state["signals_seen"]: continue
