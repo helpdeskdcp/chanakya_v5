@@ -584,6 +584,18 @@ def autotrader_toggle():
         return jsonify({"success":False,"error":str(e)})
 
 
+@app.route("/api/capital")
+@require_auth
+def capital_info():
+    try:
+        from trading.capital_manager import get_full_analysis, get_capital
+        mode = request.args.get("mode", "PAPER")
+        analysis = get_full_analysis()
+        analysis["capital"] = get_capital(mode)
+        return jsonify({"success":True, **analysis})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/adaptive/log")
 @require_auth
 def adaptive_log():

@@ -214,8 +214,30 @@ def _scan_and_trade():
             with _lock:
                 if sig_key in _state["signals_seen"]: continue
                 _state["signals_seen"].add(sig_key)
+            # Capital-aware position sizing
+            try:
+                from trading.capital_manager import calculate_position_size, get_capital, check_daily_limit
+                cap_data = get_capital(mode)
+                capital  = cap_data["available"]
+                # Daily limit check
+                limit = check_daily_limit(capital)
+                if not limit["can_trade"]:
+                    _log(f"🚫 Daily limit: {limit['reason']} PnL={limit['daily_pnl']}")
+                    break
+                smart_qty, size_info = calculate_position_size(sym, exch, entry, sl, capital)
+                if not size_info.get("can_trade", True) and mode == "LIVE":
+                    _log(f"⚠️ Insufficient margin for {sym} - need Rs{size_info.get('margin_est',0):,.0f}")
+                    continue
+                lot_size = size_info.get("lot_size", 1)
+                lots     = size_info.get("lots", 1)
+                _log(f"💰 {sym} qty={smart_qty} lots={lots} risk=Rs{size_info.get('risk_amount',0)}")
+            except Exception as ce:
+                smart_qty = 1; lot_size = 1; lots = 1
+                logger.debug("capital_manager: %s", ce)
+
             tid = place_trade(AUTO_USERNAME, sym, exch, dirn, entry, sl, target,
-                              qty=1, token=token, strategy="AUTO_AI", mode=mode)
+                              qty=smart_qty, token=token, strategy="AUTO_AI", mode=mode,
+                              lot_size=lot_size, lots=lots)
             if tid:
                 open_count += 1
                 with _lock: _state["open_count"] = open_count

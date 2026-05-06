@@ -34,17 +34,18 @@ def init_db():
         print(f"trades init error: {e}")
 
 def place_trade(username, symbol, exchange, direction, entry, sl, target,
-                qty=1, token="", strategy="MANUAL", mode="PAPER"):
+                qty=1, token="", strategy="MANUAL", mode="PAPER",
+                lot_size=1, lots=1):
     try:
         conn = sqlite3.connect(DB_PATH)
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         tsym = symbol+("-EQ" if exchange=="NSE" else "")
         cur = conn.execute("""INSERT INTO trades
             (username,symbol,exchange,trading_symbol,token,direction,
-             entry_price,sl_price,target_price,qty,status,mode,strategy,created_at,updated_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+             entry_price,sl_price,target_price,qty,lots,lot_size,status,mode,strategy,created_at,updated_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (username,symbol,exchange,tsym,token,direction,
-             entry,sl,target,qty,"OPEN",mode,strategy,now,now))
+             entry,sl,target,qty,lots,lot_size,"OPEN",mode,strategy,now,now))
         trade_id = cur.lastrowid
         conn.commit(); conn.close()
         return trade_id
