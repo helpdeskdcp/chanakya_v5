@@ -1282,7 +1282,7 @@ def signals_nse_index():
             features = compute_features(candles, sym["name"])
             if not features: continue
             fusion = engine.fuse(features)
-            if fusion["signal"]=="NO_TRADE" or fusion["score"]<60: continue
+            if fusion["signal"]=="NO_TRADE" or fusion["score"]<30: continue
             ltp = features["price"]
             atr_val = features["atr14"]
             sl_pts = max(atr_val*2.5, ltp*sym["min_sl"])

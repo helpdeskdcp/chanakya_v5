@@ -211,11 +211,11 @@ ADJUSTMENT: [+10/-10/0] (confidence adjustment)"""
         # LLM: only block if rule is WEAK (<40) AND LLM rejects
         if not llm["approved"] and rule["score"] < 40:
             fused_score = max(0, fused_score - 5)
-        if agree_buy >= 1 and fused_score >= 32:
+        if agree_buy >= 1 and fused_score >= 30:
             final_signal = 'BUY_CE'
-        elif agree_sell >= 1 and fused_score >= 32:
+        elif agree_sell >= 1 and fused_score >= 30:
             final_signal = 'BUY_PE'
-        elif rule['signal'] != 'NO_TRADE' and fused_score >= 28:
+        elif rule['signal'] != 'NO_TRADE' and fused_score >= 25:
             final_signal = rule['signal']
         else:
             final_signal = "NO_TRADE"
