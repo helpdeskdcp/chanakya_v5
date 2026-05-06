@@ -143,21 +143,56 @@ def _scan_and_trade():
         def is_option(sym):
             return any(c.isdigit() for c in str(sym)) or                    any(x in str(sym) for x in ["CE","PE","FUT"])
 
-        # Filter 3: Index साठी careful (NIFTY, BANKNIFTY, FINNIFTY)
+        # Filter 3: Index साठी careful
         INDEX_SYMS = {"NIFTY","BANKNIFTY","FINNIFTY","SENSEX"}
+
+        # Filter 4: Gap Down/Up detect
+        def detect_gap(sig):
+            """Gap 0.5%+ असेल तर direction विरुद्ध trade skip"""
+            try:
+                ltp   = sig.get("ltp", 0)
+                entry = sig.get("entry", 0)
+                # candle open vs prev close gap
+                return False  # placeholder
+            except: return False
+
+        # Filter 5: NIFTY overall market bias
+        nifty_bias = "NEUTRAL"
+        try:
+            from data_stream.cache import get as cget
+            nifty_candles = cget("candles_NIFTY_5m")
+            if nifty_candles and len(nifty_candles) >= 5:
+                from engine.indicators import ema
+                closes = [float(c[4]) for c in nifty_candles]
+                e9  = ema(closes, 9)
+                e21 = ema(closes, 21)
+                # Today open vs current
+                today_open  = float(nifty_candles[0][1]) if nifty_candles else closes[0]
+                today_close = closes[-1]
+                gap_pct = (today_open - float(nifty_candles[-max(len(nifty_candles)//2,1)][4])) / float(nifty_candles[-max(len(nifty_candles)//2,1)][4]) * 100
+                if e9 > e21 and today_close > today_open: nifty_bias = "BULL"
+                elif e9 < e21 and today_close < today_open: nifty_bias = "BEAR"
+        except: pass
 
         good = []
         for s in (signals or []):
-            sym = s.get("symbol","")
+            sym   = s.get("symbol","")
             score = s.get("score",0)
+            dirn  = s.get("direction","")
             if score < MIN_SCORE: continue
             if s.get("fake"): continue
             if is_option(sym): continue
             if skip_open:
                 _log(f"⏳ Skip {sym} — first 15min rule")
                 continue
-            if sym in INDEX_SYMS and score < 75:
-                continue  # Index साठी high confidence required
+            if sym in INDEX_SYMS and score < 75: continue
+            # Market bias filter: BEAR market मध्ये BUY skip
+            if nifty_bias == "BEAR" and dirn == "BUY" and sym not in ["CRUDEOIL","NATURALGAS","GOLD"]:
+                _log(f"🐻 Skip BUY {sym} — Market BEARISH")
+                continue
+            if nifty_bias == "BULL" and dirn == "SELL" and sym not in ["CRUDEOIL","NATURALGAS","GOLD"]:
+                _log(f"🐂 Skip SELL {sym} — Market BULLISH")
+                continue
             good.append(s)
 
         _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
