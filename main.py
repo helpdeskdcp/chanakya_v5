@@ -1345,15 +1345,13 @@ def signals_nse_index():
     try:
         from ai.feature_engine import compute_features
         from ai.decision_engine import ChanakyaDecisionEngine
-        from broker.global_broker import get_broker
-        import datetime, pytz, time, json as jj, datetime as dt2
-        IST = pytz.timezone("Asia/Kolkata")
-        now = datetime.datetime.now(IST)
-        if not ((now.hour==9 and now.minute>=15) or (10<=now.hour<=15) or
-                (now.hour==15 and now.minute<=30)):
+        from data_stream.data_manager import get_data_manager
+        import json as jj, datetime as dt2
+        dm = get_data_manager()
+        if not dm.is_market_open("NSE"):
             return jsonify({"success":True,"signals":[],"market":"NSE_CLOSED",
                           "message":"NSE 9:15AM-3:30PM IST madhe open aahe"})
-        broker = get_broker()
+        broker = dm._get_broker()
         engine = ChanakyaDecisionEngine()
         NSE = [
             {"name":"NIFTY",    "token":"99926000","exchange":"NSE","lot":65,"interval":50,"min_sl":0.004},
@@ -1364,11 +1362,8 @@ def signals_nse_index():
         today = dt2.date.today()
         for sym in NSE:
             time.sleep(0.5)
-            if not broker.is_connected(): broker.connect()
-            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
-            if not raw or len(raw)<30: continue
-            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
-                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+            candles = dm.get_candles(sym["name"])
+            if not candles or len(candles)<30: continue
             features = compute_features(candles, sym["name"])
             if not features: continue
             fusion = engine.fuse(features)
@@ -1429,15 +1424,13 @@ def signals_mcx():
     try:
         from ai.feature_engine import compute_features
         from ai.decision_engine import ChanakyaDecisionEngine
-        from broker.global_broker import get_broker
-        import datetime, pytz, time, json as jj, datetime as dt2
-        IST = pytz.timezone("Asia/Kolkata")
-        now = datetime.datetime.now(IST)
-        mcx_open = (now.hour>=9) and (now.hour<23 or (now.hour==23 and now.minute<=30))
-        if not mcx_open:
+        from data_stream.data_manager import get_data_manager
+        import json as jj, datetime as dt2
+        dm = get_data_manager()
+        if not dm.is_market_open("MCX"):
             return jsonify({"success":True,"signals":[],"market":"MCX_CLOSED",
                           "message":"MCX 9:00AM-11:30PM IST madhe open aahe"})
-        broker = get_broker()
+        broker = dm._get_broker()
         engine = ChanakyaDecisionEngine()
         MCX = [
             {"name":"CRUDEOIL",  "token":"488290","exchange":"MCX","lot":100,"interval":50,"min_sl":0.006},
@@ -1448,11 +1441,8 @@ def signals_mcx():
         today = dt2.date.today()
         for sym in MCX:
             time.sleep(0.5)
-            if not broker.is_connected(): broker.connect()
-            raw = broker.get_candles(sym["token"],sym["exchange"],"FIVE_MINUTE",2)
-            if not raw or len(raw)<30: continue
-            candles=[{"o":float(x[1]),"h":float(x[2]),"l":float(x[3]),
-                      "c":float(x[4]),"v":float(x[5]) if len(x)>5 else 0} for x in raw]
+            candles = dm.get_candles(sym["name"])
+            if not candles or len(candles)<30: continue
             features = compute_features(candles, sym["name"])
             if not features: continue
             fusion = engine.fuse(features)
@@ -1543,6 +1533,15 @@ def signals_equity():
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_EQUITY"})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+# Pre-warm DataManager cache on startup
+try:
+    from data_stream.data_manager import get_data_manager
+    import threading
+    dm = get_data_manager()
+    t = threading.Thread(target=dm.warm_cache, daemon=True)
+    t.start()
+except: pass
+
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
