@@ -2209,8 +2209,21 @@ async function runScalpingScan() {
 
 async function buyOption(sig, paper) {
   var mode = paper ? 'PAPER' : 'LIVE';
-  if(!paper && !confirm('⚠️ LIVE ORDER! ₹'+sig.opt_entry+' × '+sig.opt_lot+' lots. Confirm?')) return;
-  var payload = Object.assign({}, sig, {paper: paper});
+  var entryPrice = sig.opt_entry || sig.opt_ltp || 0;
+  var lotSize = sig.opt_lot || sig.qty || 1;
+  if(!paper && !confirm('⚠️ LIVE ORDER! ₹'+entryPrice+' × '+lotSize+' lots. Confirm?')) return;
+  var isMCX = ['CRUDEOIL','NATURALGAS','GOLD','SILVER'].indexOf(sig.symbol) >= 0;
+  var payload = {
+    symbol: sig.symbol, signal: sig.signal,
+    strategy: sig.strategy || 'MYTHOS',
+    opt_symbol: sig.opt_symbol, opt_token: sig.opt_token || '',
+    opt_exchange: sig.opt_exchange || (isMCX ? 'MCX' : 'NFO'),
+    opt_lot: lotSize, opt_entry: entryPrice,
+    opt_sl: sig.opt_sl || Math.round(entryPrice*0.80*100)/100,
+    opt_target: sig.opt_target || Math.round(entryPrice*1.40*100)/100,
+    opt_trail: sig.opt_trail || Math.round(entryPrice*0.90*100)/100,
+    paper: paper
+  };
   var d = await api('/scalping/buy','POST', payload);
   if(d.success) {
     toast('✅ '+mode+' BUY placed! '+d.message, '#00e676');
