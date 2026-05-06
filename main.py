@@ -1542,6 +1542,190 @@ try:
     t.start()
 except: pass
 
+
+
+# ═══ SYMBOL MANAGEMENT APIS ═══
+
+@app.route("/api/admin/symbols/search")
+@require_auth
+def search_symbols():
+    """Search scrip master for symbol token/lot"""
+    try:
+        q = request.args.get("q","").upper().strip()
+        exchange = request.args.get("exchange","").upper()
+        if len(q) < 2:
+            return jsonify({"success":False,"error":"Min 2 chars"})
+        import json as jj
+        with open("data/scrip_master.json") as f: scrips = jj.load(f)
+        results = []
+        seen = set()
+        for s in scrips:
+            sym  = s.get("symbol","").upper()
+            name = s.get("name","").upper()
+            exch = s.get("exch_seg","").upper()
+            itype = s.get("instrumenttype","").upper()
+            # Filter: only index/future/equity — not options
+            if itype in ["CE","PE","OPTFUT","OPTIDX"]: continue
+            if exchange and exch != exchange: continue
+            if q not in sym and q not in name: continue
+            # Deduplicate
+            key = f"{name}_{exch}"
+            if key in seen: continue
+            seen.add(key)
+            # Detect instrument type
+            if exch in ["NFO","BFO"]:
+                typ = "index" if "NIFTY" in sym or "SENSEX" in sym else "equity"
+            elif exch == "MCX":
+                typ = "commodity"
+            else:
+                typ = "equity"
+            # Check if options exist
+            has_opts = any(
+                o.get("name","").upper()==name and
+                o.get("exch_seg","").upper() in ["NFO","MCX"] and
+                o.get("instrumenttype","").upper() in ["CE","PE","OPTFUT","OPTIDX"]
+                for o in scrips[:5000]  # limit check
+            ) if len(results) < 5 else False
+            results.append({
+                "symbol": name,
+                "token":  s.get("token",""),
+                "exchange": exch,
+                "type": typ,
+                "lot_size": int(float(s.get("lotsize",1) or 1)),
+                "tick_size": float(s.get("tick_size",0.05) or 0.05),
+                "instrument": itype,
+            })
+            if len(results) >= 15: break
+        return jsonify({"success":True,"results":results,"count":len(results)})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols", methods=["GET"])
+@require_auth
+def get_symbols():
+    """Get all trading symbols"""
+    try:
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        rows = conn.execute("""
+            SELECT id,symbol,token,exchange,instrument_type,lot_size,
+                   strike_interval,min_sl_pct,has_options,option_exchange,
+                   is_active,created_at
+            FROM trading_symbols ORDER BY exchange,instrument_type,symbol
+        """).fetchall()
+        conn.close()
+        syms = [{"id":r[0],"symbol":r[1],"token":r[2],"exchange":r[3],
+                 "type":r[4],"lot":r[5],"interval":r[6],"min_sl":r[7],
+                 "has_options":bool(r[8]),"opt_exchange":r[9],
+                 "active":bool(r[10]),"created":r[11]} for r in rows]
+        return jsonify({"success":True,"symbols":syms,"total":len(syms)})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols", methods=["POST"])
+@require_role("developer","administrator")
+def add_symbol():
+    """Add new trading symbol"""
+    try:
+        data = request.json or {}
+        sym      = data.get("symbol","").upper().strip()
+        token    = str(data.get("token","")).strip()
+        exchange = data.get("exchange","NSE").upper()
+        sym_type = data.get("type","equity")
+        lot      = int(data.get("lot_size",1))
+        interval = int(data.get("strike_interval",50))
+        min_sl   = float(data.get("min_sl_pct",0.004))
+        has_opts = int(data.get("has_options",0))
+        opt_exch = data.get("opt_exchange","NFO").upper()
+        tick     = float(data.get("tick_size",0.05))
+
+        if not sym or not token:
+            return jsonify({"success":False,"error":"symbol and token required"})
+
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        conn.execute("""
+            INSERT OR REPLACE INTO trading_symbols
+            (symbol,token,exchange,instrument_type,lot_size,tick_size,
+             strike_interval,min_sl_pct,has_options,option_exchange,is_active,added_by)
+            VALUES (?,?,?,?,?,?,?,?,?,?,1,?)
+        """, (sym,token,exchange,sym_type,lot,tick,interval,min_sl,has_opts,opt_exch,
+              request.username))
+        conn.commit()
+        conn.close()
+
+        # Reload DataManager
+        from data_stream.data_manager import get_data_manager
+        dm = get_data_manager()
+        total = dm.reload_symbols()
+
+        return jsonify({"success":True,"message":f"{sym} added",
+                       "total_symbols":total})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols/<symbol>", methods=["DELETE"])
+@require_role("developer","administrator")
+def delete_symbol(symbol):
+    """Delete/deactivate trading symbol"""
+    try:
+        sym = symbol.upper()
+        protected = ["NIFTY","BANKNIFTY","CRUDEOIL"]
+        if sym in protected:
+            return jsonify({"success":False,"error":f"{sym} is protected"})
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        conn.execute("UPDATE trading_symbols SET is_active=0 WHERE symbol=?", (sym,))
+        conn.commit()
+        conn.close()
+
+        from data_stream.data_manager import get_data_manager
+        dm = get_data_manager()
+        dm.reload_symbols()
+
+        return jsonify({"success":True,"message":f"{sym} removed"})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/symbols/<symbol>/expiry")
+@require_auth
+def symbol_expiry(symbol):
+    """Auto-detect nearest expiry for symbol"""
+    try:
+        sym = symbol.upper()
+        import json as jj, datetime as dt2, sqlite3 as sq
+        today = dt2.date.today()
+
+        # Get exchange from DB
+        conn = sq.connect("data/chanakya_v5.db")
+        row = conn.execute(
+            "SELECT opt_exchange FROM trading_symbols WHERE symbol=? AND is_active=1",
+            (sym,)).fetchone()
+        conn.close()
+        opt_exch = row[0] if row else "NFO"
+
+        with open("data/scrip_master.json") as f: scrips = jj.load(f)
+
+        # Find options for this symbol
+        opts = [s for s in scrips
+                if s.get("name","").upper()==sym
+                and s.get("exch_seg","").upper()==opt_exch
+                and s.get("instrumenttype","").upper() in ["CE","PE","OPTFUT","OPTIDX"]]
+
+        def parse_exp(s):
+            try: return dt2.datetime.strptime(s.get("expiry",""),"%d%b%Y").date()
+            except: return dt2.date(2099,1,1)
+
+        future = [s for s in opts if parse_exp(s) >= today and parse_exp(s).year < 2090]
+        future.sort(key=parse_exp)
+
+        expiries = sorted(set(s.get("expiry","") for s in future if s.get("expiry","")))
+
+        return jsonify({"success":True,"symbol":sym,
+                       "nearest_expiry": expiries[0] if expiries else None,
+                       "all_expiries": expiries[:5]})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -1549,7 +1733,6 @@ if __name__ == "__main__":
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
-
 
 
 
