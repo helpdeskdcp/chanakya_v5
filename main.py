@@ -69,7 +69,12 @@ def login():
         if not verify_password(username, password):
             return jsonify({"success":False,"error":"Invalid credentials"})
         token = create_session(username)
-        user = get_user(username) or {}
+        user  = get_user(username) or {}
+        # Auto trade ON on login
+        try:
+            from trading.user_auto_trader import set_user_auto_trade
+            set_user_auto_trade(username, user.get("role","demo"))
+        except: pass
         return jsonify({"success":True,"token":token,"role":user.get("role"),"username":username})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
@@ -643,6 +648,26 @@ try:
     # Adaptive Manager - हर 5 seconds monitoring
     from trading.adaptive_manager import start as am_start
     am_start()
+    # Multi-user: DB table init + 11:40 scheduler
+    try:
+        import sqlite3 as _sq
+        _c = _sq.connect("data/chanakya_v5.db")
+        _c.execute("""CREATE TABLE IF NOT EXISTS user_trading_state (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            auto_trade INTEGER DEFAULT 0,
+            mode TEXT DEFAULT 'PAPER',
+            login_at TEXT, auto_off_at TEXT,
+            trades_today INTEGER DEFAULT 0,
+            pnl_today REAL DEFAULT 0.0,
+            updated_at TEXT
+        )""")
+        _c.commit(); _c.close()
+        from trading.user_auto_trader import run_1140_scheduler
+        threading.Thread(target=run_1140_scheduler, daemon=True, name="1140Scheduler").start()
+        logger.info("Multi-user auto trader initialized")
+    except Exception as _e:
+        logger.error("Multi-user init: %s", _e)
     logger.info("Auto Trader monitor started")
 except Exception as e:
     logger.warning(f"Auto trader start failed: {e}")

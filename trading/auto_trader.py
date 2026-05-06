@@ -234,16 +234,26 @@ def _scan_and_trade():
                 smart_qty = 1; lot_size = 1; lots = 1
                 logger.debug("capital_manager: %s", ce)
 
-            tid = place_trade(AUTO_USERNAME, sym, exch, dirn, entry, sl, target,
-                              qty=smart_qty, token=token, strategy="AUTO_AI", mode=mode,
-                              lot_size=lot_size, lots=lots)
-            if tid:
-                open_count += 1
-                with _lock: _state["open_count"] = open_count
-                _log(f"✅ AUTO {mode}: {dirn} {sym} @₹{entry} #{tid}")
-                alert_trade_open(AUTO_USERNAME, sym, dirn, entry, sl, target, 1, mode)
-            else:
-                _log(f"❌ Auto place failed: {sym}")
+            # Place for ALL active users (multi-user)
+            try:
+                from trading.user_auto_trader import process_signal_for_all_users
+                results = process_signal_for_all_users(sig)
+                if results:
+                    open_count += len(results)
+                    with _lock: _state["open_count"] = open_count
+                    _log(f"✅ AUTO {mode}: {dirn} {sym} @₹{entry} → {len(results)} users")
+                else:
+                    # Fallback: single user
+                    tid = place_trade(AUTO_USERNAME, sym, exch, dirn, entry, sl, target,
+                                     qty=smart_qty, token=token, strategy="AUTO_AI", mode=mode,
+                                     lot_size=lot_size, lots=lots)
+                    if tid:
+                        open_count += 1
+                        with _lock: _state["open_count"] = open_count
+                        _log(f"✅ AUTO {mode}: {dirn} {sym} @₹{entry} #{tid}")
+                        alert_trade_open(AUTO_USERNAME, sym, dirn, entry, sl, target, 1, mode)
+            except Exception as _me:
+                logger.error("multi-user place: %s", _me)
         with _lock: _state["signals_seen"].clear()
     except Exception as e: logger.error(f"Scan error: {e}")
 
