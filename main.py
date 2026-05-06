@@ -584,10 +584,22 @@ def autotrader_toggle():
         return jsonify({"success":False,"error":str(e)})
 
 
+@app.route("/api/adaptive/log")
+@require_auth
+def adaptive_log():
+    try:
+        from trading.adaptive_manager import get_log
+        return jsonify({"success":True,"log":get_log()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e),"log":[]})
+
 # ── Auto start position monitor on boot ───────────────
 try:
     from trading.auto_trader import start as at_start
     at_start(mode="PAPER", auto_trade=True)
+    # Adaptive Manager - हर 5 seconds monitoring
+    from trading.adaptive_manager import start as am_start
+    am_start()
     logger.info("Auto Trader monitor started")
 except Exception as e:
     logger.warning(f"Auto trader start failed: {e}")
