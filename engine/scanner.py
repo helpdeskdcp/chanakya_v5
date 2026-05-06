@@ -175,9 +175,19 @@ def scan_all(broker=None):
                 sig["exchange"] = stock["exchange"]
                 sig["type"] = stock["type"]
                 sig["token"] = stock["token"]
-                # SMC filter: Smart Money confirmation required
+                # Exchange-specific filters
+                exch = stock["exchange"]
+                if exch == "NSE" and not is_nse_open(): continue
+                if exch == "MCX" and not is_mcx_open(): continue
                 smc = sig.get("smc_score", 0)
-                if sig["score"] >= 50 and not sig["fake"] and smc >= 45:
+                # MCX evening: relax filters (low volume normal)
+                if exch == "MCX":
+                    min_score = 45; min_smc = 20
+                    fake = [f for f in sig["fake"] if f != "LowVol"]
+                else:
+                    min_score = 50; min_smc = 40
+                    fake = sig["fake"]
+                if sig["score"] >= min_score and not fake and smc >= min_smc:
                     signals.append(sig)
             except Exception as e:
                 logger.debug(f"scan {stock['symbol']}: {e}")
