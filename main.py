@@ -74,7 +74,9 @@ def login():
         try:
             from trading.user_auto_trader import set_user_auto_trade
             set_user_auto_trade(username, user.get("role","demo"))
-        except: pass
+            logger.info("Auto trade ON: %s (%s)", username, user.get("role","demo"))
+        except Exception as _e:
+            logger.error("Auto trade trigger failed: %s", _e)
         return jsonify({"success":True,"token":token,"role":user.get("role"),"username":username})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
