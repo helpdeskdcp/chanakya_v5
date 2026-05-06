@@ -122,18 +122,22 @@ def _adaptive_monitor():
                     hit_sl  = (dirn=="BUY" and ltp<=sl) or (dirn=="SELL" and ltp>=sl)
                     hit_tgt = (dirn=="BUY" and ltp>=tgt) or (dirn=="SELL" and ltp<=tgt)
 
+                    lot_size   = int(t.get("lot_size") or t.get("qty") or 1)
+                    lots       = int(t.get("lots") or 1)
+                    multiplier = lot_size * lots
+
                     if hit_tgt:
-                        pnl = round((ltp-entry) if dirn=="BUY" else (entry-ltp), 2)
+                        pnl = round(((ltp-entry) if dirn=="BUY" else (entry-ltp)) * multiplier, 2)
                         _close_trade(tid, ltp, "TARGET")
-                        msg = f"🎯 TARGET HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nP&L: +₹{pnl}"
+                        msg = f"🎯 TARGET HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nLot Size: {multiplier}\nP&L: +₹{pnl}"
                         _log(f"🎯 TARGET: {sym} PnL=+₹{pnl}")
                         if _can_alert(f"close_{tid}"): _send_alert(msg)
                         continue
 
                     if hit_sl:
-                        pnl = round((ltp-entry) if dirn=="BUY" else (entry-ltp), 2)
+                        pnl = round(((ltp-entry) if dirn=="BUY" else (entry-ltp)) * multiplier, 2)
                         _close_trade(tid, ltp, "STOPLOSS")
-                        msg = f"🛑 STOPLOSS HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nP&L: ₹{pnl}"
+                        msg = f"🛑 STOPLOSS HIT!\n{sym} {dirn}\nEntry: ₹{entry} → Exit: ₹{ltp}\nLot Size: {multiplier}\nP&L: ₹{pnl}"
                         _log(f"🛑 STOPLOSS: {sym} PnL=₹{pnl}")
                         if _can_alert(f"close_{tid}"): _send_alert(msg)
                         continue
@@ -191,9 +195,13 @@ def _adaptive_monitor():
                             _log(f"⚠️ BOS_BULL on SELL {sym}")
                             if _can_alert(f"bos_{tid}"): _send_alert(msg)
 
-                    # ── 4. Live P&L log ────────────────────
-                    unrealized = round((ltp-entry) if dirn=="BUY" else (entry-ltp), 2)
-                    _log(f"📊 {sym} {dirn} LTP=₹{ltp} | P&L=₹{unrealized:+.1f} | SL=₹{sl} | T=₹{tgt}")
+                    # ── 4. Live P&L log (lot_size aware) ──
+                    lot_size   = int(t.get("lot_size") or t.get("qty") or 1)
+                    lots       = int(t.get("lots") or 1)
+                    multiplier = lot_size * lots
+                    unrealized = round(((ltp-entry) if dirn=="BUY" else (entry-ltp)) * multiplier, 2)
+                    per_unit   = round((ltp-entry) if dirn=="BUY" else (entry-ltp), 2)
+                    _log(f"📊 {sym} {dirn} LTP=₹{ltp} | P&L=₹{unrealized:+.0f} ({per_unit:+.2f}×{multiplier}) | SL=₹{sl} | T=₹{tgt}")
 
                 except Exception as e:
                     logger.debug("adaptive %s: %s", t.get("symbol"), e)
