@@ -60,7 +60,7 @@ def compute_features(candles, symbol="NIFTY"):
     from datetime import datetime; import pytz
     _IST = pytz.timezone("Asia/Kolkata")
     _today = datetime.now(_IST).strftime("%Y-%m-%d")
-    _tc = [x for x in candles if str(x.get("t","")).startswith(_today)]
+    _tc = [x for x in candles if str(x.get("t",""))[:10] == _today]
     if len(_tc) >= 5:
         vwap_val = vwap([x["h"] for x in _tc],[x["l"] for x in _tc],
                         [x["c"] for x in _tc],[x.get("v",0) for x in _tc])
