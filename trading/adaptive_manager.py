@@ -117,6 +117,7 @@ def _adaptive_monitor():
                     ltp = broker.get_ltp(exch, sym, token)
                     if not ltp or ltp <= 0: continue
                     ltp = float(ltp)
+                    if ltp <= 0: continue
 
                     # ── 1. SL/Target hit check ─────────────
                     hit_sl  = (dirn=="BUY" and ltp<=sl) or (dirn=="SELL" and ltp>=sl)
