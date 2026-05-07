@@ -175,18 +175,59 @@ def scan_all(broker=None):
                 sig["exchange"] = stock["exchange"]
                 sig["type"] = stock["type"]
                 sig["token"] = stock["token"]
-                # Exchange-specific filters
+                # Exchange hours check
                 exch = stock["exchange"]
                 if exch == "NSE" and not is_nse_open(): continue
                 if exch == "MCX" and not is_mcx_open(): continue
+
+                # ── 9:45 Time Filter ──────────────────────────
+                from datetime import datetime as _dt
+                import pytz as _pytz
+                _now = _dt.now(_pytz.timezone("Asia/Kolkata"))
+                if _now.hour==9 and _now.minute<45 and exch=="NSE":
+                    logger.debug("Skip %s — 9:45 filter", stock["symbol"])
+                    continue
+
+                # ── EMA200 Trend Filter ────────────────────────
+                try:
+                    from engine.indicators import ema as _ema
+                    _closes = [float(c[4]) for c in candles]
+                    _e200   = _ema(_closes[-200:] if len(_closes)>=200 else _closes,
+                                   min(200, len(_closes)))
+                    _ltp    = _closes[-1]
+                    _dirn   = sig["direction"]
+                    _with_trend = ((_dirn=="BUY"  and _ltp > _e200) or
+                                   (_dirn=="SELL" and _ltp < _e200))
+                    # Score modifier
+                    if _with_trend:
+                        sig["score"] = min(100, sig["score"] + 15)
+                        sig["trend_align"] = "WITH"
+                    else:
+                        sig["score"] = max(0, sig["score"] - 20)
+                        sig["trend_align"] = "COUNTER"
+                    sig["ema200"] = round(_e200, 2)
+                except: sig["trend_align"] = "UNKNOWN"
+
+                # ── Volume Spike Filter (MCX only, during hours) ──
+                try:
+                    _vols   = [float(c[5]) for c in candles]
+                    _avg_v  = sum(_vols[-20:-1])/19 if len(_vols)>=20 else sum(_vols)/len(_vols)
+                    _v_ratio= _vols[-1]/max(_avg_v,1)
+                    sig["vol_ratio"] = round(_v_ratio, 2)
+                    # NSE: vol check only during market hours (avoid 0 volume)
+                    if exch=="MCX" and _v_ratio < 0.8:
+                        sig["fake"] = sig.get("fake",[]) + ["LowVol_MCX"]
+                except: pass
+
                 smc = sig.get("smc_score", 0)
-                # MCX evening: relax filters (low volume normal)
+                # Thresholds
                 if exch == "MCX":
                     min_score = 45; min_smc = 20
-                    fake = [f for f in sig["fake"] if f != "LowVol"]
+                    fake = [f for f in sig.get("fake",[]) if f != "LowVol"]
                 else:
-                    min_score = 50; min_smc = 40
-                    fake = sig["fake"]
+                    min_score = 50; min_smc = 30
+                    fake = sig.get("fake",[])
+
                 if sig["score"] >= min_score and not fake and smc >= min_smc:
                     signals.append(sig)
             except Exception as e:
