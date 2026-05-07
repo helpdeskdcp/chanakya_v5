@@ -68,3 +68,29 @@ def supertrend(candles, period=10, multiplier=3):
         lower = mid - multiplier*a
         return "UP" if ltp > lower else "DOWN"
     except: return "UP"
+
+def fibonacci_levels(candles, lookback=100):
+    """Fibonacci Retracement levels calculate करतो"""
+    recent = candles[-min(lookback,len(candles)):]
+    highs  = [float(c[2]) for c in recent]
+    lows   = [float(c[3]) for c in recent]
+    sh = max(highs); sl = min(lows); diff = sh - sl
+    return {
+        "swing_high": round(sh,2), "swing_low": round(sl,2),
+        "23.6%": round(sh-diff*0.236,2),
+        "38.2%": round(sh-diff*0.382,2),
+        "50.0%": round(sh-diff*0.500,2),
+        "61.8%": round(sh-diff*0.618,2),  # Golden ratio
+        "78.6%": round(sh-diff*0.786,2),
+        "ext_127%": round(sl-diff*0.272,2),
+        "ext_161%": round(sl-diff*0.618,2),
+    }
+
+def fibonacci_zone(ltp, levels, tol=0.002):
+    """LTP कोणत्या Fib zone मध्ये आहे?"""
+    zones = []
+    for k,v in levels.items():
+        if k in ["swing_high","swing_low"]: continue
+        if abs(ltp-v)/max(ltp,1) <= tol:
+            zones.append((k, v, round(abs(ltp-v)/ltp*100,3)))
+    return sorted(zones, key=lambda x: x[2])
