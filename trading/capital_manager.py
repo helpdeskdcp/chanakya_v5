@@ -222,7 +222,7 @@ def calculate_position_size(symbol, exchange, entry, sl, capital=None):
 
         # Number of lots
         if lot_size > 1:
-            lots = max(1, round(raw_qty / lot_size))
+            import math; lots = max(1, math.floor(raw_qty / lot_size))
             qty  = lots * lot_size
         else:
             # Equity — min 1 share, max based on capital
