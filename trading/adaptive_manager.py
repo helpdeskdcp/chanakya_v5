@@ -107,8 +107,15 @@ def _adaptive_monitor():
                     tid   = t["id"]
                     dirn  = t["direction"]
                     entry = float(t["entry_price"])
-                    sl    = float(t["sl_price"])
-                    tgt   = float(t["target_price"])
+                    # Always fresh read from DB
+                    import sqlite3 as _sq
+                    _c2 = _sq.connect(DB_PATH)
+                    _tr = _c2.execute(
+                        "SELECT sl_price, target_price FROM trades WHERE id=?",
+                        (tid,)).fetchone()
+                    _c2.close()
+                    sl  = float(_tr[0]) if _tr else float(t["sl_price"])
+                    tgt = float(_tr[1]) if _tr else float(t["target_price"])
                     exch  = t.get("exchange", "NSE")
                     token = t.get("token", "")
                     user  = t.get("username", "avinash")
