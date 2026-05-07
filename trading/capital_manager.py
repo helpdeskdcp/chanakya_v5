@@ -14,22 +14,44 @@ MIN_RR_RATIO        = 1.8   # Minimum Risk:Reward
 # Paper Trading Virtual Capital (per user)
 DEFAULT_PAPER_CAPITAL = 200000.0  # ₹2,00,000 default per user
 
-# MCX Lot Sizes
+# ── Correct Lot Sizes (verified May 2026) ────────────
 MCX_LOT_SIZES = {
-    "CRUDEOIL":   100,
-    "NATURALGAS": 1250,
-    "GOLD":       100,
-    "SILVER":     30000,
+    "CRUDEOIL":   100,    # 100 barrels/lot
+    "CRUDEOILM":  10,     # Mini crude
+    "NATURALGAS": 1250,   # 1250 MMBtu/lot
+    "GOLD":       1000,   # 1 KG = 1000 gms/lot
+    "GOLDM":      100,    # 100 gms (Mini gold)
+    "SILVER":     30000,  # 30 KGS = 30,000 gms/lot
+    "SILVERM":    5000,   # 5 KGS mini
     "COPPER":     2500,
+    "ZINC":       5000,
+    "LEAD":       5000,
+    "NICKEL":     1500,
+    "ALUMINIUM":  5000,
 }
 
-# NSE F&O Lot Sizes
+# NSE F&O Lot Sizes (corrected)
 FNO_LOT_SIZES = {
-    "NIFTY":     75,
-    "BANKNIFTY": 30,
-    "FINNIFTY":  40,
-    "SENSEX":    20,
+    "NIFTY":      65,     # corrected from 75
+    "BANKNIFTY":  30,
+    "FINNIFTY":   60,     # corrected from 40
+    "MIDCPNIFTY": 120,
+    "SENSEX":     20,
 }
+
+# Master lot size lookup
+ALL_LOT_SIZES = {**MCX_LOT_SIZES, **FNO_LOT_SIZES}
+
+def get_lot_size(symbol, exchange="NSE"):
+    """Symbol चा correct lot size return करतो"""
+    sym = symbol.upper().replace("-EQ","").replace("-I","")
+    if sym in ALL_LOT_SIZES:
+        return ALL_LOT_SIZES[sym]
+    if exchange == "MCX":
+        return MCX_LOT_SIZES.get(sym, 1)
+    if exchange == "NSE" and sym in FNO_LOT_SIZES:
+        return FNO_LOT_SIZES[sym]
+    return 1  # Equity = 1 share
 
 def get_paper_capital(username="avinash"):
     """User-specific paper capital from DB"""
