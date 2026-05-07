@@ -9,3 +9,6 @@ data/ml_model.pkl
 data/cache/
 .aider*
 *.bak
+*.bak*
+data/scalping_ai.db
+features
