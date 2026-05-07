@@ -67,10 +67,16 @@ def place_user_trade(username, sig, capital):
         conn.close()
         if sym in open_syms: return None, f"Already open"
         qty, info = calculate_position_size(sym, exch, entry, sl, capital)
+        # Ensure correct lot_size always
+        from trading.capital_manager import get_lot_size as _gls
+        correct_lot = _gls(sym, exch)
+        actual_lot  = info.get("lot_size", correct_lot) or correct_lot
+        actual_lots = info.get("lots", 1) or 1
+        actual_qty  = actual_lots * actual_lot
         tid = place_trade(username, sym, exch, dirn, entry, sl, target,
-                         qty=qty, token=token, strategy="AUTO_AI", mode="PAPER",
-                         lot_size=info.get("lot_size",1), lots=info.get("lots",1))
-        return tid, f"qty={qty} lots={info.get('lots',1)}"
+                         qty=actual_qty, token=token, strategy="AUTO_AI", mode="PAPER",
+                         lot_size=actual_lot, lots=actual_lots)
+        return tid, f"qty={actual_qty} lots={actual_lots} lot={actual_lot}"
     except Exception as e:
         logger.error("place_user_trade %s: %s", username, e)
         return None, str(e)
