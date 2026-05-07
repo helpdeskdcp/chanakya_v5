@@ -83,6 +83,32 @@ def _analyze(candles, symbol):
         # Blended score: 50% classic + 50% SMC
         final_score = round(score * 0.5 + smc * 0.5)
 
+        # ── EMA50 Pyramid Bonus ──────────────────────────
+        try:
+            e50 = ema(closes[-50:] if len(closes)>=50 else closes, 50)
+            if direction=="BUY":
+                pyr_strong = e9>e21 and e21>e50 and ltp>e200 if "e200" in dir() else e9>e21 and e21>e50
+            else:
+                pyr_strong = e9<e21 and e21<e50 and ltp<e200 if "e200" in dir() else e9<e21 and e21<e50
+            if pyr_strong:
+                final_score = min(100, final_score + 20)
+        except: pass
+
+        # ── Fibonacci Zone Bonus ──────────────────────────
+        fib_tag = ""
+        try:
+            from engine.indicators import fibonacci_levels, fibonacci_zone
+            _fibs  = fibonacci_levels(candles, lookback=100)
+            _zones = fibonacci_zone(ltp, _fibs, tol=0.003)
+            for _zn, _zp, _zd in _zones:
+                if direction=="BUY" and _zn in ["38.2%","50.0%","61.8%"]:
+                    final_score = min(100, final_score + 20)
+                    fib_tag = f"FIB_{_zn}_SUPPORT"; break
+                elif direction=="SELL" and _zn in ["23.6%","38.2%","78.6%"]:
+                    final_score = min(100, final_score + 20)
+                    fib_tag = f"FIB_{_zn}_RESIST"; break
+        except: pass
+
         # SL/Target: MCX=ATR only, NSE=OB+ATR
         ob = smc_details.get("ob",{})
         is_mcx = stock.get("exchange","NSE") == "MCX"
