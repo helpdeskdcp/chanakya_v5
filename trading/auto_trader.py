@@ -201,8 +201,15 @@ def _scan_and_trade():
             exch=sig.get("exchange","NSE"); token=sig.get("token","")
             alert_signal(sym, dirn, entry, sl, target, score)
             if not auto: continue
-            if open_count >= MAX_OPEN_TRADES:
-                _log(f"⚠️ Max trades reached, skip {sym}"); continue
+            # Per-user open trade count check
+            import sqlite3 as _sq3
+            _uc = _sq3.connect(DB_PATH)
+            user_open = _uc.execute(
+                "SELECT COUNT(*) FROM trades WHERE username=? AND status='OPEN'",
+                (AUTO_USERNAME,)).fetchone()[0]
+            _uc.close()
+            if user_open >= MAX_OPEN_TRADES:
+                _log(f"⚠️ Max trades({user_open}/{MAX_OPEN_TRADES}) reached, skip {sym}"); continue
             # Duplicate check: same symbol already open?
             open_trades = _get_all_open_trades()
             open_syms = [t["symbol"] for t in open_trades]
