@@ -54,20 +54,16 @@ class DataManager:
         return len(self.SYMBOLS)
 
     def _get_broker(self):
-        now = time.time()
-        if self._broker and self._connected: return self._broker
-        if now - self._last_connect < 5: return self._broker
         try:
-            self._last_connect = now
             from broker.global_broker import get_broker
             b = get_broker()
-            if not b.is_connected(): b.connect()
-            if b.is_connected():
-                self._broker = b
-                self._connected = True
+            if not b.is_connected():
+                logger.info("DataManager: reconnecting broker")
+                b.connect()
+            self._broker = b
+            self._connected = b.is_connected()
         except Exception as e:
             logger.error("DataManager broker: %s", e)
-            self._connected = False
         return self._broker
 
     def get_candles(self, symbol, timeframe="FIVE_MINUTE", days=2, force=False):
