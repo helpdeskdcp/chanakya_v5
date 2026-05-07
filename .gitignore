@@ -1,11 +1,11 @@
 .env
+node_modules/
 __pycache__/
 *.pyc
-*.pyo
-data/*.db
-data/*.log
+*.pkl
+data/app.log
+data/chanakya_v5.db
+data/ml_model.pkl
 data/cache/
 .aider*
-features
-*.bak*
-"del*"
+*.bak
