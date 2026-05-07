@@ -19,10 +19,10 @@ MCX_LOT_SIZES = {
     "CRUDEOIL":   100,    # 100 barrels/lot
     "CRUDEOILM":  10,     # Mini crude
     "NATURALGAS": 1250,   # 1250 MMBtu/lot
-    "GOLD":       1000,   # 1 KG = 1000 gms/lot
-    "GOLDM":      100,    # 100 gms (Mini gold)
-    "SILVER":     30000,  # 30 KGS = 30,000 gms/lot
-    "SILVERM":    5000,   # 5 KGS mini
+    "GOLD":       100,    # 1 lot = 100 units (1 unit=10gms, 1 lot=1kg)
+    "GOLDM":      10,     # 1 lot = 10 units (1 unit=10gms, 1 lot=100gms)
+    "SILVER":     30,     # 1 lot = 30 kg (price per kg)
+    "SILVERM":    5,      # 1 lot = 5 kg mini
     "COPPER":     2500,
     "ZINC":       5000,
     "LEAD":       5000,
@@ -232,7 +232,23 @@ def calculate_position_size(symbol, exchange, entry, sl, capital=None):
             qty = min(qty, max(1, max_qty))
             lots = qty
 
-        margin_required = qty * entry * 0.20  # 20% margin estimate
+        # Realistic per-lot margin (MCX/NSE F&O intraday)
+        MARGIN_PER_LOT = {
+            "CRUDEOIL":    50000, "CRUDEOILM":    5000,
+            "NATURALGAS":  20000, "GOLD":         60000,
+            "GOLDM":        6000, "SILVER":       80000,
+            "SILVERM":     15000, "COPPER":       30000,
+            "ZINC":        20000, "NICKEL":       20000,
+            "ALUMINIUM":   15000, "LEAD":         15000,
+            "NIFTY":       75000, "BANKNIFTY":   100000,
+            "FINNIFTY":    50000, "MIDCPNIFTY":   40000,
+            "SENSEX":      60000,
+        }
+        sym_up = symbol.upper()
+        if sym_up in MARGIN_PER_LOT:
+            margin_required = MARGIN_PER_LOT[sym_up] * lots
+        else:
+            margin_required = qty * entry * 0.20  # Equity intraday
 
         return qty, {
             "capital":          round(capital, 2),
