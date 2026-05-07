@@ -262,7 +262,9 @@ def scan_all(broker=None):
                 # Thresholds
                 if exch == "MCX":
                     min_score = 45; min_smc = 20
-                    fake = [f for f in sig.get("fake",[]) if f != "LowVol"]
+                    # Evening MCX: volume naturally low → remove vol filters
+                    fake = [f for f in sig.get("fake",[])
+                            if f not in ["LowVol","LowVol_MCX"]]
                 else:
                     min_score = 50; min_smc = 30
                     fake = sig.get("fake",[])
