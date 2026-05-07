@@ -104,6 +104,20 @@ def predict_symbol(symbol, token, exchange, broker):
         if bull>=threshold: overall="BULLISH"; direction="BUY"
         elif bear>=threshold: overall="BEARISH"; direction="SELL"
         else: return None
+
+        # EMA200 Trend Filter — counter-trend skip
+        try:
+            from engine.indicators import ema as _ema
+            from data_stream.cache import get as cget
+            _c5 = cget(f"candles_{symbol}_5m")
+            if _c5 and len(_c5) >= 50:
+                _cls = [float(c[4]) for c in _c5]
+                _e200 = _ema(_cls[-200:] if len(_cls)>=200 else _cls, min(200,len(_cls)))
+                _ltp  = _cls[-1]
+                _with = (direction=="BUY" and _ltp>_e200) or (direction=="SELL" and _ltp<_e200)
+                if not _with:
+                    return None  # Counter-trend — skip
+        except: pass
         scores = [v["score"] for v in results.values()]
         conf = int(sum(scores)/len(scores))
         base = results.get("5m") or results.get("15m") or list(results.values())[0]
