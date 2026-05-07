@@ -83,21 +83,34 @@ def _analyze(candles, symbol):
         # Blended score: 50% classic + 50% SMC
         final_score = round(score * 0.5 + smc * 0.5)
 
-        # Smart SL/Target using Order Blocks + ATR
+        # SL/Target: MCX=ATR only, NSE=OB+ATR
         ob = smc_details.get("ob",{})
+        is_mcx = stock.get("exchange","NSE") == "MCX"
+
         if direction=="BUY":
-            bull_ob = ob.get("bull_ob")
-            # Minimum SL buffer (SEBI best practice)
-            min_sl_pct = 0.004 if symbol in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
-            atr_sl = round(ltp - max(2.0*at, ltp*min_sl_pct), 1)
-            sl = round(bull_ob["low"] - at*0.5, 1) if bull_ob else atr_sl
-            target = round(ltp+3*at,1)
+            if is_mcx:
+                # MCX: tight ATR-based SL always (OB too wide)
+                sl     = round(ltp - 1.5*at, 1)   # 1.5×ATR
+                target = round(ltp + 4.0*at, 1)   # 4×ATR → RR=2.67
+            else:
+                # NSE: OB-based (untouched)
+                bull_ob = ob.get("bull_ob")
+                min_sl_pct = 0.004 if symbol in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
+                atr_sl = round(ltp - max(2.0*at, ltp*min_sl_pct), 1)
+                sl     = round(bull_ob["low"] - at*0.5, 1) if bull_ob else atr_sl
+                target = round(ltp + 3*at, 1)
         else:
-            bear_ob = ob.get("bear_ob")
-            min_sl_pct = 0.004 if symbol in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
-            atr_sl_sell = round(ltp + max(2.0*at, ltp*min_sl_pct), 1)
-            sl = round(bear_ob["high"] + at*0.5, 1) if bear_ob else atr_sl_sell
-            target = round(ltp-3*at,1)
+            if is_mcx:
+                # MCX: tight ATR-based SL always
+                sl     = round(ltp + 1.5*at, 1)   # 1.5×ATR above
+                target = round(ltp - 4.0*at, 1)   # 4×ATR below → RR=2.67
+            else:
+                # NSE: OB-based (untouched)
+                bear_ob = ob.get("bear_ob")
+                min_sl_pct = 0.004 if symbol in ["NIFTY","BANKNIFTY","FINNIFTY"] else 0.006
+                atr_sl_sell = round(ltp + max(2.0*at, ltp*min_sl_pct), 1)
+                sl     = round(bear_ob["high"] + at*0.5, 1) if bear_ob else atr_sl_sell
+                target = round(ltp - 3*at, 1)
 
         rr = round(abs(target-ltp)/abs(ltp-sl),1) if ltp!=sl else 0
 
