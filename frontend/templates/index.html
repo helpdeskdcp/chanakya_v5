@@ -462,27 +462,88 @@ async function toggleAutoTrader() {
 
     <!-- SETTINGS -->
     <div id="pg-settings" class="hidden">
-      <div class="card">
-        <div class="card-header">⚙️ Broker Settings <span style="font-size:10px;color:#8090a8">(Angel One)</span></div>
-        <div style="max-width:480px">
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">API Key</div>
-            <input class="inp" id="bApiKey" placeholder="Angel One API Key" style="margin:0">
+      <!-- TABS -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-blue" id="stab-personal" onclick="switchSettingsTab('personal')" style="font-size:11px;padding:6px 14px">👤 My Broker</button>
+        <button class="btn" id="stab-global" onclick="switchSettingsTab('global')" style="font-size:11px;padding:6px 14px;background:#0a0f1a;color:#8090a8;border:1px solid #1e3a5f">🌐 Global Broker</button>
+      </div>
+
+      <!-- TAB 1: Personal Broker -->
+      <div id="stab-personal-content">
+        <div class="card">
+          <div class="card-header">⚙️ My Broker Settings <span style="font-size:10px;color:#8090a8">(Angel One)</span></div>
+          <div style="max-width:480px">
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">API Key</div>
+              <input class="inp" id="bApiKey" placeholder="Angel One API Key" style="margin:0">
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Client ID</div>
+              <input class="inp" id="bClientId" placeholder="Client ID (e.g. R51882011)" style="margin:0">
+            </div>
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Password</div>
+              <input class="inp" id="bPassword" placeholder="Trading Password" type="password" style="margin:0">
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">TOTP Secret Key</div>
+              <input class="inp" id="bTotp" placeholder="TOTP Secret (not OTP)" style="margin:0">
+            </div>
+            <button class="btn btn-green" onclick="saveBroker()" style="width:100%;padding:12px;font-size:14px">💾 Save Broker Settings</button>
+            <div id="brokerMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
           </div>
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Client ID</div>
-            <input class="inp" id="bClientId" placeholder="Client ID (e.g. R51882011)" style="margin:0">
+        </div>
+      </div>
+
+      <!-- TAB 2: Global Broker (Admin/Developer only) -->
+      <div id="stab-global-content" class="hidden">
+        <div class="card" style="border-color:#d4af3744">
+          <div class="card-header">🌐 Global Broker Settings
+            <span style="font-size:9px;color:#d4af37;background:#d4af3711;padding:2px 8px;border-radius:10px;border:1px solid #d4af3733">👑 Admin Only</span>
           </div>
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Password</div>
-            <input class="inp" id="bPassword" placeholder="Trading Password" type="password" style="margin:0">
+          <!-- Live Status -->
+          <div style="background:#0a0f1a;border-radius:8px;padding:12px;margin-bottom:12px">
+            <div style="font-size:11px;color:#8090a8;margin-bottom:8px;font-weight:600">Live Status</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px;text-align:center" id="gbStatusGrid">
+              <div style="background:var(--card);border-radius:6px;padding:8px">
+                <div style="color:#8090a8">Connected</div>
+                <div id="gbConnected" style="font-weight:700;margin-top:2px">-</div>
+              </div>
+              <div style="background:var(--card);border-radius:6px;padding:8px">
+                <div style="color:#8090a8">Session Age</div>
+                <div id="gbAge" style="color:#00c8ff;font-weight:700;margin-top:2px">-</div>
+              </div>
+              <div style="background:var(--card);border-radius:6px;padding:8px">
+                <div style="color:#8090a8">TTL</div>
+                <div id="gbTtl" style="color:#00e676;font-weight:700;margin-top:2px">-</div>
+              </div>
+            </div>
           </div>
-          <div style="margin-bottom:16px">
-            <div style="font-size:11px;color:#8090a8;margin-bottom:4px">TOTP Secret Key</div>
-            <input class="inp" id="bTotp" placeholder="TOTP Secret (not OTP)" style="margin:0">
+          <!-- Credentials Form -->
+          <div style="max-width:480px">
+            <div style="font-size:11px;color:#d4af37;margin-bottom:10px;font-weight:600">⚠️ Global Broker Credentials (.env)</div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">API Key</div>
+              <input class="inp" id="gbApiKey" placeholder="Angel One API Key" style="margin:0">
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Client ID</div>
+              <input class="inp" id="gbClientId" placeholder="Client ID" style="margin:0">
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">Password</div>
+              <input class="inp" id="gbPassword" placeholder="Trading Password" type="password" style="margin:0">
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:11px;color:#8090a8;margin-bottom:4px">TOTP Secret Key</div>
+              <input class="inp" id="gbTotp" placeholder="TOTP Secret Key" style="margin:0">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="btn btn-green" onclick="saveGlobalBroker()" style="padding:12px;font-size:13px">💾 Save & Reconnect</button>
+              <button class="btn btn-blue" onclick="loadGlobalBrokerStatus()" style="padding:12px;font-size:13px">🔄 Refresh Status</button>
+            </div>
+            <div id="gbMsg" style="margin-top:8px;font-size:11px;text-align:center"></div>
           </div>
-          <button class="btn btn-green" onclick="saveBroker()" style="width:100%;padding:12px;font-size:14px">💾 Save Broker Settings</button>
-          <div id="brokerMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
         </div>
       </div>
     </div>
