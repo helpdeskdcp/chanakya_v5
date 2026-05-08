@@ -35,7 +35,8 @@ NSE_EQUITY = [
 # Auto-trader only uses INDEX + MCX (NOT equity for F&O signals)
 WATCHLIST = NSE_INDEX + MCX_COMMODITY  # Equity separate module madhe
 
-def _analyze(candles, symbol):
+def _analyze(candles, symbol, stock=None):
+    if stock is None: stock = {}
     try:
         from engine.indicators import ema, rsi, macd, vwap, atr, supertrend
         from engine.smart_money import smc_score, market_structure, detect_bos, volume_profile
@@ -49,7 +50,7 @@ def _analyze(candles, symbol):
         e9     = ema(closes,9); e21 = ema(closes,21)
         m,mh   = macd(closes)
         vw     = vwap(candles[-50:] if len(candles)>=50 else candles)
-        at     = atr(candles)
+        at     = atr(candles) or (ltp * 0.002)
         st     = supertrend(candles)
         vol_avg = sum(vols)/len(vols)
         vol_ratio = round(vols[-1]/vol_avg,2) if vol_avg>0 else 1
@@ -63,14 +64,14 @@ def _analyze(candles, symbol):
             if e9>e21: score+=25
             if 40<r<70: score+=20
             if mh>0: score+=15
-            if ltp>vw: score+=20
+            if vw and vw>0 and ltp>vw: score+=20
             if vol_ratio>=1.2: score+=10
             if st=="UP": score+=10
         else:
             if e9<e21: score+=25
             if 30<r<60: score+=20
             if mh<0: score+=15
-            if ltp<vw: score+=20
+            if vw and vw>0 and ltp<vw: score+=20
             if vol_ratio>=1.2: score+=10
             if st=="DOWN": score+=10
 
@@ -209,7 +210,7 @@ def scan_all(broker=None):
                     candles = broker.get_candles(stock["token"], stock["exchange"], "FIVE_MINUTE", days=2)
                     if candles: cset(ckey, candles, ttl=60)
                 if not candles or len(candles)<10: continue
-                sig = _analyze(candles, stock["symbol"])
+                sig = _analyze(candles, stock["symbol"], stock)
                 if not sig: continue
                 sig["exchange"] = stock["exchange"]
                 sig["type"] = stock["type"]
@@ -246,6 +247,17 @@ def scan_all(broker=None):
                         sig["trend_align"] = "COUNTER"
                     sig["ema200"] = round(_e200, 2)
                 except: sig["trend_align"] = "UNKNOWN"
+
+                # ── Multi-Timeframe Alignment ─────────────────────
+                try:
+                    from engine.mtf_analyzer import mtf_analyze, mtf_score_boost
+                    _mtf = mtf_analyze(broker, stock["token"], stock["exchange"], stock["symbol"])
+                    sig  = mtf_score_boost(sig, _mtf)
+                    if not _mtf.get("aligned") and sig["score"] < 60:
+                        logger.debug("Skip %s — MTF not aligned (%s)", stock["symbol"], _mtf.get("reason",""))
+                        continue
+                except Exception as _me:
+                    logger.debug("MTF error %s: %s", stock["symbol"], _me)
 
                 # ── Volume Spike Filter (MCX only, during hours) ──
                 try:
