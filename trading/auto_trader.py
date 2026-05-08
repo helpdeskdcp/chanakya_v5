@@ -43,7 +43,8 @@ def _monitor_positions():
         from notifications.telegram import alert_trade_close
         from trading.paper_engine import close_trade
         broker = get_broker()
-        if not broker or not broker.is_connected(): return
+        if not broker.is_connected(): broker.ensure_connected()
+        if not broker.is_connected(): return
         trades = _get_all_open_trades()
         with _lock:
             _state["open_count"] = len(trades)
@@ -55,6 +56,27 @@ def _monitor_positions():
                 entry=float(t["entry_price"]); sl=float(t["sl_price"]); target=float(t["target_price"])
                 qty=int(t.get("qty",1)); sym=t["symbol"]; dirn=t["direction"]
                 tid=t["id"]; mode=t.get("mode","PAPER"); user=t.get("username","avinash")
+                # ── Market Close Square-off ───────────────────
+                now_t = datetime.datetime.now().time()
+                exch  = t.get("exchange","NSE")
+                # NSE: 15:15, MCX: 23:15
+                nse_cutoff = datetime.time(15, 15)
+                mcx_cutoff = datetime.time(23, 15)
+                is_squareoff = False
+                if exch == "NSE" and now_t >= nse_cutoff:
+                    is_squareoff = True
+                elif exch == "MCX" and now_t >= mcx_cutoff:
+                    is_squareoff = True
+
+                if is_squareoff:
+                    pnl = round((ltp-entry)*qty if dirn=="BUY" else (entry-ltp)*qty, 2)
+                    ok  = close_trade(tid, ltp, "MARKET_CLOSE_SQUAREOFF")
+                    if ok:
+                        with _lock: _state["today_pnl"] += pnl
+                        _log(f"🔔 SQUAREOFF: {sym} {dirn} LTP={ltp} P&L=₹{pnl:+.0f} [{exch}]")
+                        alert_trade_close(user, sym, dirn, entry, ltp, pnl, mode)
+                    continue
+
                 hit_sl     = (dirn=="BUY" and ltp<=sl)     or (dirn=="SELL" and ltp>=sl)
                 hit_target = (dirn=="BUY" and ltp>=target)  or (dirn=="SELL" and ltp<=target)
 
@@ -101,8 +123,11 @@ def _scan_and_trade():
         from trading.paper_engine import place_trade
         from notifications.telegram import alert_signal, alert_trade_open
         broker = get_broker()
-        if not broker or not broker.is_connected():
-            _log("⚠️ Broker not connected"); return
+        # Force reconnect if needed
+        if not broker.is_connected():
+            broker.ensure_connected()
+        if not broker.is_connected():
+            _log("⚠️ Broker not connected — skipping scan"); return
         with _lock:
             _state["last_scan"] = datetime.datetime.now().strftime("%H:%M:%S")
             auto=_state["auto_trade"]; mode=_state["mode"]; open_count=_state["open_count"]
@@ -266,6 +291,8 @@ def _scan_and_trade():
 
 def _run_loop():
     _log("🚀 Auto Trader started")
+    import time as _time
+    _time.sleep(15)  # Wait for broker to connect on startup
     last_scan_time = 0
     while True:
         try:
