@@ -293,27 +293,136 @@ def get_daily_pnl():
         logger.error("daily_pnl: %s", e)
         return {}
 
-def check_daily_limit(capital=None):
-    """Daily loss limit circuit breaker"""
+def get_consecutive_losses():
+    """आजचे लागोपाठ losses count करतो"""
+    try:
+        import sqlite3, datetime
+        conn = sqlite3.connect("data/chanakya_v5.db")
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        rows = conn.execute("""
+            SELECT pnl FROM trades
+            WHERE status='CLOSED' AND closed_at >= ? || ' 00:00:00'
+            ORDER BY closed_at DESC LIMIT 5
+        """, (today,)).fetchall()
+        conn.close()
+        consecutive = 0
+        for r in rows:
+            if (r[0] or 0) < 0:
+                consecutive += 1
+            else:
+                break
+        return consecutive
+    except Exception as e:
+        logger.error("consecutive_losses: %s", e)
+        return 0
+
+
+def check_daily_limit(capital=None, signal_score=0):
+    """
+    Confidence-Based Drawdown Protection:
+    - High score signals (>=80) bypass soft limits
+    - Hard limits always apply
+    """
     try:
         if capital is None:
             cap = get_live_capital()
-            capital = cap["available"] if cap else 10000
-        pnl_data = get_daily_pnl()
-        daily_pnl = pnl_data.get("total_pnl", 0)
-        max_loss  = capital * (MAX_DAILY_LOSS_PCT / 100)
-        trades    = pnl_data.get("trades", 0)
+            capital = cap["available"] if cap else 200000
+
+        pnl_data    = get_daily_pnl()
+        daily_pnl   = pnl_data.get("total_pnl", 0)
+        trades      = pnl_data.get("trades", 0)
+        losses      = pnl_data.get("losses", 0)
+        consec_loss = get_consecutive_losses()
+        max_loss    = capital * (MAX_DAILY_LOSS_PCT / 100)
+
+        # ── HARD LIMITS — always block regardless of score ──────
+        # 1. Extreme daily loss (>7.5% capital)
+        hard_loss_limit = capital * 0.075
+        if daily_pnl < -hard_loss_limit:
+            return {
+                "can_trade":    False,
+                "lot_multiplier": 0,
+                "daily_pnl":    round(daily_pnl, 2),
+                "max_loss":     round(-max_loss, 2),
+                "trades_today": trades,
+                "consec_loss":  consec_loss,
+                "reason":       "HARD_LOSS_LIMIT_HIT",
+                "override":     False,
+            }
+
+        # 2. Max trades hard limit (>15)
+        if trades >= MAX_TRADES_PER_DAY * 3:
+            return {
+                "can_trade":    False,
+                "lot_multiplier": 0,
+                "daily_pnl":    round(daily_pnl, 2),
+                "max_loss":     round(-max_loss, 2),
+                "trades_today": trades,
+                "consec_loss":  consec_loss,
+                "reason":       "MAX_TRADES_HARD_LIMIT",
+                "override":     False,
+            }
+
+        # ── CONFIDENCE-BASED SOFT LIMITS ────────────────────────
+        lot_multiplier = 1.0  # default full lots
+        reason = "OK"
+        can_trade = True
+
+        # Soft daily loss limit (5% capital)
+        soft_loss_hit = daily_pnl < -max_loss
+
+        # Max trades soft limit
+        soft_trades_hit = trades >= MAX_TRADES_PER_DAY
+
+        if soft_loss_hit or soft_trades_hit:
+            if signal_score >= 80:
+                # HIGH confidence — allow 1 recovery trade, full lots
+                can_trade = True
+                lot_multiplier = 1.0
+                reason = f"SOFT_LIMIT_BYPASS_HIGH_SCORE_{signal_score}"
+                logger.info(f"🟢 Drawdown bypass: score={signal_score} — allowing recovery trade")
+            elif signal_score >= 65:
+                # MODERATE — allow but reduce lots to 50%
+                can_trade = True
+                lot_multiplier = 0.5
+                reason = f"SOFT_LIMIT_REDUCED_LOTS_SCORE_{signal_score}"
+                logger.info(f"🟡 Drawdown reduced lots: score={signal_score} → 50% lots")
+            else:
+                # LOW confidence — block
+                can_trade = False
+                lot_multiplier = 0
+                reason = "SOFT_LIMIT_LOW_SCORE_BLOCKED"
+
+        # Consecutive loss adjustment (independent of daily limit)
+        if consec_loss >= 4 and can_trade:
+            if signal_score >= 85:
+                lot_multiplier = min(lot_multiplier, 0.5)
+                reason += "_CONSEC_REDUCED"
+            elif signal_score >= 75:
+                lot_multiplier = min(lot_multiplier, 0.25)
+                reason += "_CONSEC_QUARTER"
+            else:
+                can_trade = False
+                reason = f"CONSEC_LOSS_{consec_loss}_BLOCKED"
+        elif consec_loss == 3 and can_trade:
+            if signal_score < 75:
+                lot_multiplier = min(lot_multiplier, 0.5)
+                reason += "_CONSEC3_HALF"
+
         return {
-            "can_trade":      daily_pnl > -max_loss and trades < MAX_TRADES_PER_DAY,
+            "can_trade":      can_trade,
+            "lot_multiplier": lot_multiplier,
             "daily_pnl":      round(daily_pnl, 2),
             "max_loss":       round(-max_loss, 2),
             "trades_today":   trades,
             "max_trades":     MAX_TRADES_PER_DAY,
-            "reason":         "OK" if daily_pnl > -max_loss else "DAILY_LOSS_LIMIT_HIT"
+            "consec_loss":    consec_loss,
+            "reason":         reason,
+            "override":       signal_score >= 80 and (soft_loss_hit or soft_trades_hit),
         }
     except Exception as e:
         logger.error("check_daily_limit: %s", e)
-        return {"can_trade": True}
+        return {"can_trade": True, "lot_multiplier": 1.0}
 
 def get_full_analysis():
     """Complete capital + position analysis"""

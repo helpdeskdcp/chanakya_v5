@@ -256,6 +256,12 @@ def _scan_and_trade():
                     _log(f"🚫 Daily limit: {limit['reason']} PnL={limit['daily_pnl']}")
                     break
                 smart_qty, size_info = calculate_position_size(sym, exch, entry, sl, capital)
+                    # Drawdown lot reduction apply
+                    if _lot_mult < 1.0 and smart_qty > 1:
+                        import math
+                        smart_qty = max(1, math.floor(smart_qty * _lot_mult))
+                        size_info["lots"] = max(1, math.floor(size_info.get("lots",1) * _lot_mult))
+                        _log(f"⚠️ Lot reduced {_lot_mult*100:.0f}%: qty={smart_qty} consec={limit.get('consec_loss',0)}")
                 if not size_info.get("can_trade", True) and mode == "LIVE":
                     _log(f"⚠️ Insufficient margin for {sym} - need Rs{size_info.get('margin_est',0):,.0f}")
                     continue
