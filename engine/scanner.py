@@ -248,6 +248,16 @@ def scan_all(broker=None):
                     sig["ema200"] = round(_e200, 2)
                 except: sig["trend_align"] = "UNKNOWN"
 
+                # ── Fake Breakout Detection ───────────────────────
+                try:
+                    from engine.fake_breakout import apply_fake_filter
+                    sig = apply_fake_filter(sig, candles)
+                    if sig.get("fake_breakout") and sig["score"] < 55:
+                        logger.debug("Skip %s — FakeBreakout %s", stock["symbol"], sig.get("fake",[]))
+                        continue
+                except Exception as _fe:
+                    logger.debug("FakeBreakout error %s: %s", stock["symbol"], _fe)
+
                 # ── Multi-Timeframe Alignment ─────────────────────
                 try:
                     from engine.mtf_analyzer import mtf_analyze, mtf_score_boost
