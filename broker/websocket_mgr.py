@@ -100,7 +100,7 @@ def _on_error(wsapp, error):
     logger.error(f"🔴 WebSocket error: {error}")
 
 
-def _on_close(wsapp, close_status_code, close_msg):
+def _on_close(wsapp, *args):
     global _connected
     _connected = False
     logger.warning(f"🟡 WebSocket closed: {close_status_code} {close_msg}")

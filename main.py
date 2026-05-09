@@ -58,6 +58,14 @@ def require_role(*roles):
 def health():
     return jsonify({"status":"ok","version":"5.0","service":"Chanakya AI"})
 
+@app.route("/api/ws/status")
+def ws_status():
+    try:
+        from broker.websocket_mgr import status as ws_st, get_all_ltp
+        return jsonify({"success":True,"ws":ws_st(),"ltp":get_all_ltp()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 # ── Auth routes ────────────────────────────────────────
 @app.route("/api/login", methods=["POST"])
 def login():
