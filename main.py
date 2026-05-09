@@ -665,6 +665,7 @@ try:
             updated_at TEXT
         )""")
         _c.commit(); _c.close()
+        import threading
         from trading.user_auto_trader import run_1140_scheduler
         threading.Thread(target=run_1140_scheduler, daemon=True, name="1140Scheduler").start()
         logger.info("Multi-user auto trader initialized")
@@ -1712,12 +1713,96 @@ def symbol_expiry(symbol):
                        "all_expiries": expiries[:5]})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+
+# ── Global Broker Admin Routes ─────────────────────────
+@app.route("/api/broker/status")
+@require_auth
+def broker_live_status():
+    try:
+        from broker.global_broker import get_broker
+        b = get_broker()
+        connected = b.is_connected() if hasattr(b,'is_connected') else b.connected
+        import time
+        last = getattr(b,'_last_connect', getattr(b._auth if hasattr(b,'_auth') else b, '_session_start', 0)) if hasattr(b,'_auth') else getattr(b,'_last_connect',0)
+        age = int(time.time()-last) if last else 0
+        return jsonify({"success":True,"status":{
+            "connected":connected,
+            "session_age_s":age,
+            "session_ttl_s":max(0,25200-age),
+        }})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/global-broker")
+@require_role("developer","administrator")
+def get_global_broker():
+    try:
+        import os
+        from dotenv import load_dotenv
+        load_dotenv("/root/chanakya_v5/.env")
+        return jsonify({"success":True,"broker":{
+            "api_key":   os.getenv("ANGEL_API_KEY",""),
+            "client_id": os.getenv("ANGEL_CLIENT_ID",""),
+            "password":  os.getenv("ANGEL_PASSWORD",""),
+            "totp_key":  os.getenv("ANGEL_TOTP_KEY",""),
+        }})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
+@app.route("/api/admin/global-broker", methods=["POST"])
+@require_role("developer","administrator")
+def save_global_broker():
+    try:
+        data = request.json or {}
+        api_key   = data.get("api_key","").strip()
+        client_id = data.get("client_id","").strip()
+        password  = data.get("password","").strip()
+        totp_key  = data.get("totp_key","").strip()
+        if not all([api_key,client_id,password,totp_key]):
+            return jsonify({"success":False,"error":"All fields required"})
+        # Update .env file
+        env_path = "/root/chanakya_v5/.env"
+        env = open(env_path).read()
+        import re
+        env = re.sub(r"ANGEL_API_KEY=.*",    f"ANGEL_API_KEY={api_key}",    env)
+        env = re.sub(r"ANGEL_CLIENT_ID=.*",  f"ANGEL_CLIENT_ID={client_id}",env)
+        env = re.sub(r"ANGEL_PASSWORD=.*",   f"ANGEL_PASSWORD={password}",  env)
+        env = re.sub(r"ANGEL_TOTP_KEY=.*",   f"ANGEL_TOTP_KEY={totp_key}",  env)
+        open(env_path,"w").write(env)
+        # Reconnect broker
+        import os
+        os.environ["ANGEL_API_KEY"]   = api_key
+        os.environ["ANGEL_CLIENT_ID"] = client_id
+        os.environ["ANGEL_PASSWORD"]  = password
+        os.environ["ANGEL_TOTP_KEY"]  = totp_key
+        from broker.global_broker import get_broker
+        b = get_broker()
+        b.api_key=api_key; b.client_id=client_id
+        b.password=password; b.totp_key=totp_key
+        ok = b.connect()
+        return jsonify({"success":True,"broker_connected":ok})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
     import threading
     threading.Thread(target=_startup_train, daemon=True).start()
     threading.Thread(target=_prediction_scheduler, daemon=True).start()
+
+    # ── WebSocket Manager start ────────────────────────
+    def _start_websocket():
+        import time
+        time.sleep(8)  # Broker connect होऊ दे आधी
+        try:
+            from broker.websocket_mgr import start as ws_start
+            ws_start()
+            logger.info("✅ WebSocket Manager started")
+        except Exception as e:
+            logger.error(f"WebSocket Manager start error: {e}")
+
+    threading.Thread(target=_start_websocket, daemon=True, name="WSManagerInit").start()
     app.run(host="0.0.0.0", port=PORT, debug=False)
 
 
