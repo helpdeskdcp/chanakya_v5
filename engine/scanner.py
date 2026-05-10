@@ -57,7 +57,9 @@ def _analyze(candles, symbol, stock=None):
         vol_ratio = round(vols[-1]/vol_avg,2) if vol_avg>0 else 1
 
         # Direction first
-        direction = "BUY" if e9>e21 and r<70 else "SELL"
+        # Direction: purely EMA cross (RSI handled in score)
+        # Old bug: e9>e21 but r>70 → wrongly defaulted to SELL!
+        direction = "BUY" if e9 > e21 else "SELL"
 
         # Classic score (max 100)
         score = 0
