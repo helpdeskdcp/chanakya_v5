@@ -14,8 +14,9 @@ NSE_INDEX = [
 
 # ═══ MCX COMMODITY F&O ═══ (Monthly options, 9AM-11:30PM)
 MCX_COMMODITY = [
-    {"symbol":"CRUDEOIL",   "token":"488290","exchange":"MCX","type":"commodity",
-     "lot":100, "interval":50,"min_sl_pct":0.006,"option_type":"monthly"},
+    # CRUDEOIL disabled — backtest: -7.3 pts/trade (29% WR, losing money)
+    # {"symbol":"CRUDEOIL",   "token":"488290","exchange":"MCX","type":"commodity",
+    #  "lot":100, "interval":50,"min_sl_pct":0.006,"option_type":"monthly"},
     {"symbol":"NATURALGAS", "token":"488505","exchange":"MCX","type":"commodity",
      "lot":1250,"interval":10,"min_sl_pct":0.008,"option_type":"monthly"},
     {"symbol":"GOLDM",      "token":"67694", "exchange":"MCX","type":"commodity",
