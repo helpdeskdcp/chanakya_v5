@@ -94,3 +94,32 @@ def fibonacci_zone(ltp, levels, tol=0.002):
         if abs(ltp-v)/max(ltp,1) <= tol:
             zones.append((k, v, round(abs(ltp-v)/ltp*100,3)))
     return sorted(zones, key=lambda x: x[2])
+
+
+def pivot_levels(prev_high, prev_low, prev_close):
+    """Standard Pivot Point levels"""
+    pp = round((prev_high + prev_low + prev_close) / 3, 2)
+    r1 = round(2*pp - prev_low, 2)
+    r2 = round(pp + (prev_high - prev_low), 2)
+    r3 = round(r1 + (prev_high - prev_low), 2)
+    s1 = round(2*pp - prev_high, 2)
+    s2 = round(pp - (prev_high - prev_low), 2)
+    s3 = round(s1 - (prev_high - prev_low), 2)
+    return {"PP":pp,"R1":r1,"R2":r2,"R3":r3,"S1":s1,"S2":s2,"S3":s3}
+
+def pivot_zone(ltp, levels, tol=0.003):
+    """LTP कोणत्या pivot zone जवळ आहे?"""
+    hits = []
+    for name,val in levels.items():
+        dist = abs(ltp-val)/max(ltp,1)
+        if dist <= tol:
+            hits.append((name, val, round(dist*100,3)))
+    return sorted(hits, key=lambda x: x[2])
+
+def pivot_bias(ltp, levels):
+    """PP वरून market bias"""
+    if ltp > levels["R1"]: return "STRONG_BULL"
+    if ltp > levels["PP"]: return "BULL"
+    if ltp < levels["S1"]: return "STRONG_BEAR"
+    if ltp < levels["PP"]: return "BEAR"
+    return "NEUTRAL"
