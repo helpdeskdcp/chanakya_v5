@@ -189,18 +189,48 @@ def _adaptive_monitor():
                                     if _can_alert(f"be_{tid}"): _send_alert(msg)
                                     sl = new_sl
 
-                            # Adaptive Target expand
-                            new_tgt = round(ltp + live_atr*ATR_MULTIPLIER_TG, 1) if dirn=="BUY" else round(ltp - live_atr*ATR_MULTIPLIER_TG, 1)
-                            if dirn=="BUY" and new_tgt > tgt and profit > 0:
-                                _update_trade(tid, target=new_tgt)
-                                msg = f"🚀 TARGET UPGRADED!\n{sym} {dirn}\nTarget: ₹{tgt} → ₹{new_tgt}\nLTP: ₹{ltp}"
-                                _log(f"🚀 TGT UPGRADED: {sym} {tgt}→{new_tgt}")
-                                if _can_alert(f"tgt_{tid}"): _send_alert(msg)
-                            elif dirn=="SELL" and new_tgt < tgt and profit > 0:
-                                _update_trade(tid, target=new_tgt)
-                                msg = f"🚀 TARGET UPGRADED!\n{sym} {dirn}\nTarget: ₹{tgt} → ₹{new_tgt}\nLTP: ₹{ltp}"
-                                _log(f"🚀 TGT UPGRADED: {sym} {tgt}→{new_tgt}")
-                                if _can_alert(f"tgt_{tid}"): _send_alert(msg)
+                            # ── Hybrid Adaptive Target (backtest +29%) ──
+                            sym_mult  = TARGET_MULT.get(sym, TARGET_MULT["DEFAULT"])
+                            tgt_3atr  = round(entry + 3*live_atr, 1) if dirn=="BUY" else round(entry - 3*live_atr, 1)
+                            tgt_final = round(entry + sym_mult*live_atr, 1) if dirn=="BUY" else round(entry - sym_mult*live_atr, 1)
+
+                            def _mom_ok():
+                                try:
+                                    from engine.indicators import ema as _em, rsi as _rs
+                                    _cl=[float(c[4]) for c in candles[-20:]]
+                                    _e9=_em(_cl,9); _e21=_em(_cl,21); _rv=_rs(_cl)
+                                    return (_e9>_e21 and _rv>45) if dirn=="BUY" else (_e9<_e21 and _rv<55)
+                                except: return True
+
+                            hit_3atr = (dirn=="BUY" and ltp>=tgt_3atr) or (dirn=="SELL" and ltp<=tgt_3atr)
+
+                            if hit_3atr and sym_mult > 3.0 and profit > 0:
+                                if _mom_ok():
+                                    if (dirn=="BUY" and tgt_final>tgt) or (dirn=="SELL" and tgt_final<tgt):
+                                        _update_trade(tid, target=tgt_final)
+                                        msg = f"🚀 TARGET EXTENDED {sym_mult}x!\n{sym} {dirn}\n3×={tgt_3atr} → {sym_mult}×={tgt_final}\nLTP: ₹{ltp}"
+                                        _log(f"🚀 EXTENDED {sym_mult}x: {sym} {tgt}→{tgt_final}")
+                                        if _can_alert(f"tgt_{tid}"): _send_alert(msg)
+                            elif profit > 0 and sym not in MOMENTUM_EXIT_SYMS:
+                                new_tgt = round(ltp + live_atr*ATR_MULTIPLIER_TG, 1) if dirn=="BUY" else round(ltp - live_atr*ATR_MULTIPLIER_TG, 1)
+                                if dirn=="BUY" and new_tgt > tgt:
+                                    _update_trade(tid, target=new_tgt)
+                                    _log(f"🚀 TGT UPGRADED: {sym} {tgt}→{new_tgt}")
+                                elif dirn=="SELL" and new_tgt < tgt:
+                                    _update_trade(tid, target=new_tgt)
+                                    _log(f"🚀 TGT UPGRADED: {sym} {tgt}→{new_tgt}")
+
+                            if sym in MOMENTUM_EXIT_SYMS and profit >= risk*0.8 and not _mom_ok():
+                                pnl_m = round(profit * (int(t.get("lot_size") or 1)), 2)
+                                _close_trade(tid, ltp, "MOMENTUM_EXIT")
+                                try:
+                                    from trading.capital_manager import update_paper_capital
+                                    update_paper_capital(t.get("username","avinash"), pnl_m, tid)
+                                except: pass
+                                msg = f"📊 MOMENTUM EXIT\n{sym} {dirn} LTP: ₹{ltp}\nP&L: ₹{pnl_m:+,.0f}"
+                                _log(f"📊 MOM_EXIT: {sym} P&L=₹{pnl_m}")
+                                if _can_alert(f"close_{tid}"): _send_alert(msg)
+                                continue
 
                     # ── 3. Market Structure Change alert ──────
                     if candles and len(candles) >= 20:
