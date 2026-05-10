@@ -84,16 +84,9 @@ def _analyze(candles, symbol, stock=None):
         # Blended score: 50% classic + 50% SMC
         final_score = round(score * 0.5 + smc * 0.5)
 
-        # ── EMA50 Pyramid Bonus ──────────────────────────
-        try:
-            e50 = ema(closes[-50:] if len(closes)>=50 else closes, 50)
-            if direction=="BUY":
-                pyr_strong = e9>e21 and e21>e50 and ltp>e200 if "e200" in dir() else e9>e21 and e21>e50
-            else:
-                pyr_strong = e9<e21 and e21<e50 and ltp<e200 if "e200" in dir() else e9<e21 and e21<e50
-            if pyr_strong:
-                final_score = min(100, final_score + 20)
-        except: pass
+        # EMA50 Pyramid: backtest shows -6.3% impact → removed
+        # (fires 93% of time → noise, not signal quality)
+        # Kept for reference: e9>e21>e50>e200 = STRONG (display only)
 
         # ── Fibonacci Zone Bonus ──────────────────────────
         fib_tag = ""
