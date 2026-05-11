@@ -103,6 +103,8 @@ def _on_error(wsapp, error):
 def _on_close(wsapp, *args):
     global _connected
     _connected = False
+    close_status_code = args[0] if len(args)>0 else None
+    close_msg = args[1] if len(args)>1 else None
     logger.warning(f"🟡 WebSocket closed: {close_status_code} {close_msg}")
 
     # Auto-reconnect — thread मध्ये करा (deadlock avoid)
