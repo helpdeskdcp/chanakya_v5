@@ -58,6 +58,45 @@ def require_role(*roles):
 def health():
     return jsonify({"status":"ok","version":"5.0","service":"Chanakya AI"})
 
+@app.route("/api/calculator_data")
+def calculator_data():
+    """Live indicator data for Signal Calculator - no auth needed"""
+    try:
+        sym = request.args.get("symbol","NIFTY")
+        exch= request.args.get("exchange","NSE")
+        from data_stream.cache import get as cget
+        from engine.indicators import ema, rsi as rsi_fn, macd, vwap, atr
+        candles = cget(f"candles_{sym}_5m")
+        if not candles or len(candles)<20:
+            from broker.global_broker import get_broker
+            tokens={"NIFTY":"99926000","BANKNIFTY":"99926009","FINNIFTY":"99926037",
+                    "NATURALGAS":"488505","GOLDM":"67694","CRUDEOIL":"488290"}
+            tok = tokens.get(sym,"99926000")
+            b = get_broker()
+            candles = b.get_candles(tok, exch, "FIVE_MINUTE", days=2)
+        if not candles: return jsonify({"error":"no data"}),200
+        closes=[float(c[4]) for c in candles]
+        vols  =[float(c[5]) for c in candles]
+        ltp   = closes[-1]
+        e9    = ema(closes,9); e21=ema(closes,21)
+        e200  = ema(closes[-200:] if len(closes)>=200 else closes,min(200,len(closes)))
+        r     = rsi_fn(closes)
+        m,mh  = macd(closes)
+        vw    = vwap(candles[-75:] if len(candles)>=75 else candles)
+        at    = atr(candles)
+        vol_avg=sum(vols)/max(len(vols),1)
+        vol_r  =round(vols[-1]/vol_avg,2) if vol_avg>0 else 1
+        from engine.indicators import supertrend
+        st = supertrend(candles)
+        direction = "BUY" if e9>e21 else "SELL"
+        return jsonify({"success":True,"symbol":sym,"ltp":ltp,
+            "ema9":e9,"ema21":e21,"ema200":e200,
+            "rsi":r,"macd_hist":round(mh,4),"vwap":vw,
+            "atr":round(at,2),"vol_ratio":vol_r,
+            "supertrend":st,"direction":direction})
+    except Exception as e:
+        return jsonify({"error":str(e),"success":False}),200
+
 @app.route("/dataflow")
 def dataflow():
     return render_template("dataflow.html")

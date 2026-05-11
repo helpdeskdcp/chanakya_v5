@@ -1602,59 +1602,37 @@ function dfFetchLive(){
   var sym = document.getElementById('dc-sym').value;
   var exch = (sym==='NATURALGAS'||sym==='GOLDM'||sym==='CRUDEOIL')?'MCX':'NSE';
   var btn = document.querySelector('[onclick="dfFetchLive()"]');
+  if(btn){btn.textContent='⏳ Loading...';btn.disabled=true;btn.style.color='#ffd700';}
 
-  // Step 1: chartInfo मधून try करतो
-  var info = document.getElementById('chartInfo');
-  var txt = info ? info.innerText : '';
-  function pv(lbl){
-    var m = txt.match(new RegExp(lbl+'[:\s]+[₹]?([\d.]+)','i'));
-    return m ? parseFloat(m[1]) : null;
-  }
-  var ltp=pv('LTP'),e9=pv('EMA9'),e21=pv('EMA21'),rsi=pv('RSI'),atr=pv('ATR'),vw=pv('VWAP');
-
-  if(ltp && ltp > 0){
-    document.getElementById('dc-ltp').value=ltp;
-    if(e9)  document.getElementById('dc-e9').value=e9;
-    if(e21) document.getElementById('dc-e21').value=e21;
-    if(rsi) document.getElementById('dc-rsi').value=rsi;
-    if(atr) document.getElementById('dc-atr').value=atr;
-    if(vw && vw>0) document.getElementById('dc-vwap').value=vw;
-    if(e9&&e21) document.getElementById('dc-dir').value=e9>e21?'BUY':'SELL';
-    dfCalc();
-    if(btn){btn.textContent='✅ Loaded!';btn.style.color='#00ff9f';
-      setTimeout(function(){btn.textContent='⚡ Live Data';btn.style.color='#00d4ff';},2000);}
-    return;
-  }
-
-  // Step 2: API call with token
-  var tok = localStorage.getItem('ch_token')||'';
-  if(btn){btn.textContent='⏳...';btn.disabled=true;}
-  fetch('/api/market?symbol='+sym+'&exchange='+exch,{
-    headers:{'Authorization':'Bearer '+tok}
-  }).then(function(r){return r.json();})
-  .then(function(d){
-    if(btn){btn.disabled=false;}
-    var md=d.data||d;
-    if(md.ltp||md.ema9){
-      document.getElementById('dc-ltp').value=md.ltp||0;
-      document.getElementById('dc-e9').value=md.ema9||md.ltp||0;
-      document.getElementById('dc-e21').value=md.ema21||md.ltp||0;
-      document.getElementById('dc-rsi').value=md.rsi||50;
-      document.getElementById('dc-atr').value=md.atr||25;
-      if(md.vwap) document.getElementById('dc-vwap').value=md.vwap;
-      if(md.ema200) document.getElementById('dc-e200').value=md.ema200;
-      if(md.ema9&&md.ema21) document.getElementById('dc-dir').value=md.ema9>md.ema21?'BUY':'SELL';
-      dfCalc();
-      if(btn){btn.textContent='✅ Done!';btn.style.color='#00ff9f';
-        setTimeout(function(){btn.textContent='⚡ Live Data';btn.style.color='#00d4ff';},2000);}
-    } else {
-      if(btn){btn.textContent='⚡ Live Data';btn.style.color='#00d4ff';}
-      alert('Chart Load करा आधी!');
+  function done(ok){
+    if(btn){btn.disabled=false;
+      btn.textContent=ok?'✅ Loaded!':'⚡ Live Data';
+      btn.style.color=ok?'#00ff9f':'#00d4ff';
+      if(ok) setTimeout(function(){btn.textContent='⚡ Live Data';btn.style.color='#00d4ff';},2000);
     }
-  }).catch(function(){
-    if(btn){btn.textContent='⚡ Live Data';btn.style.color='#00d4ff';btn.disabled=false;}
-    alert('Chart Load करा आधी!');
-  });
+  }
+
+  fetch('/api/calculator_data?symbol='+sym+'&exchange='+exch)
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.success && d.ltp){
+      document.getElementById('dc-ltp').value  = d.ltp;
+      document.getElementById('dc-e9').value   = d.ema9;
+      document.getElementById('dc-e21').value  = d.ema21;
+      document.getElementById('dc-e200').value = d.ema200||0;
+      document.getElementById('dc-rsi').value  = d.rsi;
+      document.getElementById('dc-atr').value  = d.atr;
+      document.getElementById('dc-macd').value = d.macd_hist||0;
+      document.getElementById('dc-vol').value  = d.vol_ratio||1;
+      document.getElementById('dc-dir').value  = d.direction||'BUY';
+      document.getElementById('dc-st').value   = d.supertrend||'UP';
+      if(d.vwap && d.vwap>0) document.getElementById('dc-vwap').value=d.vwap;
+      dfCalc(); done(true);
+    } else {
+      done(false);
+      alert('Data नाही मिळाली: '+(d.error||'unknown'));
+    }
+  }).catch(function(e){done(false);alert('Error: '+e);});
 }
 
 function dfCalc(){
