@@ -220,7 +220,7 @@ def mtf_score_boost(sig, mtf_result):
 
     if mtf_dir != direction:
         # MTF disagrees — penalize heavily
-        sig["score"] = max(0, sig["score"] - 30)
+        sig["score"] = max(0, sig["score"] - 10)  # Reduced penalty
         sig["fake"]  = sig.get("fake", []) + ["MTF_CONFLICT"]
         return sig
 
@@ -233,7 +233,7 @@ def mtf_score_boost(sig, mtf_result):
         sig["score"] = min(100, sig["score"] + 5)
     else:
         # NO_TRADE
-        sig["score"] = max(0, sig["score"] - 20)
+        sig["score"] = max(0, sig["score"] - 5)  # Reduced penalty
         sig["fake"]  = sig.get("fake", []) + ["MTF_NO_ALIGN"]
 
     return sig
