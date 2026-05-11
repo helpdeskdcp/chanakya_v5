@@ -1612,7 +1612,7 @@ function dfFetchLive(){
     }
   }
 
-  fetch('/api/calculator_data?symbol='+sym+'&exchange='+exch)
+  fetch('/v5/api/calculator_data?symbol='+sym+'&exchange='+exch)
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.success && d.ltp){
