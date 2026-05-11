@@ -256,7 +256,7 @@ def _scan_and_trade():
                 cap_data = get_capital(mode)
                 capital  = cap_data["available"]
                 # Daily limit check
-                limit = check_daily_limit(capital)
+                limit = check_daily_limit(capital, signal_score=score)
                 if not limit["can_trade"]:
                     _log(f"🚫 Daily limit: {limit['reason']} PnL={limit['daily_pnl']}")
                     break
