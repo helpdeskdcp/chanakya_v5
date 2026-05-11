@@ -210,6 +210,12 @@ def calculate_position_size(symbol, exchange, entry, sl, capital=None):
         if point_risk <= 0:
             return 1, {"error": "Invalid SL"}
 
+        # Minimum point_risk: 0.2% of entry (prevents huge lots on tiny ATR)
+        import math as _math
+        min_risk = entry * 0.002
+        if point_risk < min_risk:
+            point_risk = min_risk
+
         # Raw quantity
         raw_qty = risk_amount / point_risk
 
