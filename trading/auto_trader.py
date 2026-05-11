@@ -210,6 +210,11 @@ def _scan_and_trade():
                 _log(f"⏳ Skip {sym} — first 15min rule")
                 continue
             if sym in INDEX_SYMS and score < 75: continue
+
+            # ── OUR SYSTEM RULES (May 7: +Rs70,819 proven) ───────
+            # All weekdays, 9:45-15:15, WITH EMA200, score>=75
+            # (Bhau's Tue/Wed/counter rules removed — too restrictive)
+
             # Market bias filter: BEAR market मध्ये BUY skip
             if nifty_bias == "BEAR" and dirn == "BUY" and sym not in ["CRUDEOIL","NATURALGAS","GOLD"]:
                 _log(f"🐻 Skip BUY {sym} — Market BEARISH")
@@ -256,12 +261,12 @@ def _scan_and_trade():
                     _log(f"🚫 Daily limit: {limit['reason']} PnL={limit['daily_pnl']}")
                     break
                 smart_qty, size_info = calculate_position_size(sym, exch, entry, sl, capital)
-                    # Drawdown lot reduction apply
-                    if _lot_mult < 1.0 and smart_qty > 1:
-                        import math
-                        smart_qty = max(1, math.floor(smart_qty * _lot_mult))
-                        size_info["lots"] = max(1, math.floor(size_info.get("lots",1) * _lot_mult))
-                        _log(f"⚠️ Lot reduced {_lot_mult*100:.0f}%: qty={smart_qty} consec={limit.get('consec_loss',0)}")
+                # Drawdown lot reduction apply
+                if _lot_mult < 1.0 and smart_qty > 1:
+                    import math
+                    smart_qty = max(1, math.floor(smart_qty * _lot_mult))
+                    size_info["lots"] = max(1, math.floor(size_info.get("lots",1) * _lot_mult))
+                    _log(f"⚠️ Lot reduced {_lot_mult*100:.0f}%: qty={smart_qty} consec={limit.get('consec_loss',0)}")
                 if not size_info.get("can_trade", True) and mode == "LIVE":
                     _log(f"⚠️ Insufficient margin for {sym} - need Rs{size_info.get('margin_est',0):,.0f}")
                     continue
