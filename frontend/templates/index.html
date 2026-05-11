@@ -383,6 +383,17 @@ async function toggleAutoTrader() {
         <!-- Indicator badges -->
         <div id="chartInfo" style="display:flex;gap:6px;padding:6px 0;font-size:10px;flex-wrap:wrap"></div>
         <!-- Main Candlestick Chart -->
+        <!-- Data Flow + Calculator Tool -->
+        <div id="dataflowPanel" style="margin-bottom:10px">
+          <div onclick="toggleDataflow()" style="display:flex;align-items:center;justify-content:space-between;background:#0f1628;border:1px solid #1e2d4a;border-radius:8px;padding:8px 14px;cursor:pointer">
+            <span style="color:#00d4ff;font-weight:700;font-size:12px">🔱 Data Flow + Signal Calculator</span>
+            <span id="dfArrow" style="color:#4a6080;font-size:14px">▼</span>
+          </div>
+          <div id="dfContent" style="display:none;margin-top:4px;border-radius:8px;overflow:hidden;border:1px solid #1e2d4a">
+            <iframe src="dataflow" style="width:100%;height:600px;border:none;border-radius:8px" loading="lazy"></iframe>
+          </div>
+        </div>
+
         <div id="chartContainer" style="width:100%;height:320px;border-radius:6px;overflow:hidden"></div>
         <!-- RSI Chart -->
         <div style="margin-top:6px">
@@ -1541,6 +1552,13 @@ async function saveBroker() {
 }
 
 // ── CHART ─────────────────────────────────────────────
+function toggleDataflow(){
+  var c=document.getElementById("dfContent");
+  var a=document.getElementById("dfArrow");
+  if(c.style.display==="none"){c.style.display="block";a.textContent="▲";}
+  else{c.style.display="none";a.textContent="▼";}
+}
+
 var _chartInstance = null;
 var _rsiInstance = null;
 var _chartAutoTimer = null;

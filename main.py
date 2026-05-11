@@ -58,6 +58,14 @@ def require_role(*roles):
 def health():
     return jsonify({"status":"ok","version":"5.0","service":"Chanakya AI"})
 
+@app.route("/dataflow")
+def dataflow():
+    return render_template("dataflow.html")
+
+@app.route("/v5/pivot")
+def pivot_chart():
+    return render_template("pivot_chart.html")
+
 @app.route("/api/ws/status")
 def ws_status():
     try:
@@ -1811,6 +1819,11 @@ if __name__ == "__main__":
             logger.error(f"WebSocket Manager start error: {e}")
 
     threading.Thread(target=_start_websocket, daemon=True, name="WSManagerInit").start()
+
+    # ── Pivot Blueprint ──────────────────────────────
+    from api.routes.pivot import pivot_bp
+    app.register_blueprint(pivot_bp, url_prefix="/api/pivot")
+
     app.run(host="0.0.0.0", port=PORT, debug=False)
 
 
