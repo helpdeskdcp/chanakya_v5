@@ -283,7 +283,7 @@ def get_daily_pnl():
                 SUM(CASE WHEN pnl>0 THEN 1 ELSE 0 END) wins,
                 SUM(CASE WHEN pnl<=0 AND status='CLOSED' THEN 1 ELSE 0 END) losses,
                 ROUND(SUM(CASE WHEN status='CLOSED' 
-                    THEN pnl * COALESCE(NULLIF(lot_size,0),1) 
+                    THEN pnl  -- pnl already includes qty×lot_size 
                     ELSE 0 END), 2) total_pnl,
                 SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END) open
             FROM trades

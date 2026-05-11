@@ -39,7 +39,7 @@ def get_daily_pnl_user(username):
         r = conn.execute("""
             SELECT COUNT(*),
             ROUND(SUM(CASE WHEN status='CLOSED'
-                THEN pnl*COALESCE(NULLIF(lot_size,0),1) ELSE 0 END),2)
+                THEN pnl ELSE 0 END),2)  -- pnl already includes qty
             FROM trades WHERE username=? AND created_at>=?
         """, (username, today+" 00:00:00")).fetchone()
         conn.close()
