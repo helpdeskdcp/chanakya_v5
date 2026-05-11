@@ -72,9 +72,20 @@ def calculator_data():
             tokens={"NIFTY":"99926000","BANKNIFTY":"99926009","FINNIFTY":"99926037",
                     "NATURALGAS":"488505","GOLDM":"67694","CRUDEOIL":"488290"}
             tok = tokens.get(sym,"99926000")
-            b = get_broker()
-            candles = b.get_candles(tok, exch, "FIVE_MINUTE", days=2)
-        if not candles: return jsonify({"error":"no data"}),200
+            try:
+                b = get_broker()
+                candles = b.get_candles(tok, exch, "FIVE_MINUTE", days=2)
+            except: candles = None
+        # Fallback: historical DB
+        if not candles or len(candles)<20:
+            import sqlite3 as _sq
+            _db = "data/chanakya_v5.db"
+            _rows = _sq.connect(_db).execute(
+                "SELECT ts,open,high,low,close,volume FROM historical_candles "
+                "WHERE symbol=? AND timeframe='5m' ORDER BY ts DESC LIMIT 300",(sym,)
+            ).fetchall()
+            if _rows: candles=[[r[0],r[1],r[2],r[3],r[4],r[5]] for r in reversed(_rows)]
+        if not candles or len(candles)<10: return jsonify({"error":"no data","symbol":sym}),200
         closes=[float(c[4]) for c in candles]
         vols  =[float(c[5]) for c in candles]
         ltp   = closes[-1]
