@@ -270,7 +270,11 @@ def scan_all(broker=None):
                     min_score = 50; min_smc = 30
                     fake = sig.get("fake",[])
 
-                if sig["score"] >= min_score and not fake and smc >= min_smc:
+                # High confidence signals bypass minor fakes
+                minor = {"LowVol","WeakMACD","LowVol_MCX"}
+                serious_fake = [f for f in fake if f not in minor]
+                bypass = sig["score"] >= 80 and not serious_fake
+                if (sig["score"] >= min_score and not fake and smc >= min_smc) or bypass:
                     signals.append(sig)
             except Exception as e:
                 logger.debug(f"scan {stock['symbol']}: {e}")
