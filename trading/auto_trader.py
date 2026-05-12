@@ -227,8 +227,28 @@ def _scan_and_trade():
         _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
         for sig in good:
             sym=sig["symbol"]; score=sig.get("score",0); dirn=sig["direction"]
-            entry=sig["entry"]; sl=sig["sl"]; target=sig["target"]
             exch=sig.get("exchange","NSE"); token=sig.get("token","")
+            # Live LTP वापरतो (candle close stale असू शकते!)
+            try:
+                from broker.global_broker import get_broker as _gb
+                _ltp_live = _gb().get_ltp(exch, sym, token)
+                entry = float(_ltp_live) if _ltp_live and float(_ltp_live)>0 else float(sig["entry"])
+            except:
+                entry = float(sig["entry"])
+            # SL/Target recalculate from live entry
+            from engine.indicators import atr as _atr
+            from data_stream.cache import get as _cget
+            _candles = _cget(f"candles_{sym}_5m")
+            if _candles and len(_candles)>=14:
+                _at = _atr(_candles) or abs(entry - float(sig["sl"])) / 1.5
+            else:
+                _at = abs(entry - float(sig["sl"])) / 1.5
+            if dirn=="BUY":
+                sl     = round(entry - 1.5*_at, 1)
+                target = round(entry + 3.0*_at, 1)
+            else:
+                sl     = round(entry + 1.5*_at, 1)
+                target = round(entry - 3.0*_at, 1)
             alert_signal(sym, dirn, entry, sl, target, score)
             if not auto: continue
             # Per-user open trade count check
