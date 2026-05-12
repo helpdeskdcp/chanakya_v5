@@ -11,8 +11,9 @@ from datetime import datetime
 logger = logging.getLogger("websocket_mgr")
 
 # ── LTP Cache (shared with rest of system) ─────────────────────────
-_ltp_cache  = {}   # {"TOKEN": price}
+_ltp_cache  = {}   # {"TOKEN": {"price": float, "ts": float}}
 _ltp_lock   = threading.Lock()
+LTP_STALE_SEC = 30  # 30s पेक्षा जुना = stale
 
 # ── Subscription Registry ──────────────────────────────────────────
 _subscriptions = {}  # {exchange_type: [tokens]}
@@ -71,6 +72,7 @@ def _on_data(wsapp, data):
         if token and ltp:
             # Angel One LTP is in paise — convert to rupees
             price = ltp / 100.0
+            import time as _t2
             with _ltp_lock:
                 _ltp_cache[token] = price
 
