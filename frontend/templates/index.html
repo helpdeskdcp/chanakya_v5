@@ -1265,12 +1265,20 @@ async function loadPositions() {
   }
 }
 
-async function closeTrade(tid, price) {
-  var exit = prompt("Exit price:", price);
-  if(!exit) return;
-  var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
-  if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
-  else toast("❌ "+d.error,"#ff0000");
+async function closeTrade(tid, price, symbol, exchange) {
+  var liveLtp = price;
+  try {
+    var sym = symbol || "NIFTY";
+    var exch = exchange || "NSE";
+    var r = await fetch("/v5/api/calculator_data?symbol="+sym+"&exchange="+exch);
+    var data = await r.json();
+    if(data.success && data.ltp) liveLtp = parseFloat(data.ltp);
+  } catch(e){}
+  var msg = (symbol||"") + " @ ₹" + liveLtp;
+  if(!confirm("⚡ Exit " + msg + "?")) return;
+  var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(liveLtp)});
+  if(d && d.success){toast("✅ Exited "+msg,"#00e676");loadPositions();loadPnL();}
+  else toast("❌ Exit failed: "+(d?d.error:"err"),"#ff5252");
 }
 
 // ── SYMBOL MANAGER ────────────────────────────────────
