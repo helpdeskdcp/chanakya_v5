@@ -1,0 +1,183 @@
+[
+  {
+    "symbol": "NIFTY",
+    "days": 66,
+    "total": 4,
+    "wins": 4,
+    "losses": 0,
+    "opens": 0,
+    "winrate": 100.0,
+    "avg_win": 69.0,
+    "avg_loss": 0,
+    "rr": 0,
+    "exp_val": 69.0,
+    "total_pts": 276.0,
+    "lot": 65,
+    "total_inr": 17940,
+    "score_stats": {
+      "80-89": {
+        "w": 4,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "dow_stats": {
+      "Wed": {
+        "w": 2,
+        "l": 0,
+        "o": 0
+      },
+      "Tue": {
+        "w": 2,
+        "l": 0,
+        "o": 0
+      },
+      "Mon": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      },
+      "Thu": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      },
+      "Fri": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "time_stats": {
+      "12:00": {
+        "w": 3,
+        "l": 0,
+        "o": 0
+      },
+      "11:00": {
+        "w": 1,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "trend_stats": {
+      "COUNTER": {
+        "w": 4,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "month_stats": {
+      "2026-03": {
+        "w": 1,
+        "l": 0,
+        "o": 0,
+        "pnl": 60.63
+      },
+      "2026-04": {
+        "w": 3,
+        "l": 0,
+        "o": 0,
+        "pnl": 215.37
+      }
+    },
+    "trades": [
+      {
+        "date": "2026-03-18",
+        "time": "12:25",
+        "symbol": "NIFTY",
+        "direction": "BUY",
+        "entry": 23767.0,
+        "target": 23827.63,
+        "sl": 23736.69,
+        "score": 80,
+        "smc_score": 75,
+        "rsi": 43.1,
+        "atr": 20.21,
+        "ema200": 25299.34,
+        "trend_align": "COUNTER",
+        "vwap_bias": "ABOVE",
+        "structure": "UPTREND",
+        "ema_cross": "BULL",
+        "outcome": "WIN",
+        "pnl": 60.63,
+        "exit_time": "13:20",
+        "month": "2026-03",
+        "dow": "Wed",
+        "hour": 12
+      },
+      {
+        "date": "2026-04-07",
+        "time": "12:55",
+        "symbol": "NIFTY",
+        "direction": "BUY",
+        "entry": 22915.9,
+        "target": 23001.79,
+        "sl": 22872.96,
+        "score": 80,
+        "smc_score": 75,
+        "rsi": 49.7,
+        "atr": 28.63,
+        "ema200": 25189.08,
+        "trend_align": "COUNTER",
+        "vwap_bias": "ABOVE",
+        "structure": "UPTREND",
+        "ema_cross": "BULL",
+        "outcome": "WIN",
+        "pnl": 85.89,
+        "exit_time": "13:30",
+        "month": "2026-04",
+        "dow": "Tue",
+        "hour": 12
+      },
+      {
+        "date": "2026-04-08",
+        "time": "11:55",
+        "symbol": "NIFTY",
+        "direction": "BUY",
+        "entry": 23931.2,
+        "target": 24009.8,
+        "sl": 23891.9,
+        "score": 80,
+        "smc_score": 75,
+        "rsi": 47.5,
+        "atr": 26.2,
+        "ema200": 25184.8,
+        "trend_align": "COUNTER",
+        "vwap_bias": "ABOVE",
+        "structure": "UPTREND",
+        "ema_cross": "BULL",
+        "outcome": "WIN",
+        "pnl": 78.6,
+        "exit_time": "13:35",
+        "month": "2026-04",
+        "dow": "Wed",
+        "hour": 11
+      },
+      {
+        "date": "2026-04-21",
+        "time": "12:55",
+        "symbol": "NIFTY",
+        "direction": "BUY",
+        "entry": 24537.9,
+        "target": 24588.78,
+        "sl": 24512.46,
+        "score": 80,
+        "smc_score": 75,
+        "rsi": 54.9,
+        "atr": 16.96,
+        "ema200": 25145.93,
+        "trend_align": "COUNTER",
+        "vwap_bias": "ABOVE",
+        "structure": "UPTREND",
+        "ema_cross": "BULL",
+        "outcome": "WIN",
+        "pnl": 50.88,
+        "exit_time": "15:00",
+        "month": "2026-04",
+        "dow": "Tue",
+        "hour": 12
+      }
+    ]
+  }
+]

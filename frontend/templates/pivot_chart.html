@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chanakya v5 — Pivot Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080c12;color:#e0e6f0;font-family:'JetBrains Mono','Courier New',monospace;min-height:100vh}
+  .topbar{background:#0d1117;border-bottom:1px solid #1a2233;padding:10px 20px;display:flex;align-items:center;gap:14px}
+  .logo{color:#00e5ff;font-weight:700;font-size:13px;letter-spacing:2px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#00e676;box-shadow:0 0 6px #00e676;animation:blink 2s infinite}
+  .dot.off{background:#334455;box-shadow:none;animation:none}
+  .badge{font-size:9px;background:#1a1200;border:1px solid #ff980060;color:#ff9800;border-radius:3px;padding:2px 7px}
+  .main{padding:14px 18px}
+  .sym-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+  .sym-btn{background:#0d1117;border:1px solid #1a2233;border-radius:4px;color:#334455;padding:5px 13px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all .12s}
+  .sym-btn.active{border-color:var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent)}
+  .controls{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-start}
+  .card{background:#0d1117;border:1px solid #1a2233;border-radius:6px;padding:9px 13px}
+  .card-label{font-size:9px;color:#334455;letter-spacing:2px;margin-bottom:5px}
+  input[type=date]{background:transparent;border:none;color:#00e5ff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;outline:none}
+  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) hue-rotate(180deg);cursor:pointer}
+  .live-tag{font-size:9px;color:#00e676;margin-top:2px}
+  .hist-tag{font-size:9px;color:#445566;margin-top:2px}
+  .ltp-card{background:#0d1117;border-radius:6px;padding:9px 15px;text-align:right}
+  .ltp-val{font-size:22px;font-weight:700;letter-spacing:1px}
+  .ltp-chg{font-size:10px;margin-top:1px}
+  .layout{display:flex;gap:10px}
+  .chart-wrap{flex:1;background:#0d1117;border:1px solid #1a2233;border-radius:6px;padding:12px 8px 8px}
+  .chart-title{font-size:10px;color:#334455;letter-spacing:1px;margin-bottom:8px;padding-left:6px}
+  .right-panel{width:178px;display:flex;flex-direction:column;gap:8px}
+  .pivot-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #0e1520}
+  .pivot-row.active-row{background:linear-gradient(90deg,transparent,#ffffff08)}
+  .pivot-label{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:400}
+  .pivot-bar{width:14px;height:2px;border-radius:1px}
+  .pivot-right{text-align:right}
+  .pivot-price{font-size:11px;color:#dde4ee;font-weight:600}
+  .pivot-pct{font-size:9px}
+  .zone-label{font-size:11px;font-weight:700;margin-top:4px}
+  .bias-label{font-size:13px;font-weight:700;margin-top:6px}
+  .formula{font-size:8px;color:#334455;line-height:1.9}
+  .spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;height:360px;gap:14px}
+  .spin-ring{width:32px;height:32px;border:2px solid #1e2a3a;border-top:2px solid #00e5ff;border-radius:50%;animation:spin .8s linear infinite}
+  .spin-txt{font-size:11px;color:#445566;letter-spacing:2px}
+  .err-bar{background:#1a0808;border:1px solid #ff525240;border-radius:6px;padding:9px 14px;font-size:11px;color:#ff8a80;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .retry-btn{background:#ff5252;border:none;border-radius:4px;color:#fff;padding:3px 10px;font-size:10px;cursor:pointer;font-family:inherit}
+  .reload-btn{background:#0d1117;border:1px solid #1a2233;border-radius:6px;color:#445566;padding:0 14px;font-size:18px;cursor:pointer;font-family:inherit;min-height:58px}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .sig-bar{background:#0d1117;border:1px solid #1a2233;border-radius:6px;padding:10px 14px;margin-top:10px}
+  .sig-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #0e1520;font-size:11px}
+  .sig-badge{border-radius:3px;padding:2px 8px;font-weight:700;font-size:10px;letter-spacing:1px}
+  .buy-badge{background:#69f0ae20;color:#69f0ae;border:1px solid #69f0ae40}
+  .sell-badge{background:#ff525220;color:#ff5252;border:1px solid #ff525240}
+  .pred-panel{background:#0d1117;border:1px solid #1a2233;border-radius:6px;padding:10px 12px;margin-top:8px}
+  .pred-row{display:flex;justify-content:space-between;padding:3px 0;font-size:10px;border-bottom:1px solid #0e1520}
+  .conf-bar{height:4px;border-radius:2px;margin-top:4px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:700px){.layout{flex-direction:column}.right-panel{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div id="statusDot" class="dot off"></div>
+  <span class="logo">CHANAKYA v5</span>
+  <span style="color:#1a2a3a">│</span>
+  <span style="color:#334455;font-size:10px;letter-spacing:1px">PIVOT ENGINE</span>
+  <div style="flex:1"></div>
+  <span id="simBadge" class="badge" style="display:none">SIMULATION</span>
+  <span id="updateTag" style="font-size:9px;color:#334455"></span>
+</div>
+
+<div class="main">
+  <!-- Symbol tabs -->
+  <div class="sym-tabs" id="symTabs"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="card">
+      <div class="card-label">CHART DATE</div>
+      <input type="date" id="dateInput">
+      <div id="liveTag" class="live-tag">● LIVE · AUTO-REFRESH 30s</div>
+    </div>
+    <div class="card" style="flex:1;min-width:240px">
+      <div class="card-label">PREV DAY OHLC (PIVOT INPUT)</div>
+      <div id="ohlcDisplay" style="font-size:11px;color:#556677">Loading...</div>
+    </div>
+    <div class="ltp-card" id="ltpCard" style="border:1px solid #00e5ff40">
+      <div class="card-label">LTP</div>
+      <div class="ltp-val" id="ltpVal" style="color:#00e5ff">—</div>
+      <div class="ltp-chg" id="ltpChg">—</div>
+    </div>
+    <button class="reload-btn" onclick="loadAll()" title="Reload">↻</button>
+  </div>
+
+  <!-- Error bar -->
+  <div id="errBar" class="err-bar" style="display:none">
+    <span id="errMsg"></span>
+    <button class="retry-btn" onclick="loadAll()">RETRY</button>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+    <!-- Chart -->
+    <div class="chart-wrap">
+      <div class="chart-title" id="chartTitle">NIFTY · 5MIN</div>
+      <div id="spinnerWrap" class="spinner">
+        <div class="spin-ring"></div>
+        <div class="spin-txt">FETCHING LIVE DATA...</div>
+      </div>
+      <div id="chartWrap" style="display:none;position:relative;height:370px">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="card">
+        <div class="card-label" style="margin-bottom:8px">DAILY PIVOTS</div>
+        <div id="pivotTable"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">ZONE</div>
+        <div class="zone-label" id="zoneLabel">—</div>
+        <div class="card-label" style="margin-top:8px">BIAS</div>
+        <div class="bias-label" id="biasLabel">—</div>
+        <div class="card-label" style="margin-top:8px">NEAREST R</div>
+        <div id="nearR" style="font-size:10px;color:#ff867c;font-weight:600;margin-top:2px">—</div>
+        <div class="card-label" style="margin-top:6px">NEAREST S</div>
+        <div id="nearS" style="font-size:10px;color:#69f0ae;font-weight:600;margin-top:2px">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label" style="margin-bottom:6px">FORMULA</div>
+        <div class="formula">
+          PP = (H+L+C)÷3<br>
+          R1 = 2PP − L<br>
+          R2 = PP + (H−L)<br>
+          R3 = H + 2(PP−L)<br>
+          S1 = 2PP − H<br>
+          S2 = PP − (H−L)<br>
+          S3 = L − 2(H−PP)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Auth check ─────────────────────────────────────────────────────
+const TOKEN = localStorage.getItem("ch_token") || "";
+if (!TOKEN) { window.location.href = "/v5/login"; }
+
+async function api(path) {
+  const r = await fetch(path, { headers: { "X-Auth-Token": TOKEN } });
+  if (r.status === 401) { localStorage.removeItem("ch_token"); window.location.href = "/v5/login"; }
+  return r.json();
+}
+
+async function pivotFetch(path) {
+  const r = await fetch(path, { headers: { "X-Auth-Token": TOKEN } });
+  const ct = r.headers.get("content-type") || "";
+  if (!ct.includes("application/json")) throw new Error("Not JSON — got HTML (auth issue)");
+  const data = await r.json();
+  return data;  // 404 with JSON error msg is handled by caller
+}
+
+// ── Config ─────────────────────────────────────────────────────────
+const SYMBOLS = {
+  NIFTY:      { color:"#00e5ff", base:24380 },
+  BANKNIFTY:  { color:"#ff9800", base:52400 },
+  NATURALGAS: { color:"#69f0ae", base:298   },
+  CRUDEOIL:   { color:"#ff5252", base:6720  },
+  GOLD:       { color:"#ffd740", base:72850 },
+  SILVER:     { color:"#b0bec5", base:87400 },
+};
+
+const PIVOT_CFG = [
+  { key:"r3", label:"R3", color:"#ff1744", dash:[6,3], w:1   },
+  { key:"r2", label:"R2", color:"#ff5252", dash:[6,3], w:1   },
+  { key:"r1", label:"R1", color:"#ff867c", dash:[4,3], w:1   },
+  { key:"pp", label:"PP", color:"#ffd740", dash:[],    w:1.5 },
+  { key:"s1", label:"S1", color:"#69f0ae", dash:[4,3], w:1   },
+  { key:"s2", label:"S2", color:"#00e676", dash:[6,3], w:1   },
+  { key:"s3", label:"S3", color:"#00c853", dash:[6,3], w:1   },
+];
+
+let sym = "NIFTY", pivots = null, ltp = null, chartInst = null;
+let refreshTimer = null;
+const _now = new Date();
+const _ist = new Date(_now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
+const today = _ist.getFullYear()+'-'+String(_ist.getMonth()+1).padStart(2,'0')+'-'+String(_ist.getDate()).padStart(2,'0');
+
+// ── Build symbol tabs ───────────────────────────────────────────────
+const tabsEl = document.getElementById("symTabs");
+Object.entries(SYMBOLS).forEach(([s, info]) => {
+  const b = document.createElement("button");
+  b.className = "sym-btn" + (s === sym ? " active" : "");
+  b.style.setProperty("--c", info.color);
+  b.innerHTML = `${s} <span style="font-size:8px;margin-left:4px;opacity:.5">${s==="NIFTY"||s==="BANKNIFTY"?"NSE":"MCX"}</span>`;
+  b.onclick = () => { sym = s; document.querySelectorAll(".sym-btn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); loadAll(); };
+  tabsEl.appendChild(b);
+});
+
+// ── Date picker ─────────────────────────────────────────────────────
+const dateInput = document.getElementById("dateInput");
+dateInput.value = today;
+dateInput.max   = today;
+dateInput.addEventListener("change", loadAll);
+
+function isLive() { return dateInput.value === today; }
+
+// ── Load all ────────────────────────────────────────────────────────
+async function loadAll() {
+  clearInterval(refreshTimer);
+  showSpinner(true);
+  showErr(null);
+  updateLiveTag();
+
+  const date = dateInput.value;
+  const info = SYMBOLS[sym];
+
+  // Update LTP card color
+  document.getElementById("ltpCard").style.borderColor = info.color + "50";
+  document.getElementById("ltpVal").style.color = info.color;
+
+  try {
+    const [ohlcData, candleData] = await Promise.all([
+      pivotFetch(`/v5/api/pivot/ohlc?symbol=${sym}&date=${date}`),
+      pivotFetch(`/v5/api/pivot/candles?symbol=${sym}&date=${date}&interval=FIVE_MINUTE`),
+    ]);
+
+    let ok = true;
+
+    if (ohlcData.error) { ok = false; }
+    else {
+      pivots = ohlcData.pivots;
+      const o = ohlcData.ohlc;
+      document.getElementById("ohlcDisplay").innerHTML =
+        `<span style="color:#556677">Prev: ${ohlcData.prev_date} &nbsp;</span>` +
+        `H: <b style="color:#ff867c">${o.high}</b> &nbsp;` +
+        `L: <b style="color:#69f0ae">${o.low}</b> &nbsp;` +
+        `C: <b style="color:${info.color}">${o.close}</b>`;
+    }
+
+    if (candleData.error) { ok = false; showErr("No candle data — market closed or holiday"); }
+    else {
+      ltp = candleData.ltp;
+      window._lastCandles = candleData.candles; renderChart(candleData.candles, info.color);
+      updateLTP(ltp, info.base, info.color);
+    }
+
+    if (pivots) { renderPivots(ltp || info.base); }
+
+    // Signals + Prediction parallel fetch
+    try {
+      const [sigData, predData] = await Promise.all([
+        pivotFetch(`/v5/api/pivot/signals?symbol=${sym}&date=${date}`),
+        pivotFetch(`/v5/api/pivot/predict?symbol=${sym}&date=${date}`),
+      ]);
+      if (!sigData.error)  renderSignals(sigData, candleData?.candles || []);
+      if (!predData.error) renderPrediction(predData);
+    } catch(e) { console.warn('Signals/Predict fetch:', e); }
+    document.getElementById("simBadge").style.display = ok ? "none" : "inline";
+    document.getElementById("statusDot").className = "dot" + (ok ? "" : " off");
+    document.getElementById("updateTag").textContent = "Updated " + new Date().toLocaleTimeString("en-IN");
+
+    // Auto-refresh LTP every 30s on live
+    if (isLive() && ok) {
+      refreshTimer = setInterval(refreshLTP, 30000);
+    }
+  } catch(e) {
+    showErr("API unreachable: " + e.message);
+    document.getElementById("simBadge").style.display = "inline";
+  }
+
+  showSpinner(false);
+}
+
+// ── Refresh LTP only ─────────────────────────────────────────────
+async function refreshLTP() {
+  try {
+    const d = await pivotFetch(`/v5/api/pivot/live-ltp?symbol=${sym}`);
+    if (!d.error && d.ltp) {
+      ltp = d.ltp;
+      updateLTP(ltp, SYMBOLS[sym].base, SYMBOLS[sym].color);
+      if (pivots) renderPivots(ltp);
+      document.getElementById("updateTag").textContent = "Updated " + new Date().toLocaleTimeString("en-IN");
+    }
+  } catch(e) {}
+}
+
+// ── Render Chart ─────────────────────────────────────────────────
+function renderChart(candles, color, signals=[]) {
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  document.getElementById("chartTitle").textContent =
+    `${sym} · 5MIN · ${dateInput.value}`;
+
+  const labels = candles.map(c => c.time);
+  const prices = candles.map(c => c.price);
+
+  const annotations = {};
+  if (pivots) {
+    PIVOT_CFG.forEach(p => {
+      annotations[p.key] = {
+        type: "line", yMin: pivots[p.key], yMax: pivots[p.key],
+        borderColor: p.color, borderWidth: p.w,
+        borderDash: p.dash,
+        label: {
+          display: true, content: `${p.label} ${pivots[p.key]}`,
+          position: "end", color: p.color,
+          backgroundColor: "transparent",
+          font: { size: 9, family: "JetBrains Mono" },
+          xAdjust: 4,
+        }
+      };
+    });
+  }
+
+  const ctx = document.getElementById("priceChart").getContext("2d");
+  const grad = ctx.createLinearGradient(0, 0, 0, 360);
+  grad.addColorStop(0,   color + "30");
+  grad.addColorStop(1,   color + "00");
+
+  // Signal annotations
+  if (signals && signals.length) {
+    signals.forEach((s,i) => {
+      annotations[`sig_${i}`] = {
+        type: 'line',
+        xMin: s.time, xMax: s.time,
+        borderColor: s.type==='BUY' ? '#69f0ae' : '#ff5252',
+        borderWidth: 1.5, borderDash: [3,3],
+        label: {
+          display: true,
+          content: `${s.type==='BUY'?'▲':'▼'} ${s.level}`,
+          position: s.type==='BUY' ? 'end' : 'start',
+          color: s.type==='BUY' ? '#69f0ae' : '#ff5252',
+          backgroundColor: 'transparent',
+          font: { size: 8, family: 'JetBrains Mono' },
+          yAdjust: s.type==='BUY' ? 10 : -10,
+        }
+      };
+      // Target line
+      annotations[`tgt_${i}`] = {
+        type: 'line', yMin: s.target, yMax: s.target,
+        borderColor: s.type==='BUY' ? '#69f0ae50' : '#ff525250',
+        borderWidth: 1, borderDash: [2,4],
+      };
+      // SL line
+      annotations[`sl_${i}`] = {
+        type: 'line', yMin: s.sl, yMax: s.sl,
+        borderColor: '#ff980050', borderWidth: 1, borderDash: [2,4],
+      };
+    });
+  }
+
+  chartInst = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        data: prices, borderColor: color, borderWidth: 1.5,
+        backgroundColor: grad, fill: true,
+        pointRadius: 0, pointHoverRadius: 3, tension: 0.1,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#0d1117",
+          borderColor: color + "50", borderWidth: 1,
+          titleColor: "#556677", bodyColor: color,
+          titleFont: { family: "JetBrains Mono", size: 10 },
+          bodyFont:  { family: "JetBrains Mono", size: 13, weight: "700" },
+          callbacks: {
+            label: ctx => " " + ctx.parsed.y.toFixed(2),
+            afterLabel: ctx => {
+              if (!pivots) return "";
+              const p = ctx.parsed.y;
+              const n = Object.entries(pivots).sort((a,b)=>Math.abs(a[1]-p)-Math.abs(b[1]-p))[0];
+              return n ? ` Near: ${n[0].toUpperCase()} ${n[1]}` : "";
+            }
+          }
+        },
+        annotation: { annotations }
+      },
+      scales: {
+        x: { ticks: { color:"#334455", font:{ family:"JetBrains Mono", size:8 }, maxTicksLimit:10 }, grid:{ color:"#111820" } },
+        y: { position:"right", ticks:{ color:"#334455", font:{ family:"JetBrains Mono", size:8 }, callback: v=>v.toFixed(0) }, grid:{ color:"#111820" } }
+      }
+    }
+  });
+}
+
+// ── Render Pivot Table ─────────────────────────────────────────────
+function renderPivots(price) {
+  const info = SYMBOLS[sym];
+  let html = "";
+  [...PIVOT_CFG].reverse().forEach(p => {
+    const val = pivots[p.key];
+    const diff = val - price;
+    const pct  = ((diff / price)*100).toFixed(2);
+    const near = Math.abs(diff) < price * 0.003;
+    html += `
+      <div class="pivot-row ${near?"active-row":""}">
+        <div class="pivot-label">
+          <div class="pivot-bar" style="background:${p.color};opacity:${p.key==='pp'?1:.7}"></div>
+          <span style="color:${p.color};font-weight:${p.key==='pp'?700:400}">${p.label}</span>
+          ${near?`<span style="font-size:8px;color:${p.color}">◄</span>`:""}
+        </div>
+        <div class="pivot-right">
+          <div class="pivot-price">${val.toFixed(2)}</div>
+          <div class="pivot-pct" style="color:${diff>=0?"#69f0ae":"#ff5252"}">${diff>=0?"+":""}${pct}%</div>
+        </div>
+      </div>`;
+  });
+  document.getElementById("pivotTable").innerHTML = html;
+
+  // Zone
+  let zone="—", zc="#556677";
+  if      (price > pivots.r3) { zone="ABOVE R3 🚀"; zc="#ff1744"; }
+  else if (price > pivots.r2) { zone="R2 → R3 ↑";  zc="#ff5252"; }
+  else if (price > pivots.r1) { zone="R1 → R2 ↑";  zc="#ff867c"; }
+  else if (price > pivots.pp) { zone="PP → R1 ↑";  zc="#ffd740"; }
+  else if (price > pivots.s1) { zone="S1 → PP ↓";  zc="#69f0ae"; }
+  else if (price > pivots.s2) { zone="S2 → S1 ↓";  zc="#00e676"; }
+  else                        { zone="BELOW S2 📉"; zc="#00c853"; }
+  document.getElementById("zoneLabel").textContent = zone;
+  document.getElementById("zoneLabel").style.color = zc;
+
+  // Bias
+  const bull = price > pivots.pp;
+  document.getElementById("biasLabel").textContent = bull ? "▲ BULLISH" : "▼ BEARISH";
+  document.getElementById("biasLabel").style.color  = bull ? "#ff5252" : "#69f0ae";
+
+  // Nearest R / S
+  const rLevels = ["r1","r2","r3"].filter(k => pivots[k] > price);
+  const sLevels = ["s1","s2","s3"].filter(k => pivots[k] < price).reverse();
+  document.getElementById("nearR").textContent = rLevels[0] ? `${rLevels[0].toUpperCase()} ${pivots[rLevels[0]].toFixed(2)}` : "Above R3";
+  document.getElementById("nearS").textContent = sLevels[0] ? `${sLevels[0].toUpperCase()} ${pivots[sLevels[0]].toFixed(2)}` : "Below S3";
+}
+
+// ── Update LTP card ────────────────────────────────────────────────
+function updateLTP(price, base, color) {
+  const diff = price - base, pct = ((diff/base)*100).toFixed(2);
+  document.getElementById("ltpVal").textContent = price.toFixed(2);
+  document.getElementById("ltpChg").innerHTML =
+    `<span style="color:${diff>=0?"#69f0ae":"#ff5252"}">${diff>=0?"▲":"▼"} ${Math.abs(diff).toFixed(2)} (${pct}%)</span>`;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────
+function showSpinner(v) {
+  document.getElementById("spinnerWrap").style.display = v ? "flex" : "none";
+  document.getElementById("chartWrap").style.display   = v ? "none" : "block";
+}
+function showErr(msg) {
+  const el = document.getElementById("errBar");
+  if (msg) { document.getElementById("errMsg").textContent = msg; el.style.display = "flex"; }
+  else      { el.style.display = "none"; }
+}
+function updateLiveTag() {
+  const live = isLive();
+  document.getElementById("liveTag").textContent = live ? "● LIVE · AUTO-REFRESH 30s" : "◌ HISTORICAL";
+  document.getElementById("liveTag").style.color  = live ? "#00e676" : "#445566";
+  document.getElementById("liveTag").className    = live ? "live-tag" : "hist-tag";
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>

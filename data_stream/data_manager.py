@@ -58,8 +58,9 @@ class DataManager:
             from broker.global_broker import get_broker
             b = get_broker()
             if not b.is_connected():
-                logger.info("DataManager: reconnecting broker")
-                b.connect()
+                time.sleep(5)
+                logger.info("DataManager: using shared broker reconnect")
+                b.ensure_connected()
             self._broker = b
             self._connected = b.is_connected()
         except Exception as e:

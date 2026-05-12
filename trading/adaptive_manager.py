@@ -12,6 +12,13 @@ ATR_MULTIPLIER_SL = 1.5
 ATR_MULTIPLIER_TG = 3.0
 ALERT_COOLDOWN    = 60   # seconds between same alerts
 
+# Per-symbol target multiplier (backtest proven +29%)
+TARGET_MULT = {
+    "NIFTY":5.0,"BANKNIFTY":3.0,"FINNIFTY":5.0,
+    "CRUDEOIL":5.0,"NATURALGAS":3.0,"RELIANCE":5.0,"DEFAULT":3.0,
+}
+MOMENTUM_EXIT_SYMS = {"BANKNIFTY","NATURALGAS"}
+
 _state = {"running": False, "alerts_sent": {}, "adaptations": []}
 _lock  = threading.Lock()
 

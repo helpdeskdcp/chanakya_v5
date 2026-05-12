@@ -1,0 +1,193 @@
+[
+  {
+    "symbol": "BANKNIFTY",
+    "days": 60,
+    "total": 4,
+    "wins": 1,
+    "losses": 1,
+    "opens": 2,
+    "winrate": 50.0,
+    "avg_win": 230.97,
+    "avg_loss": 72.15,
+    "rr": 3.2,
+    "exp_val": 79.41,
+    "total_pts": 158.8,
+    "lot": 30,
+    "total_inr": 4764,
+    "score_stats": {
+      "80-89": {
+        "w": 0,
+        "l": 1,
+        "o": 2
+      },
+      "70-79": {
+        "w": 1,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "dow_stats": {
+      "Wed": {
+        "w": 0,
+        "l": 1,
+        "o": 1
+      },
+      "Tue": {
+        "w": 1,
+        "l": 0,
+        "o": 1
+      },
+      "Mon": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      },
+      "Thu": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      },
+      "Fri": {
+        "w": 0,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "time_stats": {
+      "12:00": {
+        "w": 1,
+        "l": 1,
+        "o": 1
+      },
+      "11:00": {
+        "w": 0,
+        "l": 0,
+        "o": 1
+      }
+    },
+    "trend_stats": {
+      "WITH": {
+        "w": 0,
+        "l": 1,
+        "o": 2
+      },
+      "COUNTER": {
+        "w": 1,
+        "l": 0,
+        "o": 0
+      }
+    },
+    "month_stats": {
+      "2026-02": {
+        "w": 0,
+        "l": 0,
+        "o": 2,
+        "pnl": 0
+      },
+      "2026-04": {
+        "w": 1,
+        "l": 1,
+        "o": 0,
+        "pnl": 158.82
+      }
+    },
+    "trades": [
+      {
+        "date": "2026-02-11",
+        "time": "12:10",
+        "symbol": "BANKNIFTY",
+        "direction": "BUY",
+        "entry": 60651.0,
+        "target": 60791.82,
+        "sl": 60580.59,
+        "score": 85,
+        "smc_score": 35,
+        "rsi": 47.9,
+        "atr": 46.94,
+        "ema200": 57054.32,
+        "trend_align": "WITH",
+        "vwap_bias": "ABOVE",
+        "structure": "RANGING",
+        "ema_cross": "BULL",
+        "outcome": "OPEN",
+        "pnl": 0,
+        "exit_time": "\u2014",
+        "month": "2026-02",
+        "dow": "Wed",
+        "hour": 12
+      },
+      {
+        "date": "2026-02-17",
+        "time": "11:40",
+        "symbol": "BANKNIFTY",
+        "direction": "BUY",
+        "entry": 61060.95,
+        "target": 61247.13,
+        "sl": 60967.86,
+        "score": 85,
+        "smc_score": 35,
+        "rsi": 44.8,
+        "atr": 62.06,
+        "ema200": 57164.43,
+        "trend_align": "WITH",
+        "vwap_bias": "ABOVE",
+        "structure": "RANGING",
+        "ema_cross": "BULL",
+        "outcome": "OPEN",
+        "pnl": 0,
+        "exit_time": "\u2014",
+        "month": "2026-02",
+        "dow": "Tue",
+        "hour": 11
+      },
+      {
+        "date": "2026-04-07",
+        "time": "12:25",
+        "symbol": "BANKNIFTY",
+        "direction": "BUY",
+        "entry": 52123.45,
+        "target": 52354.42,
+        "sl": 52007.96,
+        "score": 78,
+        "smc_score": 60,
+        "rsi": 55.4,
+        "atr": 76.99,
+        "ema200": 57282.93,
+        "trend_align": "COUNTER",
+        "vwap_bias": "ABOVE",
+        "structure": "UPTREND",
+        "ema_cross": "BULL",
+        "outcome": "WIN",
+        "pnl": 230.97,
+        "exit_time": "13:30",
+        "month": "2026-04",
+        "dow": "Tue",
+        "hour": 12
+      },
+      {
+        "date": "2026-04-22",
+        "time": "12:55",
+        "symbol": "BANKNIFTY",
+        "direction": "BUY",
+        "entry": 57343.25,
+        "target": 57487.55,
+        "sl": 57271.1,
+        "score": 85,
+        "smc_score": 35,
+        "rsi": 50.7,
+        "atr": 48.1,
+        "ema200": 57270.92,
+        "trend_align": "WITH",
+        "vwap_bias": "ABOVE",
+        "structure": "RANGING",
+        "ema_cross": "BULL",
+        "outcome": "LOSS",
+        "pnl": -72.15,
+        "exit_time": "13:20",
+        "month": "2026-04",
+        "dow": "Wed",
+        "hour": 12
+      }
+    ]
+  }
+]
