@@ -17,10 +17,12 @@ MCX_COMMODITY = [
     # CRUDEOIL disabled — backtest: -7.3 pts/trade (29% WR, losing money)
     # {"symbol":"CRUDEOIL",   "token":"488290","exchange":"MCX","type":"commodity",
     #  "lot":100, "interval":50,"min_sl_pct":0.006,"option_type":"monthly"},
-    {"symbol":"NATURALGAS", "token":"488505","exchange":"MCX","type":"commodity",
-     "lot":1250,"interval":10,"min_sl_pct":0.008,"option_type":"monthly"},
-    {"symbol":"GOLDM",      "token":"67694", "exchange":"MCX","type":"commodity",
-     "lot":100, "interval":100,"min_sl_pct":0.005,"option_type":"monthly"},
+    # NATURALGAS disabled — backtest WR=43% (research mode, not tradeable)
+    # {"symbol":"NATURALGAS", "token":"488505","exchange":"MCX","type":"commodity",
+    #  "lot":1250,"interval":10,"min_sl_pct":0.008,"option_type":"monthly"},
+    # GOLDM disabled — no historical data for backtest
+    # {"symbol":"GOLDM",      "token":"67694", "exchange":"MCX","type":"commodity",
+    #  "lot":100, "interval":100,"min_sl_pct":0.005,"option_type":"monthly"},
 ]
 
 # ═══ NSE EQUITY ═══ (Direct stock — no F&O, different SL logic)
