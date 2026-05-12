@@ -270,6 +270,12 @@ def scan_all(broker=None):
                     min_score = 50; min_smc = 30
                     fake = sig.get("fake",[])
 
+                # RR check: minimum 1.8 required
+                rr = sig.get("rr", 0)
+                if rr < 1.8:
+                    logger.debug("Skip %s — RR %.1f < 1.8", stock["symbol"], rr)
+                    continue
+
                 # High confidence signals bypass minor fakes
                 minor = {"LowVol","WeakMACD","LowVol_MCX"}
                 serious_fake = [f for f in fake if f not in minor]

@@ -334,7 +334,7 @@ def check_daily_limit(capital=None, signal_score=0):
             cap = get_live_capital()
             capital = cap["available"] if cap else 200000
 
-        pnl_data    = get_daily_pnl()
+        pnl_data    = get_daily_pnl(username)  # Per-user PnL!
         daily_pnl   = pnl_data.get("total_pnl", 0)
         trades      = pnl_data.get("trades", 0)
         losses      = pnl_data.get("losses", 0)

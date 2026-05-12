@@ -48,9 +48,18 @@ DEFAULT_TOKENS = {
 
 # ── LTP Access ────────────────────────────────────────────────────
 def get_ltp(token):
-    """Token चा latest LTP return करतो"""
+    """Token चा latest LTP return करतो — stale check included"""
+    import time as _t
     with _ltp_lock:
-        return _ltp_cache.get(str(token))
+        entry = _ltp_cache.get(str(token))
+        if not entry: return None
+        # Dict format: {"price": float, "ts": float}
+        if isinstance(entry, dict):
+            if _t.time() - entry.get("ts", 0) > LTP_STALE_SEC:
+                return None  # Stale → REST fallback
+            return entry.get("price")
+        # Old format fallback (float)
+        return entry
 
 def get_all_ltp():
     """सगळे cached LTP return करतो"""
