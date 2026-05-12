@@ -240,20 +240,27 @@ def get_trades():
             trades = get_open_trades(target)
         else:
             trades = get_all_trades(target)
-        # Add live LTP to each trade
+        # Add live LTP to each trade (REST fallback if WS down)
         try:
             broker = get_broker()
-            if broker and broker.is_connected():
-                for t in trades:
-                    ltp = broker.get_ltp(t.get("exchange","NSE"), t.get("symbol",""), t.get("token",""))
-                    if ltp:
-                        t["ltp"] = ltp
-                        qty = t.get("qty",1)
-                        entry = t.get("entry_price",0)
+            for t in trades:
+                try:
+                    ltp = broker.get_ltp(t.get("exchange","NSE"),
+                                         t.get("symbol",""), t.get("token",""))
+                    if not ltp or ltp<=0:
+                        # Cache fallback
+                        from data_stream.cache import get as _cg
+                        _c = _cg(f"candles_{t.get('symbol','')}_5m")
+                        if _c: ltp = float(_c[-1][4])
+                    if ltp and ltp>0:
+                        t["ltp"] = round(float(ltp),2)
+                        qty = t.get("qty",1) or 1
+                        entry = float(t.get("entry_price",0) or 0)
                         if t.get("direction") == "BUY":
-                            t["live_pnl"] = round((ltp-entry)*qty, 2)
+                            t["live_pnl"] = round((float(ltp)-entry)*qty, 2)
                         else:
-                            t["live_pnl"] = round((entry-ltp)*qty, 2)
+                            t["live_pnl"] = round((entry-float(ltp))*qty, 2)
+                except: pass
         except: pass
         return jsonify({"success":True,"trades":trades,"total":len(trades)})
     except Exception as e:

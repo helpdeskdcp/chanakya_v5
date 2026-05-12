@@ -1311,10 +1311,18 @@ async function loadPositions() {
 }
 
 async function closeTrade(tid, price) {
-  var exit = prompt("Exit price:", price);
-  if(!exit) return;
-  var d = await api("/trades/"+tid+"/close","POST",{exit_price:parseFloat(exit)});
-  if(d.success){toast("✅ Trade closed","#1e3a5f");loadPositions();loadPnL();}
+  // Live LTP fetch करतो
+  var ltp = price;
+  try {
+    var md = await fetch("/v5/api/calculator_data?symbol=__SYM__&exchange=NSE");
+    // Fallback to entry price
+  } catch(e){}
+  var exit = prompt("Exit price (Enter for current ~"+ltp+"):", ltp);
+  if(exit===null) return; // Cancel
+  var usePrice = exit && exit.trim() ? parseFloat(exit) : ltp;
+  var d = await api("/trades/"+tid+"/close","POST",{exit_price:usePrice});
+  if(d && d.success){toast("✅ Trade closed @ ₹"+usePrice,"#1e3a5f");loadPositions();loadPnL();}
+  else toast("❌ Close failed: "+(d?d.error:"error"),"#ff5252");
   else toast("❌ "+d.error,"#ff0000");
 }
 
