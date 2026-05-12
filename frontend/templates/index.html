@@ -1255,7 +1255,7 @@ async function loadPositions() {
         "<td style='color:#ff5252'>₹"+t.sl_price+"</td>"+
         "<td style='color:#00e676'>₹"+t.target_price+"</td>"+
         "<td style='color:"+pnlClr+";font-weight:700'>₹"+pnl.toFixed(0)+"</td>"+
-        "<td><button class='btn btn-red' onclick='closeTrade("+t.id+","+t.entry_price+")' style='font-size:10px;padding:4px 8px'>Exit</button></td>"+
+        "<td><button class='btn btn-red' onclick='closeTrade("+t.id+","+t.entry_price+",\""+t.symbol+"\",\""+t.exchange+"\")' style='font-size:10px;padding:4px 8px'>⚡ Exit</button></td>"+
       "</tr>";
     }).join("");
   } catch(e) {
