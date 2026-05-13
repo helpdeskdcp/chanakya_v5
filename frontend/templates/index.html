@@ -1158,6 +1158,7 @@ async function startApp() {
   // Fast LTP refresh every 2s for positions
   setInterval(async function(){
     var d = await api('/ltp/live');
+    if(!d || !d.ltp) return;
     var ltp = d.ltp;
     // Update ticker bar
     Object.keys(ltp).forEach(function(sym){
@@ -1165,9 +1166,9 @@ async function startApp() {
       if(el) el.textContent = '₹'+ltp[sym].toLocaleString('en-IN',{minimumFractionDigits:2});
     });
     // Update positions LTP if open
+    if(!document.getElementById('pg-positions').classList.contains('hidden')){
       loadPositions();
     }
-    // Update open trades PnL
     updateOpenTradesPnL(ltp);
   }, 2000);
   setInterval(loadPnL, 30000);
