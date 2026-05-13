@@ -1897,9 +1897,16 @@ def _ltp_broadcast_loop():
                     price = cached.get("price")
                     ts    = cached.get("ts", 0)
                     import time as _t2
-                    if price and _t2.time()-ts < 30:  # fresh only
+                    # Force fresh REST if WS stale
+                    if not price or _t2.time()-ts > 30:
+                        try:
+                            from broker.global_broker import get_broker as _gb2
+                            price = _gb2().get_ltp(exch, sym, token)
+                            if price: ts = _t2.time()
+                        except: pass
+                    if price:
                         prev_price = _prev.get(token, 0)
-                        if price != prev_price:  # changed only
+                        if abs(float(price) - float(prev_price or 0)) > 0.01:  # changed only
                             batch[token] = {
                                 "symbol": sym,
                                 "exchange": exch,

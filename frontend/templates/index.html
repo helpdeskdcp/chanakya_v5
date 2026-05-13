@@ -2871,15 +2871,25 @@ const TickEngine = {
       if (els.bidEl) els.bidEl.textContent = '₹' + (tick.bid || price - 0.2).toFixed(2);
       if (els.askEl) els.askEl.textContent = '₹' + (tick.ask || price + 0.2).toFixed(2);
 
-      // Update P&L if trade element registered
-      if (els.pnlEl && els.entry !== undefined) {
-        const qty = els.qty || 1;
-        const pnl = els.direction === 'BUY'
-          ? (price - els.entry) * qty
-          : (els.entry - price) * qty;
-        els.pnlEl.textContent = '₹' + Math.round(pnl).toLocaleString('en-IN');
-        els.pnlEl.style.color = pnl >= 0 ? '#00e676' : '#ff5252';
-      }
+      // Update P&L — multi-row support
+      var rowsToUpdate = els.multiRows || (els.ltpEl ? [els] : []);
+      rowsToUpdate.forEach(function(row) {
+        if (row.ltpEl) {
+          row.ltpEl.textContent = '₹' + price.toFixed(2);
+          if (dir) {
+            row.ltpEl.style.color = dir === 'up' ? '#00e676' : '#ff5252';
+            setTimeout(function(){ if(row.ltpEl) row.ltpEl.style.color = ''; }, 600);
+          }
+        }
+        if (row.pnlEl && row.entry) {
+          const qty = row.qty || 1;
+          const pnl = row.direction === 'BUY'
+            ? (price - row.entry) * qty
+            : (row.entry - price) * qty;
+          row.pnlEl.textContent = '₹' + Math.round(pnl).toLocaleString('en-IN');
+          row.pnlEl.style.color = pnl >= 0 ? '#00e676' : '#ff5252';
+        }
+      });
 
       // Update topbar ticker
       if (els.tickerEl) {
@@ -2929,21 +2939,36 @@ function registerTopbarTickers() {
 
 // Register open positions for live P&L
 function registerPositions(trades) {
-  // Unregister all first
+  // Unregister old registrations
   Object.values(TOKEN_MAP).forEach(t => TickEngine.unregister(t));
 
+  // Group by token — support multiple rows per symbol
+  var tokenRows = {};
   trades.forEach(t => {
     const token = TOKEN_MAP[t.symbol] || t.token;
     if (!token) return;
     const row = document.getElementById('pos-row-' + t.id);
     if (!row) return;
-    const ltpEl = row.querySelector('.pos-ltp');
-    const pnlEl = row.querySelector('.pos-pnl');
-    TickEngine.register(token, {
-      ltpEl, pnlEl,
-      entry: t.entry_price,
-      qty: t.qty,
+    if (!tokenRows[token]) tokenRows[token] = [];
+    tokenRows[token].push({
+      ltpEl: row.querySelector('.pos-ltp'),
+      pnlEl: row.querySelector('.pos-pnl'),
+      entry: parseFloat(t.entry_price),
+      qty: parseInt(t.qty),
       direction: t.direction,
+    });
+  });
+
+  // Register multi-row handler per token
+  Object.entries(tokenRows).forEach(([token, rows]) => {
+    TickEngine.register(token, {
+      multiRows: rows,
+      // ltpEl = first row (for backward compat)
+      ltpEl: rows[0] ? rows[0].ltpEl : null,
+      pnlEl: rows[0] ? rows[0].pnlEl : null,
+      entry: rows[0] ? rows[0].entry : 0,
+      qty: rows[0] ? rows[0].qty : 0,
+      direction: rows[0] ? rows[0].direction : 'BUY',
     });
   });
 }
