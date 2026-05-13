@@ -1091,11 +1091,7 @@ function renderSigCard(s) {
 async function buyOpt(sig, paper) {
   var optEntry = sig.opt_entry || sig.opt_ltp || 0;
   var lotSize = sig.opt_lot || sig.qty || 1;
-  if(!paper && !confirm("⚠️ LIVE ORDER!
-"+sig.opt_symbol+"
-₹"+optEntry+" × "+lotSize+" lots
-
-Confirm?")) return;
+  if(!paper && !confirm("LIVE ORDER: "+sig.opt_symbol+" | Rs"+optEntry+" x "+lotSize+" lots. Confirm?")) return;
   var isMCX = ["CRUDEOIL","NATURALGAS","GOLD","SILVER"].indexOf(sig.symbol) >= 0;
   var payload = {
     symbol:       sig.symbol,
