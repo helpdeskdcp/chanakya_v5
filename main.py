@@ -189,17 +189,19 @@ def status():
 @require_auth
 def market():
     try:
-        from engine.scanner import get_live_ltps
-        from data_stream.cache import get as cget, set as cset
-        ltps = cget("market_ltps")
-        if not ltps:
-            ltps = get_live_ltps()
-            if ltps: cset("market_ltps", ltps, ttl=5)
-        return jsonify({"success":True,"data":ltps or {}})
+        from broker.websocket_mgr import get_all_ltp_named, is_connected
+        from data_stream.data_manager import get_data_manager
+        if is_connected():
+            data = get_all_ltp_named()
+            source = "websocket"
+        else:
+            dm = get_data_manager()
+            data = dm.get_market_snapshot()
+            source = "rest"
+        return jsonify({"success":True,"data":data,"source":source})
     except Exception as e:
         return jsonify({"success":False,"error":str(e),"data":{}})
 
-# ── Signal routes ──────────────────────────────────────
 @app.route("/api/signals")
 @require_auth
 def signals():
