@@ -12,3 +12,12 @@ data/cache/
 *.bak*
 data/scalping_ai.db
 features
+data/app.log
+data/*.db
+data/*.pkl
+data/*.json
+__pycache__/
+*.pyc
+=
+PYEOF
+else:
