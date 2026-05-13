@@ -1110,6 +1110,8 @@ async function doLogin() {
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
   var d = await api("/login","POST",{username:u,password:p});
+  console.log("Login response:", JSON.stringify(d));
+  if(dummy = np.array([[23500, 23450, 23520, 0.65, 55.0, 45.2, 0.3, -0.1, 23490, 23470, 1.2, 0.8]])){document.getElementById("loginErr").textContent="No response from server";return;}
   if(d.success) {
     TOKEN = d.token; USER_ROLE = d.role;
     localStorage.setItem("ch_token",TOKEN);
