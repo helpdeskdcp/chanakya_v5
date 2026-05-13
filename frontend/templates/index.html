@@ -1106,6 +1106,7 @@ async function googleLogin() {
 }
 
 async function doLogin() {
+  document.getElementById("loginErr").textContent = "Trying...";
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
