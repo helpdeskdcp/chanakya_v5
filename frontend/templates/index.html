@@ -1106,22 +1106,24 @@ async function googleLogin() {
 }
 
 async function doLogin() {
+  var u = document.getElementById("loginUser").value.trim();
+  var p = document.getElementById("loginPass").value.trim();
+  if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
   document.getElementById("loginErr").textContent = "";
-  try {
-    var resp = await fetch("/v5/api/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({username: document.getElementById("loginUser").value.trim(),
-                            password: document.getElementById("loginPass").value.trim()})
-    });
-    document.getElementById("loginErr").textContent = "HTTP: " + resp.status;
-    var txt = await resp.text();
-    document.getElementById("loginErr").textContent += " | " + txt.substr(0,50);
-    return;
-  } catch(ex) {
-    document.getElementById("loginErr").textContent = "Fetch error: " + ex.message;
-    return;
+  var d = await api("/login","POST",{username:u,password:p});
+  if(d && d.success) {
+    TOKEN = d.token; USER_ROLE = d.role;
+    localStorage.setItem("ch_token",TOKEN);
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("mainApp").style.display="flex";
+    document.getElementById("userInfo").textContent = d.username+" ("+d.role+")";
+    if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
+    startApp();
+  } else {
+    document.getElementById("loginErr").textContent = (d&&d.error)||"Login failed";
   }
+}
+
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
