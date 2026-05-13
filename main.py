@@ -1333,9 +1333,9 @@ def scalping_monitor():
 
             pnl = 0; trail_sl = sl; status_msg = "HOLD"
             if ltp:
-                pnl = round((ltp - entry) * qty, 2)
+                pnl = round((ltp - (entry or 0)) * (qty or 1), 2)
                 # Trailing SL logic (SEBI style)
-                profit_pct = (ltp - entry) / entry * 100 if entry > 0 else 0
+                profit_pct = (ltp - (entry or 0)) / (entry or 1) * 100
                 if profit_pct >= 15:
                     trail_sl = round(ltp * 0.90, 2)  # Trail to 90% of current
                 elif profit_pct >= 10:

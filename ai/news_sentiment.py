@@ -83,6 +83,7 @@ def analyze_sentiment(news_list, symbol=None):
                   f"REASON: [one line max 15 words]\nKEY_NEWS: [most impactful headline max 10 words]\n")
         from ai.groq_client import ask as groq_ask
         text = groq_ask(prompt, max_tokens=120, temperature=0.1)
+        def ex(pat, default=""):
             m = re.search(pat, text, re.IGNORECASE)
             return m.group(1).strip() if m else default
         return {
