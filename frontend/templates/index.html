@@ -1162,14 +1162,37 @@ async function loadMarket() {
   var d = await api("/market");
   if(!d.success) return;
   var data = d.data||{};
-  document.getElementById("dNIFTY").textContent = data.NIFTY ? "₹"+Math.round(data.NIFTY).toLocaleString() : "-";
-  document.getElementById("dBANK").textContent  = data.BANKNIFTY ? "₹"+Math.round(data.BANKNIFTY).toLocaleString() : "-";
-  document.getElementById("dCRUDE").textContent = data.CRUDEOIL ? "₹"+Math.round(data.CRUDEOIL) : "-";
+
+  // Static dashboard cards
+  var nEl = document.getElementById("dNIFTY");
+  var bEl = document.getElementById("dBANK");
+  var cEl = document.getElementById("dCRUDE");
+  if(nEl) nEl.textContent = data.NIFTY ? "₹"+Math.round(data.NIFTY).toLocaleString() : "-";
+  if(bEl) bEl.textContent = data.BANKNIFTY ? "₹"+Math.round(data.BANKNIFTY).toLocaleString() : "-";
+  if(cEl) cEl.textContent = data.CRUDEOIL ? "₹"+Math.round(data.CRUDEOIL) : "-";
+
+  // Topbar dynamic tickers with IDs for TickEngine
   var topbar = "<span class='badge badge-green' id='brokerBadge'>● Connected</span>";
-  Object.entries(data).slice(0,4).forEach(function(e){
-    topbar += "<span class='ticker'>"+e[0]+" <span>"+Math.round(e[1])+"</span></span>";
+  Object.entries(data).slice(0,6).forEach(function(e){
+    topbar += "<span class='ticker' id='tk-"+e[0]+"'>"+e[0]
+           +" <span id='ltp-"+e[0]+"' style='font-family:monospace'>"+e[1].toFixed(2)+"</span></span>";
   });
   document.getElementById("topbar").innerHTML = topbar;
+
+  // Register topbar elements with TickEngine for live LTP
+  if(typeof TickEngine !== "undefined") {
+    var tkMap = {
+      "NIFTY":     "99926000",
+      "BANKNIFTY": "99926009",
+      "FINNIFTY":  "99926037",
+    };
+    Object.entries(tkMap).forEach(function(entry){
+      var sym=entry[0], tok=entry[1];
+      var ltpEl = document.getElementById("ltp-"+sym);
+      var dashEl = sym==="NIFTY" ? nEl : sym==="BANKNIFTY" ? bEl : null;
+      if(ltpEl) TickEngine.register(tok, { ltpEl:ltpEl, dashEl:dashEl });
+    });
+  }
 }
 
 async function loadPnL() {
@@ -1236,7 +1259,7 @@ async function loadPositions() {
   try {
     var d = await api("/trades?mode=open");
     if(!d.success) { _posLoading=false; return; } // API error — silently skip
-    var trades = d.trades||[];
+    var trades = d.trades||[]; window._lastTrades = trades;
     var tb = document.getElementById("posTable");
     if(!tb) { _posLoading=false; return; }
     if(!trades.length) {
@@ -2781,5 +2804,157 @@ async function downloadPdfReport() {
 }
 
 </script>
+
+<!-- ═══ Real-time LTP TickEngine (Socket.IO) ════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+// ── TickEngine: Zero-lag real-time LTP update ─────────────
+const TickEngine = {
+  socket: null,
+  domMap: new Map(),   // token → {ltpEl, bidEl, askEl, pnlEl}
+  prevMap: new Map(),  // token → lastPrice
+  flashTimer: new Map(),
+
+  init() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    this.socket = io({
+      transports: ['websocket','polling'],
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 30000,
+      timeout: 10000,
+    });
+
+    this.socket.on('connect', () => {
+      console.log('[TickEngine] Connected ✅');
+      this._setBadge('connected');
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('[TickEngine] Disconnected ⚠️');
+      this._setBadge('reconnecting');
+    });
+
+    this.socket.on('ltp_update', (batch) => {
+      // requestAnimationFrame for smooth 60fps updates
+      requestAnimationFrame(() => this._processBatch(batch));
+    });
+  },
+
+  // Register a DOM element for a token
+  register(token, elements) {
+    this.domMap.set(String(token), elements);
+  },
+
+  // Unregister when element removed
+  unregister(token) {
+    this.domMap.delete(String(token));
+    this.prevMap.delete(String(token));
+  },
+
+  _processBatch(batch) {
+    for (const [token, tick] of Object.entries(batch)) {
+      const els = this.domMap.get(String(token));
+      if (!els) continue;
+
+      const price = tick.price;
+      const prev  = this.prevMap.get(token) || price;
+      const dir   = price > prev ? 'up' : price < prev ? 'down' : '';
+      this.prevMap.set(token, price);
+
+      // Update LTP element
+      if (els.ltpEl) {
+        els.ltpEl.textContent = '₹' + price.toFixed(2);
+        if (dir) this._flash(els.ltpEl, dir);
+      }
+
+      // Update bid/ask
+      if (els.bidEl) els.bidEl.textContent = '₹' + (tick.bid || price - 0.2).toFixed(2);
+      if (els.askEl) els.askEl.textContent = '₹' + (tick.ask || price + 0.2).toFixed(2);
+
+      // Update P&L if trade element registered
+      if (els.pnlEl && els.entry !== undefined) {
+        const qty = els.qty || 1;
+        const pnl = els.direction === 'BUY'
+          ? (price - els.entry) * qty
+          : (els.entry - price) * qty;
+        els.pnlEl.textContent = '₹' + Math.round(pnl).toLocaleString('en-IN');
+        els.pnlEl.style.color = pnl >= 0 ? '#00e676' : '#ff5252';
+      }
+
+      // Update topbar ticker
+      if (els.tickerEl) {
+        els.tickerEl.textContent = '₹' + price.toFixed(2);
+        if (dir) this._flash(els.tickerEl, dir);
+      }
+    }
+  },
+
+  _flash(el, dir) {
+    const old = this.flashTimer.get(el);
+    if (old) clearTimeout(old);
+    el.style.color = dir === 'up' ? '#00e676' : '#ff5252';
+    const t = setTimeout(() => {
+      el.style.color = '';
+    }, 600);
+    this.flashTimer.set(el, t);
+  },
+
+  _setBadge(status) {
+    const badge = document.getElementById('wsBadge');
+    if (!badge) return;
+    const colors = { connected:'#00e676', reconnecting:'#ffd600', disconnected:'#ff5252' };
+    const labels = { connected:'● LIVE', reconnecting:'◉ RECONNECTING', disconnected:'○ OFFLINE' };
+    badge.textContent = labels[status] || status;
+    badge.style.color = colors[status] || '#8090a8';
+  }
+};
+
+// Token map for NSE symbols
+const TOKEN_MAP = {
+  'NIFTY':     '99926000',
+  'BANKNIFTY': '99926009',
+  'FINNIFTY':  '99926037',
+};
+
+// Auto-register topbar tickers when page loads
+function registerTopbarTickers() {
+  document.querySelectorAll('.ticker[data-symbol]').forEach(el => {
+    const sym   = el.getAttribute('data-symbol');
+    const token = TOKEN_MAP[sym];
+    if (!token) return;
+    const ltpSpan = el.querySelector('span') || el;
+    TickEngine.register(token, { tickerEl: ltpSpan });
+  });
+}
+
+// Register open positions for live P&L
+function registerPositions(trades) {
+  // Unregister all first
+  Object.values(TOKEN_MAP).forEach(t => TickEngine.unregister(t));
+
+  trades.forEach(t => {
+    const token = TOKEN_MAP[t.symbol] || t.token;
+    if (!token) return;
+    const row = document.getElementById('pos-row-' + t.id);
+    if (!row) return;
+    const ltpEl = row.querySelector('.pos-ltp');
+    const pnlEl = row.querySelector('.pos-pnl');
+    TickEngine.register(token, {
+      ltpEl, pnlEl,
+      entry: t.entry_price,
+      qty: t.qty,
+      direction: t.direction,
+    });
+  });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  TickEngine.init();
+  setTimeout(registerTopbarTickers, 500);
+});
+</script>
+<!-- ═══════════════════════════════════════════════════════ -->
+
 </body>
 </html>

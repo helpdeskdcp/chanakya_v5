@@ -2,6 +2,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import os, sys, logging
 sys.path.insert(0,'/root/chanakya_v5')
 from flask import Flask, jsonify, request, render_template, session
+from flask_socketio import SocketIO, emit as sio_emit
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,6 +13,7 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="frontend/templates")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading", logger=False, engineio_logger=False)
 app.config["APPLICATION_ROOT"] = "/v5"
 app.secret_key = os.getenv("SECRET_KEY","chanakya_v5_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -1857,6 +1859,63 @@ def save_global_broker():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+# ══ Socket.IO — Real-time LTP push ═══════════════════════
+from flask_socketio import SocketIO
+@socketio.on("connect")
+def on_client_connect():
+    logger.info("SocketIO client connected")
+
+@socketio.on("disconnect")
+def on_client_disconnect():
+    logger.info("SocketIO client disconnected")
+
+@socketio.on("subscribe")
+def on_subscribe(data):
+    """Client subscribes to specific tokens"""
+    pass  # Broadcast mode — all clients get all ticks
+
+# ══ LTP Broadcaster thread ════════════════════════════════
+import threading as _threading
+
+def _ltp_broadcast_loop():
+    """Every 250ms broadcast latest LTP to all SocketIO clients"""
+    import time as _t
+    _prev = {}
+    while True:
+        _t.sleep(0.25)  # 4 ticks/sec max
+        try:
+            from broker.websocket_mgr import get_all_ltp
+            from engine.scanner import WATCHLIST
+            batch = {}
+            for sym_info in WATCHLIST:
+                sym   = sym_info["symbol"]
+                token = str(sym_info["token"])
+                exch  = sym_info["exchange"]
+                cached = get_all_ltp().get(token)
+                if isinstance(cached, dict):
+                    price = cached.get("price")
+                    ts    = cached.get("ts", 0)
+                    import time as _t2
+                    if price and _t2.time()-ts < 30:  # fresh only
+                        prev_price = _prev.get(token, 0)
+                        if price != prev_price:  # changed only
+                            batch[token] = {
+                                "symbol": sym,
+                                "exchange": exch,
+                                "price": round(float(price),2),
+                                "prev":  round(float(prev_price),2) if prev_price else round(float(price),2),
+                                "ts": round(_t2.time()*1000),
+                            }
+                            _prev[token] = price
+            if batch:
+                socketio.emit("ltp_update", batch)
+        except Exception as _e:
+            pass  # Never crash broadcaster
+
+_broadcaster = _threading.Thread(target=_ltp_broadcast_loop, daemon=True, name="LTPBroadcast")
+_broadcaster.start()
+
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -1881,7 +1940,8 @@ if __name__ == "__main__":
     from api.routes.pivot import pivot_bp
     app.register_blueprint(pivot_bp, url_prefix="/api/pivot")
 
-    app.run(host="0.0.0.0", port=PORT, debug=False)
+    # SocketIO run (backward compatible with Flask)
+    socketio.run(app, host="0.0.0.0", port=PORT, debug=False, allow_unsafe_werkzeug=True)
 
 
 

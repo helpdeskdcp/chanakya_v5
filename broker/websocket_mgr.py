@@ -62,9 +62,15 @@ def get_ltp(token):
         return entry
 
 def get_all_ltp():
-    """सगळे cached LTP return करतो"""
+    """सगळे cached LTP return करतो — {token: {price,ts}} format"""
     with _ltp_lock:
-        return dict(_ltp_cache)
+        result = {}
+        for token, entry in _ltp_cache.items():
+            if isinstance(entry, dict):
+                result[token] = entry
+            elif isinstance(entry, (int, float)):
+                result[token] = {"price": float(entry), "ts": 0}
+        return result
 
 def set_ltp(token, price):
     """Manual LTP set (REST API fallback साठी)"""
