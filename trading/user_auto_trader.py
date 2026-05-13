@@ -81,6 +81,22 @@ def place_user_trade(username, sig, capital):
         logger.error("place_user_trade %s: %s", username, e)
         return None, str(e)
 
+def auto_on_all_users():
+    """Daily 9:15 AM ला सर्व active users auto ON"""
+    try:
+        conn = sqlite3.connect(DB)
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn.execute("""UPDATE user_trading_state
+            SET auto_trade=1, trades_today=0, pnl_today=0, updated_at=?
+            WHERE username IN (
+                SELECT username FROM users WHERE is_active=1
+            )""", (now,))
+        n = conn.total_changes; conn.commit(); conn.close()
+        logger.info("auto-ON ALL: %d users", n)
+        return n
+    except Exception as e:
+        logger.error("auto_on_all_users: %s", e); return 0
+
 def auto_off_1140():
     """11:40 AM ला non-admin users चे auto trade OFF"""
     try:
@@ -134,10 +150,14 @@ def run_1140_scheduler():
             import pytz
             now = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
             # 11:40 AM check
-            if now.hour == 11 and now.minute == 40:
+            if now.hour == 9 and now.minute == 15:
+                n = auto_on_all_users()
+                logger.info("9:15 AM: auto-ON %d users", n)
+                time.sleep(61)
+            elif now.hour == 15 and now.minute == 15:
                 n = auto_off_1140()
-                logger.info("11:40 AM: auto-OFF %d users", n)
-                time.sleep(61)  # 1 min wait (next check 11:41)
+                logger.info("15:15 PM: auto-OFF %d users", n)
+                time.sleep(61)
             time.sleep(30)
         except Exception as e:
             logger.error("1140_scheduler: %s", e)
