@@ -1122,6 +1122,21 @@ async function doLogin() {
     document.getElementById("loginErr").textContent = "Fetch error: " + ex.message;
     return;
   }
+  try {
+    var resp = await fetch("/v5/api/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({username: document.getElementById("loginUser").value.trim(),
+                            password: document.getElementById("loginPass").value.trim()})
+    });
+    document.getElementById("loginErr").textContent = "HTTP: " + resp.status;
+    var txt = await resp.text();
+    document.getElementById("loginErr").textContent += " | " + txt.substr(0,50);
+    return;
+  } catch(ex) {
+    document.getElementById("loginErr").textContent = "Fetch error: " + ex.message;
+    return;
+  }
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){document.getElementById("loginErr").textContent="Enter credentials";return;}
