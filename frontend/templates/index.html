@@ -2731,7 +2731,11 @@ async function createUser() {
 })();
 </script>
 <script>
+// Unregister old service workers
 if('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); console.log('SW unregistered'); });
+  });
   window.addEventListener('load', function() {
     console.log('SW disabled');
   });
