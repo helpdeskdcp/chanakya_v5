@@ -842,7 +842,7 @@ async function api(path, method, body) {
 }
 
 // ══ AUTH ════════════════════════════════════════════════════════════
-async function doLogin() {
+async function doLogin() { alert("doLogin called!");
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){setLoginErr("Enter credentials");return;}
