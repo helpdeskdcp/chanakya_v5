@@ -271,7 +271,7 @@ def calculate_position_size(symbol, exchange, entry, sl, capital=None):
         logger.error("position_size: %s", e)
         return 1, {"error": str(e)}
 
-def get_daily_pnl():
+def get_daily_pnl(username=None):
     """आजचा realized PnL"""
     try:
         import sqlite3, datetime
@@ -287,7 +287,7 @@ def get_daily_pnl():
                     ELSE 0 END), 2) total_pnl,
                 SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END) open
             FROM trades
-            WHERE created_at >= '{today} 00:00:00'
+            WHERE created_at >= '{today} 00:00:00' {user_filter}
         """).fetchone()
         conn.close()
         return {
