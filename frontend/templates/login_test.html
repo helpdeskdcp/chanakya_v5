@@ -1,0 +1,37 @@
+<html>
+<head><meta charset="UTF-8"><title>Login Test</title></head>
+<body style="background:#0a0f1a;color:white;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;font-family:sans-serif">
+<div style="background:#1a2535;padding:40px;border-radius:12px;width:320px;text-align:center">
+  <h2 style="color:#d4af37">⚡ Chanakya AI</h2>
+  <input id="u" placeholder="Username" style="width:100%;padding:12px;margin:8px 0;background:#0a0f1a;border:1px solid #333;color:white;border-radius:8px;box-sizing:border-box" value="avinash"><br>
+  <input id="p" type="password" placeholder="Password" style="width:100%;padding:12px;margin:8px 0;background:#0a0f1a;border:1px solid #333;color:white;border-radius:8px;box-sizing:border-box" value="Chanakya@2026"><br>
+  <button onclick="login()" style="width:100%;padding:14px;background:#d4af37;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px">Login →</button>
+  <div id="msg" style="margin-top:12px;font-size:13px"></div>
+</div>
+<script>
+async function login() {
+  document.getElementById('msg').textContent = 'Logging in...';
+  try {
+    var r = await fetch('/v5/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username:document.getElementById('u').value, password:document.getElementById('p').value})
+    });
+    var d = await r.json();
+    if(d.success) {
+      localStorage.setItem('ch_token', d.token);
+      document.getElementById('msg').style.color='#00e676';
+      document.getElementById('msg').textContent = '✅ Login OK! Token: ' + d.token.substr(0,20)+'...';
+      setTimeout(function(){ window.location.href='/v5'; }, 1500);
+    } else {
+      document.getElementById('msg').style.color='#ff5252';
+      document.getElementById('msg').textContent = '❌ ' + (d.error||'Failed');
+    }
+  } catch(e) {
+    document.getElementById('msg').style.color='#ff5252';
+    document.getElementById('msg').textContent = '❌ Error: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
