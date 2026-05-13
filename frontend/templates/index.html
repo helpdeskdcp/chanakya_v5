@@ -847,7 +847,7 @@ async function doLogin() {
   var p = document.getElementById("loginPass").value.trim();
   if(!u||!p){setLoginErr("Enter credentials");return;}
   setLoginErr("");
-  var d = await api("/login","POST",{username:u,password:p});
+  document.getElementById("loginErr").textContent="Connecting..."; var d = await api("/login","POST",{username:u,password:p}); document.getElementById("loginErr").textContent="Got:"+JSON.stringify(d).substr(0,50);
   if(d && d.success) {
     TOKEN = d.token;
     USER_ROLE = d.role;
