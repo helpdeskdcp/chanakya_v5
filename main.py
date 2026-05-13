@@ -1603,7 +1603,16 @@ def signals_equity():
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_EQUITY"})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
-# Auto-start WebSocket for live LTP
+# Auto-start WebSocket for live LTP (24/7)
+try:
+    from broker.websocket_mgr import start as ws_start, status as ws_status
+    import threading
+    _ws_thread = threading.Thread(target=ws_start, daemon=True)
+    _ws_thread.start()
+    import time; time.sleep(3)
+    logger.info("WS Status: %s", ws_status()["connected"])
+except Exception as e:
+    logger.error("WS start failed: %s", e)
 try:
     from broker.websocket_mgr import start as ws_start, status as ws_status
     import threading
