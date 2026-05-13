@@ -1,367 +1,306 @@
-# broker/websocket_mgr.py
-# Chanakya AI v5.0 — WebSocket Manager
-# NSE + MCX real-time LTP via SmartWebSocketV2
-# Auto-reconnect + Auto-resubscribe
+"""
+Chanakya SmartWebSocket Manager™ — 24/7 Live LTP
+Features:
+- Auto-reconnect on disconnect
+- JWT auto-refresh (expires daily)
+- Exponential backoff retry
+- All NSE + MCX symbols
+- Thread-safe LTP cache
+- Health monitor
+"""
+import threading, time, logging, os, json
+from datetime import datetime, timedelta
+import pytz
 
-import threading
-import time
-import logging
-from datetime import datetime
+logger = logging.getLogger("ws_mgr")
+IST = pytz.timezone("Asia/Kolkata")
 
-logger = logging.getLogger("websocket_mgr")
+# ── LTP Cache ─────────────────────────────────────────────────────
+_ltp = {}          # {token: price}
+_ltp_lock = threading.Lock()
+_last_tick = {}    # {token: timestamp}
 
-# ── LTP Cache (shared with rest of system) ─────────────────────────
-_ltp_cache  = {}   # {"TOKEN": {"price": float, "ts": float}}
-_ltp_lock   = threading.Lock()
-LTP_STALE_SEC = 30  # 30s पेक्षा जुना = stale
+# ── State ─────────────────────────────────────────────────────────
+_ws          = None
+_connected   = False
+_running     = False
+_jwt         = None
+_feed_token  = None
+_jwt_expiry  = None
+_retry_count = 0
+_lock        = threading.Lock()
 
-# ── Subscription Registry ──────────────────────────────────────────
-_subscriptions = {}  # {exchange_type: [tokens]}
-_sub_lock       = threading.RLock()
-
-# ── WebSocket State ────────────────────────────────────────────────
-_ws         = None
-_ws_lock    = threading.Lock()
-_connected  = False
-_running    = False
-_thread     = None
-
-# Angel One Exchange Type constants
-NSE_CM = 1   # NSE Cash/Index
-NSE_FO = 2   # NSE F&O
-MCX_FO = 5   # MCX F&O
-
-# WATCHLIST tokens — NSE F&O + MCX
-# Format: {exchange_type: [token_strings]}
-DEFAULT_TOKENS = {
-    NSE_FO: [
+# ── Token Registry ────────────────────────────────────────────────
+# exchange_type: 1=NSE_CM, 2=NSE_FO, 5=MCX_FO
+WATCH_TOKENS = {
+    1: [   # NSE Cash/Index
         "99926000",   # NIFTY 50
         "99926009",   # BANKNIFTY
         "99926074",   # FINNIFTY
+        "99926037",   # MIDCPNIFTY
     ],
-    MCX_FO: [
-        "234230",     # CRUDEOIL
-        "234235",     # NATURALGAS
-    ],
+    5: [   # MCX F&O
+        "488290",     # CRUDEOIL
+        "488505",     # NATURALGAS
+        "67694",      # GOLD
+        "67695",      # SILVER
+    ]
 }
 
+# Token → Symbol name map
+TOKEN_MAP = {
+    "99926000": "NIFTY",
+    "99926009": "BANKNIFTY",
+    "99926074": "FINNIFTY",
+    "99926037": "MIDCPNIFTY",
+    "488290":   "CRUDEOIL",
+    "488505":   "NATURALGAS",
+    "67694":    "GOLD",
+    "67695":    "SILVER",
+}
 
 # ── LTP Access ────────────────────────────────────────────────────
 def get_ltp(token):
-    """Token चा latest LTP return करतो — stale check included"""
-    import time as _t
     with _ltp_lock:
-        entry = _ltp_cache.get(str(token))
-        if not entry: return None
-        # Dict format: {"price": float, "ts": float}
-        if isinstance(entry, dict):
-            if _t.time() - entry.get("ts", 0) > LTP_STALE_SEC:
-                return None  # Stale → REST fallback
-            return entry.get("price")
-        # Old format fallback (float)
-        return entry
+        return _ltp.get(str(token))
 
 def get_all_ltp():
-    """सगळे cached LTP return करतो — {token: {price,ts}} format"""
     with _ltp_lock:
-        result = {}
-        for token, entry in _ltp_cache.items():
-            if isinstance(entry, dict):
-                result[token] = entry
-            elif isinstance(entry, (int, float)):
-                result[token] = {"price": float(entry), "ts": 0}
-        return result
+        return dict(_ltp)
+
+def get_ltp_by_symbol(symbol):
+    for tok, sym in TOKEN_MAP.items():
+        if sym == symbol.upper():
+            return get_ltp(tok)
+    return None
 
 def set_ltp(token, price):
-    """Manual LTP set (REST API fallback साठी)"""
     with _ltp_lock:
-        _ltp_cache[str(token)] = price
+        _ltp[str(token)] = float(price)
+        _last_tick[str(token)] = time.time()
 
+def is_connected():
+    return _connected
+
+def status():
+    return {
+        "connected": _connected,
+        "running": _running,
+        "ltp_count": len(_ltp),
+        "symbols": {TOKEN_MAP.get(k, k): v for k,v in _ltp.items()},
+        "retry_count": _retry_count,
+        "jwt_valid": _jwt is not None,
+        "jwt_expiry": str(_jwt_expiry) if _jwt_expiry else None,
+    }
+
+# ── JWT Management ────────────────────────────────────────────────
+def _get_credentials():
+    """Load fresh credentials from .env"""
+    from dotenv import load_dotenv
+    load_dotenv("/root/chanakya_v5/.env", override=True)
+    return {
+        "api_key":    os.getenv("ANGEL_API_KEY"),
+        "client_id":  os.getenv("ANGEL_CLIENT_ID"),
+        "password":   os.getenv("ANGEL_PASSWORD"),
+        "totp_key":   os.getenv("ANGEL_TOTP_KEY"),
+        "jwt":        os.getenv("ANGEL_JWT"),
+        "feed_token": os.getenv("ANGEL_FEED_TOKEN"),
+    }
+
+def _refresh_jwt():
+    """Refresh JWT token — called daily or on 401"""
+    global _jwt, _feed_token, _jwt_expiry
+    try:
+        import pyotp
+        from SmartApi import SmartConnect
+        creds = _get_credentials()
+        obj = SmartConnect(api_key=creds["api_key"])
+        totp = pyotp.TOTP(creds["totp_key"]).now()
+        data = obj.generateSession(creds["client_id"], creds["password"], totp)
+        if data.get("status"):
+            _jwt = data["data"]["jwtToken"]
+            _feed_token = data["data"]["feedToken"]
+            _jwt_expiry = datetime.now(IST) + timedelta(hours=22)
+            # Save to .env
+            _save_env("ANGEL_JWT", _jwt)
+            _save_env("ANGEL_FEED_TOKEN", _feed_token)
+            logger.info("✅ JWT refreshed, valid till %s", _jwt_expiry)
+            return True
+        else:
+            logger.error("JWT refresh failed: %s", data)
+            return False
+    except Exception as e:
+        logger.error("JWT refresh error: %s", e)
+        return False
+
+def _save_env(key, value):
+    """Save key=value to .env file"""
+    import re
+    env_path = "/root/chanakya_v5/.env"
+    with open(env_path, "r") as f: content = f.read()
+    if key + "=" in content:
+        content = re.sub(key + r"=.*", key + "=" + value, content)
+    else:
+        content += f"\n{key}={value}"
+    with open(env_path, "w") as f: f.write(content)
+
+def _is_jwt_valid():
+    """Check if JWT is still valid"""
+    if not _jwt or not _jwt_expiry:
+        return False
+    return datetime.now(IST) < _jwt_expiry
+
+def _is_market_hours():
+    """Check if any market is open"""
+    now = datetime.now(IST)
+    h, m = now.hour, now.minute
+    # NSE: 9:15-15:30
+    nse = (h == 9 and m >= 15) or (10 <= h <= 14) or (h == 15 and m <= 30)
+    # MCX: 9:00-23:30
+    mcx = (h >= 9) and (h < 23 or (h == 23 and m <= 30))
+    return nse or mcx
 
 # ── WebSocket Callbacks ───────────────────────────────────────────
 def _on_data(wsapp, data):
-    """Real-time tick data येतो इथे"""
+    """Handle incoming tick data"""
+    global _connected
     try:
+        if isinstance(data, str):
+            data = json.loads(data)
         token = str(data.get("token", ""))
-        ltp   = data.get("last_traded_price", 0)
+        ltp = data.get("last_traded_price", 0)
         if token and ltp:
-            # Angel One LTP is in paise — convert to rupees
-            price = ltp / 100.0
-            import time as _t2
-            with _ltp_lock:
-                _ltp_cache[token] = price
-
-            # Event bus ला publish करा
-            try:
-                from core.event_bus import publish
-                publish("ltp_update", {"token": token, "ltp": price})
-            except Exception:
-                pass
-
+            # Angel One sends LTP in paise for some, rupees for others
+            price = float(ltp)
+            if token in ["99926000","99926009","99926074","99926037"]:
+                price = price / 100  # NSE Index in paise
+            set_ltp(token, price)
     except Exception as e:
-        logger.debug(f"on_data error: {e}")
-
+        logger.debug("Data parse error: %s | data: %s", e, str(data)[:100])
 
 def _on_open(wsapp):
-    global _connected
+    global _connected, _retry_count
     _connected = True
+    _retry_count = 0
     logger.info("✅ WebSocket connected!")
-
-    # सगळे subscriptions restore करा
-    _resubscribe_all()
-
+    _subscribe_all(wsapp)
 
 def _on_error(wsapp, error):
     global _connected
     _connected = False
-    logger.error(f"🔴 WebSocket error: {error}")
-
+    logger.warning("⚠️ WebSocket error: %s", error)
 
 def _on_close(wsapp, *args):
     global _connected
     _connected = False
-    close_status_code = args[0] if len(args)>0 else None
-    close_msg = args[1] if len(args)>1 else None
-    logger.warning(f"🟡 WebSocket closed: {close_status_code} {close_msg}")
+    logger.warning("🔴 WebSocket closed")
 
-    # Auto-reconnect — thread मध्ये करा (deadlock avoid)
-    if _running:
-        logger.info("🔄 WebSocket auto-reconnect scheduled...")
-        t = threading.Thread(target=_reconnect, daemon=True, name="WSReconnect")
-        t.start()
-
-
-# ── Subscribe / Unsubscribe ───────────────────────────────────────
-def _resubscribe_all():
-    """Reconnect नंतर सगळे tokens परत subscribe करा"""
-    global _ws
-    with _sub_lock:
-        if not _subscriptions:
-            # Default tokens subscribe करा
-            _subscriptions.update(DEFAULT_TOKENS)
-
-        token_list = [
-            {"exchangeType": exch, "tokens": tokens}
-            for exch, tokens in _subscriptions.items()
-            if tokens
-        ]
-
-    if not token_list:
-        return
-
+def _subscribe_all(wsapp):
+    """Subscribe to all tokens"""
     try:
-        with _ws_lock:
-            if _ws:
-                _ws.subscribe(
-                    correlation_id = "chanakya01",
-                    mode           = 1,  # LTP mode
-                    token_list     = token_list,
-                )
-                logger.info(f"✅ Resubscribed {sum(len(v) for v in _subscriptions.values())} tokens")
+        for exch_type, tokens in WATCH_TOKENS.items():
+            token_list = [{"exchangeType": exch_type, "tokens": tokens}]
+            wsapp.subscribe("chanakya_v5", 1, token_list)
+            logger.info("Subscribed %d tokens on exchange %d", len(tokens), exch_type)
     except Exception as e:
-        logger.error(f"Resubscribe error: {e}")
+        logger.error("Subscribe error: %s", e)
 
-
-def subscribe_tokens(exchange_type, tokens):
-    """
-    नवीन tokens subscribe करा.
-    exchange_type: NSE_CM=1, NSE_FO=2, MCX_FO=5
-    tokens: list of string token IDs
-    """
-    with _sub_lock:
-        if exchange_type not in _subscriptions:
-            _subscriptions[exchange_type] = []
-        for t in tokens:
-            if t not in _subscriptions[exchange_type]:
-                _subscriptions[exchange_type].append(t)
-
-    if not _connected:
-        return
-
+# ── Connection Manager ────────────────────────────────────────────
+def _connect():
+    """Create and connect WebSocket"""
+    global _ws, _connected, _retry_count
     try:
-        with _ws_lock:
-            if _ws:
-                _ws.subscribe(
-                    correlation_id = "chanakya01",
-                    mode           = 1,
-                    token_list     = [{"exchangeType": exchange_type, "tokens": tokens}],
-                )
-                logger.info(f"✅ Subscribed {tokens} on exchange {exchange_type}")
-    except Exception as e:
-        logger.error(f"Subscribe error: {e}")
+        if not _is_jwt_valid():
+            logger.info("JWT expired — refreshing...")
+            if not _refresh_jwt():
+                return False
 
-
-# ── Connect / Reconnect ───────────────────────────────────────────
-def _create_ws():
-    """SmartWebSocketV2 instance तयार करा"""
-    try:
+        creds = _get_credentials()
         from SmartApi.smartWebSocketV2 import SmartWebSocketV2
-        from broker.auth_manager import get_auth
 
-        auth   = get_auth()
-        status = auth.status()
-
-        if not status.get("connected"):
-            logger.error("Auth not connected — cannot create WebSocket")
-            return None
-
-        api    = auth.get_api()
-
-        # feed_token — auth status मधून fetch करा
-        feed_token = ""
-        try:
-            feed_token = status.get("feed_token", "") or getattr(api, "feed_token", "") or ""
-        except Exception:
-            pass
-
-        ws = SmartWebSocketV2(
-            auth_token        = api.access_token,
-            api_key           = api.api_key,
-            client_code       = status.get("client_id", ""),
-            feed_token        = feed_token,
-            max_retry_attempt = 3,
+        _ws = SmartWebSocketV2(
+            auth_token=_jwt or creds["jwt"],
+            api_key=creds["api_key"],
+            client_code=creds["client_id"],
+            feed_token=_feed_token or creds["feed_token"],
         )
-
-        # Callbacks bind करा
-        ws.on_open  = _on_open
-        ws.on_data  = _on_data
-        ws.on_error = _on_error
-        ws.on_close = _on_close
-
-        return ws
+        _ws.on_open = _on_open
+        _ws.on_data = _on_data
+        _ws.on_error = _on_error
+        _ws.on_close = _on_close
+        _ws.connect()
+        return True
     except Exception as e:
-        logger.error(f"WebSocket create error: {e}")
-        return None
-
-
-def _reconnect():
-    """WebSocket reconnect करा"""
-    global _ws, _connected
-
-    if not _running:
-        return
-
-    logger.info("🔄 Reconnecting WebSocket...")
-    with _ws_lock:
-        try:
-            if _ws:
-                try:
-                    _ws.close_connection()
-                except Exception:
-                    pass
-            _ws = None
-            _connected = False
-        except Exception:
-            pass
-
-    time.sleep(2)
-    # Thread मध्ये start करा — blocking call आहे
-    t = threading.Thread(target=_start_ws, daemon=True, name="WSRestart")
-    t.start()
-
-
-def _start_ws():
-    """WebSocket start करा background thread मध्ये — Loop based (no recursion)"""
-    global _ws
-
-    retry = 0
-    while _running:
-        ws = _create_ws()
-        if not ws:
-            retry += 1
-            wait = min(30 * retry, 120)  # max 2 min wait
-            logger.error(f"❌ WebSocket creation failed — retry {retry} in {wait}s")
-            time.sleep(wait)
-            continue
-
-        with _ws_lock:
-            _ws = ws
-
-        try:
-            logger.info("🔌 Starting WebSocket connection...")
-            _ws.connect()  # Blocking — runs until disconnect
-        except Exception as e:
-            logger.error(f"WebSocket connect error: {e}")
-
-        if _running:
-            logger.info("🔄 WebSocket disconnected — reconnecting in 5s...")
-            time.sleep(5)
-        retry = 0  # Reset retry count on successful connect
-
-
-# ── Heartbeat Monitor ─────────────────────────────────────────────
-def _is_market_hours():
-    """Market hours आहे का — Weekend skip"""
-    from datetime import datetime
-    import pytz
-    now = datetime.now(pytz.timezone("Asia/Kolkata"))
-    if now.weekday() >= 5:  # Sat=5, Sun=6
+        logger.error("Connect error: %s", e)
+        _connected = False
         return False
-    return 9 <= now.hour < 24
 
-def _heartbeat_monitor():
-    """दर 30 sec WebSocket alive आहे का check करतो"""
+# ── Main Loop — 24/7 ─────────────────────────────────────────────
+def _run_forever():
+    """Main loop — reconnect on any disconnect"""
+    global _running, _retry_count
+    _running = True
+    logger.info("🚀 WebSocket manager started — 24/7 mode")
+
     while _running:
-        time.sleep(30)
         try:
-            if not _connected and _running:
-                if _is_market_hours():
-                    logger.warning("💔 Heartbeat: WebSocket dead — reconnecting...")
-                    _reconnect()
-                else:
-                    logger.debug("💤 Market closed — skip reconnect")
-            else:
-                logger.debug(f"💓 Heartbeat OK | LTP cache: {len(_ltp_cache)} tokens")
+            if not _connected:
+                # Exponential backoff: 5s, 10s, 20s, 40s max 120s
+                wait = min(5 * (2 ** min(_retry_count, 4)), 120)
+                if _retry_count > 0:
+                    logger.info("⏳ Reconnecting in %ds (attempt %d)...", wait, _retry_count+1)
+                    time.sleep(wait)
+                _retry_count += 1
+                _connect()
+
+            # Health check every 30s
+            time.sleep(30)
+
+            # JWT refresh 1hr before expiry
+            if _jwt_expiry:
+                remaining = (_jwt_expiry - datetime.now(IST)).total_seconds()
+                if remaining < 3600:
+                    logger.info("JWT expiring soon — refreshing...")
+                    _refresh_jwt()
+
         except Exception as e:
-            logger.debug(f"Heartbeat error: {e}")
+            logger.error("Run loop error: %s", e)
+            time.sleep(10)
 
 # ── Public API ────────────────────────────────────────────────────
 def start():
-    """WebSocket Manager start करा"""
-    global _running, _thread
-
+    """Start WebSocket in background thread"""
+    global _running
     if _running:
-        logger.warning("WebSocket manager already running")
         return
+    # Load initial JWT
+    creds = _get_credentials()
+    global _jwt, _feed_token
+    _jwt = creds.get("jwt")
+    _feed_token = creds.get("feed_token")
+    if _jwt:
+        global _jwt_expiry
+        _jwt_expiry = datetime.now(IST) + timedelta(hours=20)
 
-    _running = True
-    logger.info("🚀 WebSocket Manager starting...")
-
-    # Main WS thread
-    _thread = threading.Thread(target=_start_ws, daemon=True, name="WSManager")
-    _thread.start()
-
-    # Heartbeat thread
-    hb = threading.Thread(target=_heartbeat_monitor, daemon=True, name="WSHeartbeat")
-    hb.start()
-
-    logger.info("✅ WebSocket Manager started (NSE_FO + MCX_FO)")
-
+    t = threading.Thread(target=_run_forever, daemon=True, name="ws-manager")
+    t.start()
+    logger.info("WebSocket manager thread started")
 
 def stop():
-    """WebSocket Manager stop करा"""
     global _running, _connected, _ws
-
-    _running   = False
+    _running = False
     _connected = False
+    if _ws:
+        try: _ws.close_connection()
+        except: pass
 
-    with _ws_lock:
-        if _ws:
-            try:
-                _ws.close_connection()
-            except Exception:
-                pass
-            _ws = None
+def add_tokens(exchange_type, tokens):
+    """Add new tokens to watch list"""
+    if exchange_type not in WATCH_TOKENS:
+        WATCH_TOKENS[exchange_type] = []
+    for t in tokens:
+        if t not in WATCH_TOKENS[exchange_type]:
+            WATCH_TOKENS[exchange_type].append(t)
+    if _connected and _ws:
+        _subscribe_all(_ws)
 
-    logger.info("🛑 WebSocket Manager stopped")
-
-
-def status():
-    """Current status return करा"""
-    return {
-        "connected":     _connected,
-        "running":       _running,
-        "ltp_count":     len(_ltp_cache),
-        "subscriptions": {k: len(v) for k, v in _subscriptions.items()},
-        "cached_tokens": list(_ltp_cache.keys()),
-    }
