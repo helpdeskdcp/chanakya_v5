@@ -128,6 +128,7 @@ def ws_status():
 
 # ── Auth routes ────────────────────────────────────────
 @app.route("/v5/login")
+@app.route("/v5/logintest")
 @app.route("/login")
 @app.route("/")
 def login_page():
@@ -1968,49 +1969,6 @@ def ltp_live():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
-@app.route("/api/stream/ltp")
-@require_auth
-def stream_ltp():
-    """Server-Sent Events — live LTP stream"""
-    from flask import Response, stream_with_context
-    import json, time
-
-    def generate():
-        # Tokens to stream
-        TOKENS = {
-            "NIFTY":     "99926000",
-            "BANKNIFTY": "99926009",
-            "FINNIFTY":  "99926074",
-            "CRUDEOIL":  "488290",
-            "NATURALGAS":"488505",
-        }
-        while True:
-            try:
-                from broker.websocket_mgr import get_ltp as ws_ltp, _connected
-                from broker.global_broker import get_broker
-                data = {}
-                for sym, tok in TOKENS.items():
-                    # Try WS first, then REST
-                    ltp = ws_ltp(tok) if _connected else None
-                    if not ltp:
-                        try:
-                            exch = "MCX" if sym in ["CRUDEOIL","NATURALGAS"] else "NSE"
-                            ltp = get_broker().get_ltp(exch, sym, tok)
-                        except: pass
-                    if ltp: data[sym] = ltp
-                yield f"data: {json.dumps(data)}\n\n"
-            except Exception as e:
-                yield f"data: {{}}\n\n"
-            time.sleep(2)  # Update every 2 seconds
-
-    return Response(
-        stream_with_context(generate()),
-        mimetype="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no"
-        }
-    )
 @app.route("/api/stream/ltp")
 @require_auth
 def stream_ltp():
