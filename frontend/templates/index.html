@@ -811,7 +811,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 <div class="toast" id="toast"></div>
 
 <script>
-// ══ GLOBALS ════════════════════════════════════════════════════════
+// == GLOBALS ========================================================
 var TOKEN = localStorage.getItem("ch_token") || "";
 var USER_ROLE = "";
 var USER_NAME = "";
@@ -820,7 +820,7 @@ var _sigTab = "nse";
 var _calcTab = "risk";
 var _adminTab = "users";
 
-// ══ API ════════════════════════════════════════════════════════════
+// == API ============================================================
 async function api(path, method, body) {
   try {
     var opts = {
@@ -841,7 +841,7 @@ async function api(path, method, body) {
   }
 }
 
-// ══ AUTH ════════════════════════════════════════════════════════════
+// == AUTH ============================================================
 async function doLogin() { alert("doLogin called!"); alert("doLogin called!");
   var u = document.getElementById("loginUser").value.trim();
   var p = document.getElementById("loginPass").value.trim();
@@ -875,7 +875,7 @@ function showLogin() {
   document.getElementById("mainApp").style.display = "none";
 }
 
-// ══ APP START ════════════════════════════════════════════════════════
+// == APP START ========================================================
 function startApp(userData) {
   document.getElementById("loginPage").style.display = "none";
   document.getElementById("mainApp").style.display = "flex";
@@ -906,7 +906,7 @@ function startApp(userData) {
   setInterval(loadPositions, 15000);
 }
 
-// ══ AUTO LOGIN ════════════════════════════════════════════════════════
+// == AUTO LOGIN ========================================================
 (async function(){
   if(TOKEN) {
     var d = await api("/status");
@@ -921,7 +921,7 @@ function startApp(userData) {
   }
 })();
 
-// ══ PAGE ROUTING ════════════════════════════════════════════════════════
+// == PAGE ROUTING ========================================================
 function showPage(id) {
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn,.bn-item").forEach(b=>b.classList.remove("active"));
@@ -941,7 +941,7 @@ function showPage(id) {
   if(id==="admin") loadAdmin();
 }
 
-// ══ LIVE LTP ════════════════════════════════════════════════════════
+// == LIVE LTP ========================================================
 async function loadLtp() {
   var d = await api("/ltp/live");
   if(!d || !d.success) return;
@@ -981,7 +981,7 @@ function formatPrice(p) {
   return p.toFixed(2);
 }
 
-// ══ DASHBOARD ════════════════════════════════════════════════════════
+// == DASHBOARD ========================================================
 async function loadDashboard() {
   var d = await api("/pnl");
   if(!d || !d.success) return;
@@ -1001,7 +1001,7 @@ async function loadDashboard() {
   }
 }
 
-// ══ SIGNALS ════════════════════════════════════════════════════════
+// == SIGNALS ========================================================
 var _sigCache = {};
 
 async function loadSignals() {
@@ -1087,7 +1087,7 @@ function renderSigCard(s) {
   "</div>";
 }
 
-// ══ BUY ════════════════════════════════════════════════════════
+// == BUY ========================================================
 async function buyOpt(sig, paper) {
   var optEntry = sig.opt_entry || sig.opt_ltp || 0;
   var lotSize = sig.opt_lot || sig.qty || 1;
@@ -1120,7 +1120,7 @@ Confirm?")) return;
   }
 }
 
-// ══ POSITIONS ════════════════════════════════════════════════════════
+// == POSITIONS ========================================================
 async function loadPositions() {
   var d = await api("/scalping/monitor");
   var list = document.getElementById("posList");
@@ -1160,7 +1160,7 @@ async function exitTrade(tid) {
   loadPositions();
 }
 
-// ══ OPTIONS CHAIN ════════════════════════════════════════════════════════
+// == OPTIONS CHAIN ========================================================
 async function loadOptionsChain() {
   var sym = document.getElementById("ocSymbol").value;
   var content = document.getElementById("ocContent");
@@ -1212,7 +1212,7 @@ async function loadOptionsChain() {
 function fmtOI(v) { if(!v) return "--"; return v>=100000?(v/100000).toFixed(1)+"L":(v/1000).toFixed(0)+"K"; }
 function fmtChg(v) { if(!v) return "--"; return (v>0?"+":"")+v; }
 
-// ══ CALCULATOR ════════════════════════════════════════════════════════
+// == CALCULATOR ========================================================
 function switchCalcTab(el, tab) {
   _calcTab = tab;
   document.querySelectorAll(".tab-bar .tab").forEach(t=>t.classList.remove("active"));
@@ -1246,7 +1246,7 @@ function calcRisk() {
     "</div>";
 }
 
-// ══ AI CHAT ════════════════════════════════════════════════════════
+// == AI CHAT ========================================================
 async function sendChat() {
   var inp = document.getElementById("chatInp");
   var msg = inp.value.trim();
@@ -1264,7 +1264,7 @@ async function sendChat() {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-// ══ HISTORY ════════════════════════════════════════════════════════
+// == HISTORY ========================================================
 async function loadHistory() {
   var d = await api("/history");
   var list = document.getElementById("historyList");
@@ -1290,7 +1290,7 @@ async function loadHistory() {
     "</tbody></table>";
 }
 
-// ══ NEWS ════════════════════════════════════════════════════════
+// == NEWS ========================================================
 async function loadNews() {
   var d = await api("/news/headlines");
   var list = document.getElementById("newsList");
@@ -1312,7 +1312,7 @@ async function loadNews() {
   }).join("");
 }
 
-// ══ ADMIN ════════════════════════════════════════════════════════
+// == ADMIN ========================================================
 function switchAdminTab(el, tab) {
   _adminTab = tab;
   document.querySelectorAll(".tab-bar .tab").forEach(t=>t.classList.remove("active"));
@@ -1410,7 +1410,7 @@ async function viewUser(username) {
   if(d&&d.success) toast("P&L: ₹"+d.pnl+" | WR: "+d.win_rate+"%","#4a9eff");
 }
 
-// ══ TOAST ════════════════════════════════════════════════════════
+// == TOAST ========================================================
 function toast(msg, color) {
   var t = document.getElementById("toast");
   t.textContent = msg;
