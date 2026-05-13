@@ -1073,9 +1073,9 @@ async function api(path, method, body) {
     var opts = {method:method||"GET", headers:{"Content-Type":"application/json","X-Auth-Token":TOKEN}};
     if(body) opts.body = JSON.stringify(body);
     var r = await fetch("/v5/api"+path, opts);
-    if(r.status===401){localStorage.removeItem("ch_token");window.location.href="/v5/login";return;}
+    if(r.status===401){localStorage.removeItem("ch_token");localStorage.removeItem("ch_token"); window.location.href="/v5";return;}
     return await r.json();
-  } catch(e) { return {success:false,error:String(e)}; }
+  } catch(e) { console.error("API error:",e); return {success:false,error:String(e)}; }
 }
 
 
@@ -1121,7 +1121,9 @@ async function doLogin() {
     if(["developer","administrator"].includes(d.role)) document.getElementById("adminNav").style.display="block";
     startApp();
   } else {
-    document.getElementById("loginErr").textContent = d.error||"Login failed";
+    var msg = d ? (d.error||"Login failed") : "Server nahi milala";
+    document.getElementById("loginErr").textContent = msg;
+    console.error("Login failed:", d);
   }
 }
 

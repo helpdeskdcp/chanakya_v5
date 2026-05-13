@@ -127,6 +127,12 @@ def ws_status():
         return jsonify({"success":False,"error":str(e)})
 
 # ── Auth routes ────────────────────────────────────────
+@app.route("/login")
+@app.route("/")
+def login_page():
+    from flask import redirect
+    return redirect("/v5")
+
 @app.route("/api/login", methods=["POST"])
 def login():
     try:
