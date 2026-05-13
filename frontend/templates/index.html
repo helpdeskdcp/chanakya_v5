@@ -1151,6 +1151,21 @@ async function startApp() {
   loadMarket();
   loadPnL();
   setInterval(loadMarket, 5000);
+  // Fast LTP refresh every 2s for positions
+  setInterval(async function(){
+    var d = await api('/ltp/live');
+    var ltp = d.ltp;
+    // Update ticker bar
+    Object.keys(ltp).forEach(function(sym){
+      var el = document.querySelector('[data-sym="'+sym+'"]');
+      if(el) el.textContent = '₹'+ltp[sym].toLocaleString('en-IN',{minimumFractionDigits:2});
+    });
+    // Update positions LTP if open
+      loadPositions();
+    }
+    // Update open trades PnL
+    updateOpenTradesPnL(ltp);
+  }, 2000);
   setInterval(loadPnL, 30000);
   loadAutoTraderStatus();
   setInterval(loadAutoTraderStatus, 15000);
@@ -2299,6 +2314,25 @@ async function runScalpingScan() {
   btn.textContent='⚡ Scan Now'; btn.disabled=false;
 }
 
+function updateOpenTradesPnL(ltp) {
+  // Update open trades PnL in real time
+  var trades = document.querySelectorAll('[data-trade-sym]');
+  trades.forEach(function(el){
+    var sym = el.getAttribute('data-trade-sym');
+    var entry = parseFloat(el.getAttribute('data-entry') || 0);
+    var qty = parseFloat(el.getAttribute('data-qty') || 1);
+    var curLtp = ltp[sym];
+    var pnl = ((curLtp - entry) * qty).toFixed(2);
+    var pnlEl = el.querySelector('.live-pnl');
+    if(pnlEl){
+      pnlEl.textContent = '₹'+pnl;
+      pnlEl.style.color = pnl>=0?'#00e676':'#ff5252';
+    }
+    var ltpEl = el.querySelector('.live-ltp');
+    if(ltpEl) ltpEl.textContent = '₹'+curLtp;
+  });
+}
+
 async function buyOption(sig, paper) {
   var mode = paper ? 'PAPER' : 'LIVE';
   var entryPrice = sig.opt_entry || sig.opt_ltp || 0;
@@ -2346,7 +2380,7 @@ async function loadScalpTrades() {
     return '<div style="background:#0a0f1a;border-left:3px solid '+pnlClr+';padding:8px;margin-bottom:4px;border-radius:4px">'+
       '<div style="display:flex;justify-content:space-between;font-size:10px">'+
         '<b style="color:#e0e8f0">'+t.symbol+'</b>'+
-        '<span style="color:'+pnlClr+';font-weight:700">₹'+(t.pnl||0).toFixed(0)+'</span>'+
+        '<span class="live-pnl" style="color:'+pnlClr+';font-weight:700">₹'+(t.pnl||0).toFixed(0)+'</span>'+
       '</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;font-size:9px;margin-top:4px">'+
         '<div><span style="color:#8090a8">Entry</span><br>₹'+t.entry+'</div>'+
@@ -2356,7 +2390,7 @@ async function loadScalpTrades() {
       '</div>'+
       '<div style="display:flex;justify-content:space-between;margin-top:4px">'+
         '<span style="font-size:9px;color:'+stClr+'">'+t.status+'</span>'+
-        '<span style="font-size:9px;color:#00c8ff">LTP: ₹'+(t.ltp||'--')+'</span>'+
+        '<span class="live-ltp" style="font-size:9px;color:#00c8ff">LTP: ₹'+(t.ltp||'--')+'</span>'+
       '</div>'+
     '</div>';
   }).join('');

@@ -1934,6 +1934,22 @@ def _ltp_broadcast_loop():
 _broadcaster = _threading.Thread(target=_ltp_broadcast_loop, daemon=True, name="LTPBroadcast")
 _broadcaster.start()
 
+
+@app.route("/api/ltp/live")
+@require_auth
+def ltp_live():
+    """Fast LTP for all active symbols — called every 2s from frontend"""
+    try:
+        from data_stream.data_manager import get_data_manager
+        dm = get_data_manager()
+        data = {}
+        for sym in ["NIFTY","BANKNIFTY","FINNIFTY","CRUDEOIL","NATURALGAS","GOLD"]:
+            ltp = dm.get_ltp(sym)
+            if ltp: data[sym] = ltp
+        return jsonify({"success":True,"ltp":data,"ts":__import__("time").time()})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e)})
+
 @app.route("/api/stream/ltp")
 @require_auth
 def stream_ltp():
