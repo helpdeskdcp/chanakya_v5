@@ -1596,6 +1596,16 @@ def signals_equity():
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_EQUITY"})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+# Auto-start WebSocket for live LTP
+try:
+    from broker.websocket_mgr import start as ws_start, status as ws_status
+    import threading
+    threading.Thread(target=ws_start, daemon=True).start()
+    import time; time.sleep(2)
+    print("WebSocket:", ws_status())
+except Exception as e:
+    print("WS start error:", e)
+
 # Pre-warm DataManager cache on startup
 try:
     from data_stream.data_manager import get_data_manager
@@ -1924,6 +1934,49 @@ def _ltp_broadcast_loop():
 _broadcaster = _threading.Thread(target=_ltp_broadcast_loop, daemon=True, name="LTPBroadcast")
 _broadcaster.start()
 
+@app.route("/api/stream/ltp")
+@require_auth
+def stream_ltp():
+    """Server-Sent Events — live LTP stream"""
+    from flask import Response, stream_with_context
+    import json, time
+
+    def generate():
+        # Tokens to stream
+        TOKENS = {
+            "NIFTY":     "99926000",
+            "BANKNIFTY": "99926009",
+            "FINNIFTY":  "99926074",
+            "CRUDEOIL":  "488290",
+            "NATURALGAS":"488505",
+        }
+        while True:
+            try:
+                from broker.websocket_mgr import get_ltp as ws_ltp, _connected
+                from broker.global_broker import get_broker
+                data = {}
+                for sym, tok in TOKENS.items():
+                    # Try WS first, then REST
+                    ltp = ws_ltp(tok) if _connected else None
+                    if not ltp:
+                        try:
+                            exch = "MCX" if sym in ["CRUDEOIL","NATURALGAS"] else "NSE"
+                            ltp = get_broker().get_ltp(exch, sym, tok)
+                        except: pass
+                    if ltp: data[sym] = ltp
+                yield f"data: {json.dumps(data)}\n\n"
+            except Exception as e:
+                yield f"data: {{}}\n\n"
+            time.sleep(2)  # Update every 2 seconds
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+        }
+    )
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -1950,6 +2003,7 @@ if __name__ == "__main__":
 
     # SocketIO run (backward compatible with Flask)
     socketio.run(app, host="0.0.0.0", port=PORT, debug=False, allow_unsafe_werkzeug=True)
+
 
 
 
