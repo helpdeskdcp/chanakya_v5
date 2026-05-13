@@ -2712,9 +2712,7 @@ async function createUser() {
 <script>
 if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    console.log('SW disabled');//navigator.serviceWorker.register('/v5/sw.js')
-      .then(function(reg) { console.log('SW registered:', reg.scope); })
-      .catch(function(e) { console.log('SW error:', e); });
+    console.log('SW disabled');
   });
 }
 
