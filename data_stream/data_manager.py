@@ -54,18 +54,17 @@ class DataManager:
         return len(self.SYMBOLS)
 
     def _get_broker(self):
+        """Always return working broker — reconnect if needed"""
         try:
             from broker.global_broker import get_broker
             b = get_broker()
+            # Always check + reconnect
             if not b.is_connected():
-                time.sleep(5)
-                logger.info("DataManager: using shared broker reconnect")
-                b.ensure_connected()
-            self._broker = b
-            self._connected = b.is_connected()
+                b.connect()
+            return b if b.is_connected() else None
         except Exception as e:
-            logger.error("DataManager broker: %s", e)
-        return self._broker
+            logger.error("DataManager._get_broker: %s", e)
+            return None
 
     def get_candles(self, symbol, timeframe="FIVE_MINUTE", days=2, force=False):
         key = f"{symbol}_{timeframe}_{days}"
