@@ -127,6 +127,7 @@ def ws_status():
         return jsonify({"success":False,"error":str(e)})
 
 # ── Auth routes ────────────────────────────────────────
+@app.route("/v5/login")
 @app.route("/login")
 @app.route("/")
 def login_page():
