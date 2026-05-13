@@ -2011,6 +2011,37 @@ def stream_ltp():
             "X-Accel-Buffering": "no"
         }
     )
+@app.route("/api/stream/ltp")
+@require_auth
+def stream_ltp():
+    """SSE — Live LTP every second from WebSocket cache"""
+    from flask import Response, stream_with_context
+    import json, time
+    token = request.headers.get("X-Auth-Token","")
+
+    def generate():
+        while True:
+            try:
+                from broker.websocket_mgr import get_all_ltp_named, is_connected
+                data = {
+                    "ltp": get_all_ltp_named(),
+                    "ws": is_connected(),
+                    "ts": int(time.time()*1000)
+                }
+                yield f"data: {json.dumps(data)}\n\n"
+            except Exception as e:
+                yield f"data: {{}}\n\n"
+            time.sleep(1)
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Access-Control-Allow-Origin": "*"
+        }
+    )
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))
     logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
@@ -2037,6 +2068,7 @@ if __name__ == "__main__":
 
     # SocketIO run (backward compatible with Flask)
     socketio.run(app, host="0.0.0.0", port=PORT, debug=False, allow_unsafe_werkzeug=True)
+
 
 
 
