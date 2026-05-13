@@ -1319,6 +1319,7 @@ def scalping_monitor():
         broker = get_broker()
         for t in trades:
             tid,sym,dire,entry,sl,target,qty,mode,strat,ts = t
+            qty=int(qty or 1); entry=float(entry or 0); sl=float(sl or 0); target=float(target or 0)
             # Get current LTP
             ltp = None
             try:
