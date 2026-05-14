@@ -1037,6 +1037,7 @@ function renderSigCard(s) {
   var score = s.score || 0;
   var scoreCls = score>=70?"high":score>=55?"med":"";
   var optEntry = s.opt_entry || s.opt_ltp || 0;
+  var price = s.price || s.ltp || 0;
   var optSym = s.opt_symbol || "";
   var hasOpt = optEntry > 0 && optSym;
 
@@ -1071,7 +1072,7 @@ function renderSigCard(s) {
       "<span class='sig-score "+scoreCls+"'>"+score+"%</span>"+
     "</div>"+
     "<div class='sig-grid'>"+
-      "<div class='sig-stat'><div class='label'>Index LTP</div><div class='val'>₹"+formatPrice(s.price||s.ltp)+"</div></div>"+
+      "<div class='sig-stat'><div class='label'>Index LTP</div><div class='val'>Rs"+formatPrice(price)+"</div></div>"+
       "<div class='sig-stat'><div class='label'>RSI</div><div class='val o'>"+((s.rsi||0).toFixed?s.rsi.toFixed(1):s.rsi||"--")+"</div></div>"+
       "<div class='sig-stat'><div class='label'>SL Pts</div><div class='val r'>"+formatPrice(s.sl_pts||0)+"</div></div>"+
       "<div class='sig-stat'><div class='label'>RR</div><div class='val g'>"+(s.rr||"1:2")+"</div></div>"+
@@ -1087,6 +1088,7 @@ function renderSigCard(s) {
 // == BUY ========================================================
 async function buyOpt(sig, paper) {
   var optEntry = sig.opt_entry || sig.opt_ltp || 0;
+  if(!optEntry){ alert('No option LTP available'); return; }
   var lotSize = sig.opt_lot || sig.qty || 1;
   if(!paper && !confirm("LIVE ORDER: "+sig.opt_symbol+" | Rs"+optEntry+" x "+lotSize+" lots. Confirm?")) return;
   var isMCX = ["CRUDEOIL","NATURALGAS","GOLD","SILVER"].indexOf(sig.symbol) >= 0;
