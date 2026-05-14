@@ -2051,38 +2051,6 @@ def stream_ltp():
             "Access-Control-Allow-Origin": "*"
         }
     )
-if __name__ == "__main__":
-    PORT = int(os.getenv("PORT",5002))
-    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
-    import threading
-    threading.Thread(target=_startup_train, daemon=True).start()
-    threading.Thread(target=_prediction_scheduler, daemon=True).start()
-
-    # ── WebSocket Manager start ────────────────────────
-    def _start_websocket():
-        import time
-        time.sleep(8)  # Broker connect होऊ दे आधी
-        try:
-            from broker.websocket_mgr import start as ws_start
-            ws_start()
-            logger.info("✅ WebSocket Manager started")
-        except Exception as e:
-            logger.error(f"WebSocket Manager start error: {e}")
-
-    threading.Thread(target=_start_websocket, daemon=True, name="WSManagerInit").start()
-
-    # ── Pivot Blueprint ──────────────────────────────
-    from api.routes.pivot import pivot_bp
-    app.register_blueprint(pivot_bp, url_prefix="/api/pivot")
-
-    # SocketIO run (backward compatible with Flask)
-    socketio.run(app, host="0.0.0.0", port=PORT, debug=False, allow_unsafe_werkzeug=True)
-
-
-
-
-
-
 
 @app.route("/api/options/chain")
 @require_auth
@@ -2171,3 +2139,37 @@ def options_chain():
     except Exception as e:
         import traceback
         return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-200:]})
+
+if __name__ == "__main__":
+    PORT = int(os.getenv("PORT",5002))
+    logger.info(f"Chanakya AI v5.0 starting on port {PORT}")
+    import threading
+    threading.Thread(target=_startup_train, daemon=True).start()
+    threading.Thread(target=_prediction_scheduler, daemon=True).start()
+
+    # ── WebSocket Manager start ────────────────────────
+    def _start_websocket():
+        import time
+        time.sleep(8)  # Broker connect होऊ दे आधी
+        try:
+            from broker.websocket_mgr import start as ws_start
+            ws_start()
+            logger.info("✅ WebSocket Manager started")
+        except Exception as e:
+            logger.error(f"WebSocket Manager start error: {e}")
+
+    threading.Thread(target=_start_websocket, daemon=True, name="WSManagerInit").start()
+
+    # ── Pivot Blueprint ──────────────────────────────
+    from api.routes.pivot import pivot_bp
+    app.register_blueprint(pivot_bp, url_prefix="/api/pivot")
+
+    # SocketIO run (backward compatible with Flask)
+    socketio.run(app, host="0.0.0.0", port=PORT, debug=False, allow_unsafe_werkzeug=True)
+
+
+
+
+
+
+
