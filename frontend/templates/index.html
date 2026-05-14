@@ -1021,7 +1021,12 @@ async function loadSignals() {
       "<div style='font-size:11px;margin-top:4px'>Market scanning...</div></div>";
     return;
   }
-  list.innerHTML = sigs.map(renderSigCard).join("");
+    try {
+      list.innerHTML = sigs.map(renderSigCard).join("");
+    } catch(err) {
+      list.innerHTML = "<div style='padding:16px;color:red'>Error: "+err.message+"</div>";
+      console.error(err);
+    }
 }
 
 function switchSigTab(el, tab) {
