@@ -903,7 +903,7 @@ function startApp(userData) {
 
   // Refresh intervals
   setInterval(loadDashboard, 30000);
-  setInterval(loadPositions, 15000);
+  setInterval(loadPositions, 5000);  // positions refresh every 5s
 }
 
 // == AUTO LOGIN ========================================================
@@ -1129,6 +1129,13 @@ async function loadPositions() {
     list.innerHTML = "<div style='text-align:center;padding:24px;color:var(--text3)'>No open positions</div>";
     return;
   }
+  // Get live LTP from WebSocket cache
+  var liveLtp = {};
+  try {
+    var ltpd = await api("/ltp/live");
+    if(ltpd && ltpd.ltp) liveLtp = ltpd.ltp;
+  } catch(e) {}
+
   list.innerHTML = d.trades.map(function(t){
     var pnl = t.pnl || 0;
     var ppos = pnl >= 0;
