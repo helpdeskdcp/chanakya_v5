@@ -1136,29 +1136,37 @@ async function loadPositions() {
     if(ltpd && ltpd.ltp) liveLtp = ltpd.ltp;
   } catch(e) {}
 
+  // Render cards with IDs for live update
   list.innerHTML = d.trades.map(function(t){
-    var pnl = t.pnl || 0;
+    var pnl = parseFloat(t.pnl||0);
     var ppos = pnl >= 0;
-    return "<div class='pos-card'>"+
+    var isOpt = t.symbol && (t.symbol.indexOf("CE")>-1||t.symbol.indexOf("PE")>-1);
+    // For index trades use WS LTP; for options use monitor LTP
+    var curLtp = isOpt ? parseFloat(t.ltp||0) : (parseFloat(liveLtp[t.symbol])||parseFloat(t.ltp||0));
+    var statusCls = t.status==="TRAILING"?"status-profit":t.status==="SL_HIT"?"status-loss":"status-hold";
+    return "<div class='pos-card' id='pc-"+t.id+"'>"+
       "<div class='pos-header'>"+
         "<div>"+
           "<div class='pos-sym'>"+t.symbol+"</div>"+
           "<div style='font-size:10px;color:var(--text3)'>"+t.mode+" · "+(t.strategy||"--")+"</div>"+
         "</div>"+
-        "<div class='pos-pnl "+(ppos?"pos":"neg")+"'>₹"+(ppos?"+":"")+pnl.toFixed(0)+"</div>"+
+        "<div class='pos-pnl "+(ppos?"pos":"neg")+"' id='pnl-"+t.id+"'>₹"+(ppos?"+":"")+Math.round(pnl)+"</div>"+
       "</div>"+
       "<div class='pos-meta'>"+
         "<div class='pos-meta-item'><div class='pm-label'>Entry</div><div class='pm-val'>₹"+(t.entry||0)+"</div></div>"+
         "<div class='pos-meta-item'><div class='pm-label'>SL</div><div class='pm-val' style='color:var(--red)'>₹"+(t.sl||0)+"</div></div>"+
         "<div class='pos-meta-item'><div class='pm-label'>Target</div><div class='pm-val' style='color:var(--green)'>₹"+(t.target||0)+"</div></div>"+
-        "<div class='pos-meta-item'><div class='pm-label'>LTP</div><div class='pm-val' style='color:var(--blue)'>₹"+(t.ltp||"--")+"</div></div>"+
+        "<div class='pos-meta-item'><div class='pm-label'>LTP</div><div class='pm-val' style='color:var(--blue)' id='ltp-"+t.id+"'>₹"+(curLtp||"--")+"</div></div>"+
       "</div>"+
       "<div class='pos-status'>"+
-        "<span class='status-badge "+(ppos?"status-profit":"status-hold")+"'>"+t.status+"</span>"+
+        "<span class='status-badge "+statusCls+"'>"+t.status+"</span>"+
         "<button class='btn btn-exit' style='flex:0;padding:5px 12px;font-size:10px' onclick='exitTrade("+t.id+")'>Exit</button>"+
       "</div>"+
     "</div>";
   }).join("");
+
+  // Store trades for live LTP update
+  window._openTrades = d.trades;
 }
 
 async function exitTrade(tid) {
