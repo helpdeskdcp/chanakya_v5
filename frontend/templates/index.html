@@ -985,20 +985,17 @@ function formatPrice(p) {
 async function loadDashboard() {
   var d = await api("/pnl");
   if(!d || !d.success) return;
-  var pnl = d.pnl || 0;
+  var pnlData = d.pnl || {};
+  var pnl = typeof pnlData === "object" ? (pnlData.total_pnl||0) : (pnlData||0);
+  var stats = typeof pnlData === "object" ? pnlData : {};
   var el = document.getElementById("dashPnl");
-  el.textContent = (pnl>=0?"₹+":"₹-") + Math.abs(pnl).toLocaleString("en-IN",{minimumFractionDigits:0,maximumFractionDigits:0});
-  el.className = "dash-pnl-val " + (pnl>=0?"pos":"neg");
-
-  // Stats
-  if(d.stats) {
-    var s = d.stats;
-    document.getElementById("dWinRate").textContent = (s.win_rate||0)+"%";
-    document.getElementById("dTrades").textContent = s.total_trades||0;
-    document.getElementById("dWins").textContent = s.wins||0;
-    document.getElementById("dLoss").textContent = s.losses||0;
-    document.getElementById("dashPnlSub").textContent = (s.total_trades||0)+" trades today";
-  }
+  el.textContent = "Rs"+(pnl>=0?"+":"")+Math.round(pnl).toLocaleString("en-IN");
+  el.className = "dash-pnl-val "+(pnl>=0?"pos":"neg");
+  document.getElementById("dWinRate").textContent = Math.round(stats.win_rate||0)+"%";
+  document.getElementById("dTrades").textContent = stats.total_trades||0;
+  document.getElementById("dWins").textContent = stats.wins||0;
+  document.getElementById("dLoss").textContent = stats.losses||0;
+  document.getElementById("dashPnlSub").textContent = (stats.total_trades||0)+" trades today";
 }
 
 // == SIGNALS ========================================================
