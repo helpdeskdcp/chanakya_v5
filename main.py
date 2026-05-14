@@ -1320,7 +1320,7 @@ def scalping_monitor():
         import sqlite3 as sq
         conn = sq.connect("data/chanakya_v5.db")
         trades = conn.execute("""SELECT id,symbol,direction,entry_price,sl_price,
-            target_price,quantity,mode,strategy,created_at,trading_symbol
+            target_price,quantity,mode,strategy,created_at,trading_symbol,token
             FROM trades WHERE username=? AND status='OPEN'
             ORDER BY id DESC""",
             (request.username,)).fetchall()
@@ -1328,7 +1328,7 @@ def scalping_monitor():
         from broker.global_broker import get_broker
         broker = get_broker()
         for t in trades:
-            tid,sym,dire,entry,sl,target,qty,mode,strat,ts,trading_sym = t
+            tid,sym,dire,entry,sl,target,qty,mode,strat,ts,trading_sym,tok = t
             qty=int(qty or 1); entry=float(entry or 0); sl=float(sl or 0); target=float(target or 0)
             # Get current LTP
             ltp = None
@@ -1341,15 +1341,27 @@ def scalping_monitor():
                     import json as jj
                     with open("data/scrip_master.json") as f2: scrips=jj.load(f2)
                     # Match by full symbol name (for options like NATURALGAS22MAY26280CE)
-                    # Try trading_symbol first (full option name)
-                    lookup = (trading_sym or sym or "").upper()
-                    found = [s for s in scrips if s.get("symbol","").upper()==lookup]
-                    if not found:
-                        found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
-                    if found:
-                        s2 = found[0]
-                        exch = s2.get("exch_seg","NFO")
-                        ltp = broker.get_ltp(exch, s2.get("symbol",""), str(s2.get("token","")))
+                    # Use token from DB directly (fastest)
+                    tok = str(tok or "")  # token column from trades
+                    if tok and tok != "None":
+                        # Determine exchange from token
+                        nse_tokens = ["99926000","99926009","99926037","99926074"]
+                        mcx_tokens = ["488290","488505","466583","67695"]
+                        if tok in nse_tokens:
+                            ltp = broker.get_ltp("NSE", sym, tok)
+                        elif any(tok.startswith(x[:3]) for x in mcx_tokens) or int(tok or 0) > 400000:
+                            ltp = broker.get_ltp("MCX", trading_sym or sym, tok)
+                        else:
+                            ltp = broker.get_ltp("NFO", trading_sym or sym, tok)
+                    else:
+                        # Fallback scrip master
+                        lookup = (trading_sym or sym or "").upper()
+                        found = [s for s in scrips if s.get("symbol","").upper()==lookup]
+                        if not found:
+                            found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
+                        if found:
+                            s2 = found[0]
+                            ltp = broker.get_ltp(s2.get("exch_seg","NFO"), s2.get("symbol",""), str(s2.get("token","")))
             except: pass
 
             pnl = 0; trail_sl = sl; status_msg = "HOLD"
