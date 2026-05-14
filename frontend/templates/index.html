@@ -706,12 +706,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
       <!-- ─ OPTIONS CHAIN ─────────────────────────────────── -->
       <div class="page" id="pg-options">
         <div class="page-title">⛓ Options Chain</div>
+        <div class="tab-bar" style="margin-bottom:12px">
+          <button class="tab active" id="oc-tab-nse" onclick="switchOCTab(this,'nse')">NSE Index</button>
+          <button class="tab" id="oc-tab-mcx" onclick="switchOCTab(this,'mcx')">MCX</button>
+        </div>
         <div class="card" style="margin-bottom:12px">
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <select class="inp" id="ocSymbol" style="width:140px" onchange="loadOptionsChain()">
-              <option>NIFTY</option><option>BANKNIFTY</option><option>FINNIFTY</option>
+              <option value="NIFTY">NIFTY</option>
+              <option value="BANKNIFTY">BANKNIFTY</option>
+              <option value="FINNIFTY">FINNIFTY</option>
             </select>
             <select class="inp" id="ocExpiry" style="width:160px" onchange="loadOptionsChain()"></select>
+            <button class="btn btn-paper" onclick="loadOptionsChain()" style="flex:0;padding:6px 14px;font-size:11px">⟳ Refresh</button>
             <div style="flex:1;text-align:right;font-size:11px;color:var(--text3)" id="ocMeta">--</div>
           </div>
         </div>
@@ -1177,6 +1184,20 @@ async function exitTrade(tid) {
 }
 
 // == OPTIONS CHAIN ========================================================
+var _ocTab = 'nse';
+function switchOCTab(el, tab) {
+  _ocTab = tab;
+  document.querySelectorAll('#oc-tab-nse,#oc-tab-mcx').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  var sel = document.getElementById('ocSymbol');
+  if(tab==='nse') {
+    sel.innerHTML = '<option value="NIFTY">NIFTY</option><option value="BANKNIFTY">BANKNIFTY</option><option value="FINNIFTY">FINNIFTY</option>';
+  } else {
+    sel.innerHTML = '<option value="CRUDEOIL">CRUDEOIL</option><option value="NATURALGAS">NATURALGAS</option><option value="GOLD">GOLD</option>';
+  }
+  loadOptionsChain();
+}
+
 async function loadOptionsChain() {
   var sym = document.getElementById("ocSymbol").value;
   var content = document.getElementById("ocContent");
