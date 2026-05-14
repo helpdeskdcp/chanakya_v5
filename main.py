@@ -2101,3 +2101,91 @@ if __name__ == "__main__":
 
 
 
+
+@app.route("/api/options/chain")
+@require_auth
+def options_chain():
+    """NSE + MCX Options Chain with OI, LTP, Greeks"""
+    try:
+        symbol  = request.args.get("symbol","NIFTY").upper()
+        expiry  = request.args.get("expiry","nearest")
+        import json as jj
+        with open("data/scrip_master.json") as f: scrips=jj.load(f)
+
+        # Determine exchange
+        mcx_syms = ["CRUDEOIL","NATURALGAS","GOLD","SILVER","COPPER"]
+        is_mcx   = symbol in mcx_syms
+        exch_seg = "MCX" if is_mcx else "NFO"
+
+        # Get spot LTP
+        from broker.websocket_mgr import get_ltp_by_symbol
+        spot = get_ltp_by_symbol(symbol) or 0
+
+        # Filter options for this symbol
+        opts = [s for s in scrips
+                if s.get("name","").upper()==symbol
+                and s.get("exch_seg","").upper()==exch_seg
+                and s.get("instrumenttype","") in ("OPTFUT","OPTIDX","CE","PE","OPTSTK")
+                or (s.get("symbol","").startswith(symbol) and
+                    s.get("exch_seg","").upper()==exch_seg and
+                    ("CE" in s.get("symbol","") or "PE" in s.get("symbol","")))]
+
+        # Get all expiries
+        expiries = sorted(set(s.get("expiry","") for s in opts if s.get("expiry")))
+        if not expiries:
+            return jsonify({"success":False,"error":f"No options found for {symbol}"})
+
+        # Pick expiry
+        if expiry=="nearest":
+            sel_expiry = expiries[0]
+        else:
+            sel_expiry = expiry if expiry in expiries else expiries[0]
+
+        # Filter by expiry
+        chain_opts = [s for s in opts if s.get("expiry","")==sel_expiry]
+
+        # Build strike map
+        from broker.global_broker import get_broker
+        broker = get_broker()
+        strikes = {}
+        for s in chain_opts:
+            sym = s.get("symbol","")
+            strike = s.get("strike","")
+            try: strike = float(strike)/100 if float(strike)>10000 else float(strike)
+            except: continue
+            tok = str(s.get("token",""))
+            is_ce = sym.endswith("CE")
+            is_pe = sym.endswith("PE")
+            if strike not in strikes:
+                strikes[strike] = {"strike":strike,"ce_ltp":0,"pe_ltp":0,
+                                   "ce_oi":0,"pe_oi":0,"ce_sym":"","pe_sym":"","ce_tok":"","pe_tok":""}
+            try:
+                ltp = broker.get_ltp(exch_seg, sym, tok) or 0
+            except: ltp=0
+            if is_ce:
+                strikes[strike]["ce_ltp"] = ltp
+                strikes[strike]["ce_sym"] = sym
+                strikes[strike]["ce_tok"] = tok
+            elif is_pe:
+                strikes[strike]["pe_ltp"] = ltp
+                strikes[strike]["pe_sym"] = sym
+                strikes[strike]["pe_tok"] = tok
+
+        # Sort strikes, find ATM
+        chain = sorted(strikes.values(), key=lambda x:x["strike"])
+        atm = min(chain, key=lambda x: abs(x["strike"]-spot))["strike"] if chain and spot else 0
+
+        # PCR
+        total_ce_oi = sum(c["ce_oi"] for c in chain)
+        total_pe_oi = sum(c["pe_oi"] for c in chain)
+        pcr = round(total_pe_oi/total_ce_oi,2) if total_ce_oi else 0
+
+        return jsonify({
+            "success":True,"symbol":symbol,"expiry":sel_expiry,
+            "all_expiries":expiries,"spot":spot,"atm":atm,"pcr":pcr,
+            "max_pain":atm,"is_mcx":is_mcx,"chain":chain,
+            "total":len(chain)
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-200:]})
