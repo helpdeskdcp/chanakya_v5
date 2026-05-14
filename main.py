@@ -1988,9 +1988,11 @@ def get_pnl():
         wins = sum(1 for t in trades if float(t[0] or 0) > 0)
         losses = sum(1 for t in trades if float(t[0] or 0) < 0)
         wr = round(wins/total*100) if total > 0 else 0
-        return jsonify({"success":True,"pnl":round(total_pnl,2),
+        return jsonify({"success":True,
+                       "pnl":round(total_pnl,2),
                        "stats":{"total_trades":total,"wins":wins,
-                                  "losses":losses,"win_rate":wr}})
+                                  "losses":losses,"win_rate":wr,
+                                  "total_pnl":round(total_pnl,2)}})
     except Exception as e:
         return jsonify({"success":False,"pnl":0,
                        "stats":{"total_trades":0,"wins":0,"losses":0,"win_rate":0}})
