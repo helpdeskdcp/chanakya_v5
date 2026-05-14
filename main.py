@@ -1333,13 +1333,17 @@ def scalping_monitor():
             # Get current LTP
             ltp = None
             try:
-                # Find token from scrip master
-                import json as jj
-                with open("data/scrip_master.json") as f: scrips=jj.load(f)
-                found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
-                if found:
-                    s = found[0]
-                    ltp = broker.get_ltp(s.get("exch_seg","NFO"),sym,str(s.get("token","")))
+                # Try WebSocket first (instant)
+                from broker.websocket_mgr import get_ltp_by_symbol
+                ltp = get_ltp_by_symbol(sym)
+                # Fallback to REST
+                if not ltp:
+                    import json as jj
+                    with open("data/scrip_master.json") as f2: scrips=jj.load(f2)
+                    found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
+                    if found:
+                        s2 = found[0]
+                        ltp = broker.get_ltp(s2.get("exch_seg","NFO"),sym,str(s2.get("token","")))
             except: pass
 
             pnl = 0; trail_sl = sl; status_msg = "HOLD"

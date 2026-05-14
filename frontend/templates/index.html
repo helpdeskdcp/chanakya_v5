@@ -1129,7 +1129,7 @@ async function loadPositions() {
     list.innerHTML = "<div style='text-align:center;padding:24px;color:var(--text3)'>No open positions</div>";
     return;
   }
-  // Get live LTP from WebSocket cache
+  // Get index LTP from WebSocket (fast)
   var liveLtp = {};
   try {
     var ltpd = await api("/ltp/live");
