@@ -2125,14 +2125,14 @@ def options_chain():
                 strikes[strike]["pe_sym"] = sym
                 strikes[strike]["pe_tok"] = tok
 
-        # Second pass: fetch LTP only for ATM ±8 strikes
+        # Second pass: fetch LTP only for ATM ±5 strikes
         all_strikes = sorted(strikes.keys())
         atm_approx = min(all_strikes, key=lambda x: abs(x-spot)) if all_strikes and spot else None
         if atm_approx:
             atm_idx = all_strikes.index(atm_approx)
-            active = all_strikes[max(0,atm_idx-4):atm_idx+5]
+            active = all_strikes[max(0,atm_idx-5):atm_idx+6]
         else:
-            active = all_strikes[:8]
+            active = all_strikes[:10]
         for strike in active:
             for side in [("ce_sym","ce_tok","ce_ltp"),("pe_sym","pe_tok","pe_ltp")]:
                 sym,tok_k,ltp_k = side
@@ -2151,6 +2151,17 @@ def options_chain():
         total_pe_oi = sum(c["pe_oi"] for c in chain)
         pcr = round(total_pe_oi/total_ce_oi,2) if total_ce_oi else 0
 
+        # Subscribe active tokens to WebSocket for live LTP
+        try:
+            from broker.websocket_mgr import add_token, _ws, _connected
+            exch_num = 5 if is_mcx else 2  # MCX_FO=5, NSE_FO=2
+            for strike in active:
+                for tok_k in ["ce_tok","pe_tok"]:
+                    tok_v = strikes[strike].get(tok_k,"")
+                    if tok_v and _connected and _ws:
+                        add_token(exch_num, tok_v)
+        except: pass
+
         result = {
             "success":True,"symbol":symbol,"expiry":sel_expiry,
             "all_expiries":expiries,"spot":spot,"atm":atm,"pcr":pcr,
@@ -2162,6 +2173,21 @@ def options_chain():
     except Exception as e:
         import traceback
         return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-200:]})
+
+
+@app.route("/api/options/ltp")
+@require_auth
+def options_ltp():
+    """Fast LTP poll for subscribed option tokens"""
+    tokens = request.args.get("tokens","").split(",")
+    from broker.websocket_mgr import get_ltp
+    result = {}
+    for tok in tokens:
+        tok = tok.strip()
+        if tok:
+            ltp = get_ltp(tok)
+            if ltp: result[tok] = ltp
+    return jsonify({"success":True,"ltp":result})
 
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT",5002))

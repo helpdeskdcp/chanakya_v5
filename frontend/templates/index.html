@@ -1198,6 +1198,21 @@ function switchOCTab(el, tab) {
   loadOptionsChain();
 }
 
+// Store option tokens for live polling
+var _ocTokens = {};
+var _ocInterval = null;
+
+async function pollOptionLTP() {
+  var toks = Object.keys(_ocTokens);
+  if(!toks.length) return;
+  var d = await api("/options/ltp?tokens="+toks.join(","));
+  if(!d || !d.ltp) return;
+  Object.keys(d.ltp).forEach(function(tok) {
+    var el = document.getElementById("oltp-"+tok);
+    if(el) el.textContent = "Rs"+parseFloat(d.ltp[tok]).toFixed(2);
+  });
+}
+
 async function loadOptionsChain() {
   var sym = document.getElementById("ocSymbol").value;
   var content = document.getElementById("ocContent");
@@ -1225,25 +1240,29 @@ async function loadOptionsChain() {
   document.getElementById("ocMeta").innerHTML =
     "Spot: <b>"+formatPrice(d.spot)+"</b> | ATM: <b>"+atm+"</b> | PCR: <b>"+pcr+"</b> | Max Pain: <b>"+maxpain+"</b>";
 
-  content.innerHTML = "<div style='overflow-x:auto'><table class='oc-table'>"+
+  // Reset token map
+  _ocTokens = {};
+  var rows = chain.map(function(r) {
+    var isAtm = r.strike == atm;
+    var ceTok = r.ce_tok || "";
+    var peTok = r.pe_tok || "";
+    if(ceTok) _ocTokens[ceTok] = 1;
+    if(peTok) _ocTokens[peTok] = 1;
+    return "<tr"+(isAtm?" class='atm'":"")+">" +
+      "<td class='ce'>"+fmtOI(r.ce_oi)+"</td>"+
+      "<td class='ce' id='oltp-"+ceTok+"'>"+formatPrice(r.ce_ltp)+"</td>"+
+      "<td class='strike'>"+r.strike+"</td>"+
+      "<td class='pe' id='oltp-"+peTok+"'>"+formatPrice(r.pe_ltp)+"</td>"+
+      "<td class='pe'>"+fmtOI(r.pe_oi)+"</td>"+
+    "</tr>";
+  });
+  content.innerHTML = "<div style='overflow-x:auto'><table class='oc-table'>" +
     "<thead><tr>"+
-      "<th>CE OI</th><th>CE Chg</th><th>CE LTP</th>"+
-      "<th>STRIKE</th>"+
-      "<th>PE LTP</th><th>PE Chg</th><th>PE OI</th>"+
-    "</tr></thead><tbody>"+
-    chain.map(function(r){
-      var isAtm = r.strike == atm;
-      return "<tr"+(isAtm?" class='atm'":" ")+">"+
-        "<td class='ce'>"+fmtOI(r.ce_oi)+"</td>"+
-        "<td class='ce'>"+fmtChg(r.ce_oi_chg)+"</td>"+
-        "<td class='ce'>"+formatPrice(r.ce_ltp)+"</td>"+
-        "<td class='strike'>"+r.strike+"</td>"+
-        "<td class='pe'>"+formatPrice(r.pe_ltp)+"</td>"+
-        "<td class='pe'>"+fmtChg(r.pe_oi_chg)+"</td>"+
-        "<td class='pe'>"+fmtOI(r.pe_oi)+"</td>"+
-      "</tr>";
-    }).join("")+
-    "</tbody></table></div>";
+    "<th>CE OI</th><th>CE LTP</th><th>STRIKE</th><th>PE LTP</th><th>PE OI</th>" +
+    "</tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
+  // Start live LTP polling every 2s
+  if(_ocInterval) clearInterval(_ocInterval);
+  _ocInterval = setInterval(pollOptionLTP, 2000);
 }
 
 function fmtOI(v) { if(!v) return "--"; return v>=100000?(v/100000).toFixed(1)+"L":(v/1000).toFixed(0)+"K"; }
