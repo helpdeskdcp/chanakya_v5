@@ -2098,6 +2098,15 @@ def options_chain():
         from broker.global_broker import get_broker
         broker = get_broker()
         strikes = {}
+        # Cache options chain for 60s
+        import time as _time
+        _oc_cache = getattr(options_chain, '_cache', {})
+        options_chain._cache = _oc_cache
+        _cache_key = f"{symbol}_{sel_expiry}"
+        _cached = _oc_cache.get(_cache_key)
+        if _cached and _time.time() - _cached['ts'] < 60:
+            return jsonify(_cached['data'])
+
         # Only fetch LTP for ATM ±10 strikes (performance)
         # First pass: build strike map without LTP
         for s in chain_opts:
@@ -2121,9 +2130,9 @@ def options_chain():
         atm_approx = min(all_strikes, key=lambda x: abs(x-spot)) if all_strikes and spot else None
         if atm_approx:
             atm_idx = all_strikes.index(atm_approx)
-            active = all_strikes[max(0,atm_idx-8):atm_idx+9]
+            active = all_strikes[max(0,atm_idx-4):atm_idx+5]
         else:
-            active = all_strikes[:16]
+            active = all_strikes[:8]
         for strike in active:
             for side in [("ce_sym","ce_tok","ce_ltp"),("pe_sym","pe_tok","pe_ltp")]:
                 sym,tok_k,ltp_k = side
@@ -2142,12 +2151,14 @@ def options_chain():
         total_pe_oi = sum(c["pe_oi"] for c in chain)
         pcr = round(total_pe_oi/total_ce_oi,2) if total_ce_oi else 0
 
-        return jsonify({
+        result = {
             "success":True,"symbol":symbol,"expiry":sel_expiry,
             "all_expiries":expiries,"spot":spot,"atm":atm,"pcr":pcr,
             "max_pain":atm,"is_mcx":is_mcx,"chain":chain,
             "total":len(chain)
-        })
+        }
+        options_chain._cache[_cache_key] = {"data":result,"ts":_time.time()}
+        return jsonify(result)
     except Exception as e:
         import traceback
         return jsonify({"success":False,"error":str(e),"trace":traceback.format_exc()[-200:]})
