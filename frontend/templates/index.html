@@ -1078,7 +1078,7 @@ function renderSigCard(s) {
     "</div>"+
     "<div class='sig-grid'>"+
       "<div class='sig-stat'><div class='label'>Index LTP</div><div class='val'>Rs"+formatPrice(price)+"</div></div>"+
-      "<div class='sig-stat'><div class='label'>RSI</div><div class='val o'>"+((s.rsi||0).toFixed?s.rsi.toFixed(1):s.rsi||"--")+"</div></div>"+
+      "<div class='sig-stat'><div class='label'>RSI</div><div class='val o'>"+parseFloat(s.rsi||0).toFixed(1)+"</div></div>"+
       "<div class='sig-stat'><div class='label'>SL Pts</div><div class='val r'>"+formatPrice(s.sl_pts||0)+"</div></div>"+
       "<div class='sig-stat'><div class='label'>RR</div><div class='val g'>"+(s.rr||"1:2")+"</div></div>"+
     "</div>"+
