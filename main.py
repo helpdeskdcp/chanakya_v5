@@ -2098,28 +2098,40 @@ def options_chain():
         from broker.global_broker import get_broker
         broker = get_broker()
         strikes = {}
+        # Only fetch LTP for ATM ±10 strikes (performance)
+        # First pass: build strike map without LTP
         for s in chain_opts:
             sym = s.get("symbol","")
             strike = s.get("strike","")
             try: strike = float(strike)/100 if float(strike)>10000 else float(strike)
             except: continue
             tok = str(s.get("token",""))
-            is_ce = sym.endswith("CE")
-            is_pe = sym.endswith("PE")
             if strike not in strikes:
                 strikes[strike] = {"strike":strike,"ce_ltp":0,"pe_ltp":0,
                                    "ce_oi":0,"pe_oi":0,"ce_sym":"","pe_sym":"","ce_tok":"","pe_tok":""}
-            try:
-                ltp = broker.get_ltp(exch_seg, sym, tok) or 0
-            except: ltp=0
-            if is_ce:
-                strikes[strike]["ce_ltp"] = ltp
+            if sym.endswith("CE"):
                 strikes[strike]["ce_sym"] = sym
                 strikes[strike]["ce_tok"] = tok
-            elif is_pe:
-                strikes[strike]["pe_ltp"] = ltp
+            elif sym.endswith("PE"):
                 strikes[strike]["pe_sym"] = sym
                 strikes[strike]["pe_tok"] = tok
+
+        # Second pass: fetch LTP only for ATM ±8 strikes
+        all_strikes = sorted(strikes.keys())
+        atm_approx = min(all_strikes, key=lambda x: abs(x-spot)) if all_strikes and spot else None
+        if atm_approx:
+            atm_idx = all_strikes.index(atm_approx)
+            active = all_strikes[max(0,atm_idx-8):atm_idx+9]
+        else:
+            active = all_strikes[:16]
+        for strike in active:
+            for side in [("ce_sym","ce_tok","ce_ltp"),("pe_sym","pe_tok","pe_ltp")]:
+                sym,tok_k,ltp_k = side
+                s_sym = strikes[strike].get(sym,"")
+                s_tok = strikes[strike].get(tok_k,"")
+                if s_sym and s_tok:
+                    try: strikes[strike][ltp_k] = broker.get_ltp(exch_seg,s_sym,s_tok) or 0
+                    except: pass
 
         # Sort strikes, find ATM
         chain = sorted(strikes.values(), key=lambda x:x["strike"])
