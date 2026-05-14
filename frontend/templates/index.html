@@ -976,7 +976,8 @@ async function loadLtp() {
 }
 
 function formatPrice(p) {
-  if(!p) return "--";
+  p = parseFloat(p);
+  if(!p || isNaN(p)) return "--";
   if(p >= 1000) return p.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
   return p.toFixed(2);
 }
