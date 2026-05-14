@@ -2143,7 +2143,18 @@ def options_chain():
                     except: pass
 
         # Sort strikes, find ATM
-        chain = sorted(strikes.values(), key=lambda x:x["strike"])
+        all_chain = sorted(strikes.values(), key=lambda x:x["strike"])
+        # Filter to ATM±15 only for display
+        if all_chain and spot:
+            atm_approx2 = min(all_chain, key=lambda x: abs(x["strike"]-spot))["strike"]
+            atm_idx2 = [i for i,r in enumerate(all_chain) if r["strike"]==atm_approx2]
+            if atm_idx2:
+                ai = atm_idx2[0]
+                chain = all_chain[max(0,ai-15):ai+16]
+            else:
+                chain = all_chain
+        else:
+            chain = all_chain
         atm = min(chain, key=lambda x: abs(x["strike"]-spot))["strike"] if chain and spot else 0
 
         # PCR
