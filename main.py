@@ -1969,6 +1969,51 @@ def ltp_live():
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
 
+
+@app.route("/api/pnl")
+@require_auth
+def get_pnl():
+    try:
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        from datetime import datetime
+        today = datetime.now().strftime("%Y-%m-%d")
+        trades = conn.execute("""
+            SELECT pnl,status FROM trades
+            WHERE username=? AND created_at>=?
+        """, (request.username, today+" 00:00:00")).fetchall()
+        conn.close()
+        total_pnl = sum(float(t[0] or 0) for t in trades)
+        total = len(trades)
+        wins = sum(1 for t in trades if float(t[0] or 0) > 0)
+        losses = sum(1 for t in trades if float(t[0] or 0) < 0)
+        wr = round(wins/total*100) if total > 0 else 0
+        return jsonify({"success":True,"pnl":round(total_pnl,2),
+                       "stats":{"total_trades":total,"wins":wins,
+                                  "losses":losses,"win_rate":wr}})
+    except Exception as e:
+        return jsonify({"success":False,"pnl":0,
+                       "stats":{"total_trades":0,"wins":0,"losses":0,"win_rate":0}})
+
+@app.route("/api/history")
+@require_auth
+def trade_history():
+    try:
+        import sqlite3 as sq
+        conn = sq.connect("data/chanakya_v5.db")
+        trades = conn.execute("""
+            SELECT id,symbol,direction,entry_price,exit_price,pnl,status,strategy,created_at
+            FROM trades WHERE username=?
+            ORDER BY id DESC LIMIT 50
+        """, (request.username,)).fetchall()
+        conn.close()
+        return jsonify({"success":True,"trades":[
+            {"id":t[0],"symbol":t[1],"direction":t[2],
+             "entry_price":t[3],"exit_price":t[4],"pnl":t[5],
+             "status":t[6],"strategy":t[7],"created_at":t[8]}
+            for t in trades]})
+    except Exception as e:
+        return jsonify({"success":False,"error":str(e),"trades":[]})
 @app.route("/api/stream/ltp")
 @require_auth
 def stream_ltp():
