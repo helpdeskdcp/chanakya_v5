@@ -1340,10 +1340,16 @@ def scalping_monitor():
                 if not ltp:
                     import json as jj
                     with open("data/scrip_master.json") as f2: scrips=jj.load(f2)
+                    # Match by full symbol name (for options like NATURALGAS22MAY26280CE)
                     found = [s for s in scrips if s.get("symbol","").upper()==sym.upper()]
+                    # Also try trading_symbol column
+                    if not found:
+                        ts = t[2] or ""  # trading_symbol from DB
+                        found = [s for s in scrips if s.get("symbol","").upper()==ts.upper()]
                     if found:
                         s2 = found[0]
-                        ltp = broker.get_ltp(s2.get("exch_seg","NFO"),sym,str(s2.get("token","")))
+                        exch = s2.get("exch_seg","NFO")
+                        ltp = broker.get_ltp(exch, s2.get("symbol",""), str(s2.get("token","")))
             except: pass
 
             pnl = 0; trail_sl = sl; status_msg = "HOLD"
