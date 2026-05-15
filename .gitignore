@@ -21,3 +21,12 @@ __pycache__/
 =
 PYEOF
 else:
+
+# Runtime data
+data/*.db
+data/*.pkl
+backup/
+instruments.json
+__pycache__/
+*.pyc
+
