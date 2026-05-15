@@ -4,6 +4,9 @@ sys.path.insert(0,'/root/chanakya_v5')
 from flask import Flask, jsonify, request, render_template, session
 from flask_socketio import SocketIO, emit as sio_emit
 from dotenv import load_dotenv
+try:
+    from config.subscription_enforce import require_feature, has_feature, get_daily_limit
+except: require_feature=lambda x: (lambda f: f); has_feature=lambda x: True; get_daily_limit=lambda x: 999
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO,
@@ -1612,6 +1615,14 @@ def signals_equity():
         return jsonify({"success":True,"signals":results,"count":len(results),"market":"NSE_EQUITY"})
     except Exception as e:
         return jsonify({"success":False,"error":str(e)})
+# Start Telegram bot
+try:
+    from alerts.telegram_bot import start as tg_start, alert_system
+    tg_start()
+    logger.info('Telegram bot started')
+except Exception as e:
+    logger.warning('Telegram not configured: %s', e)
+
 # Auto-start WebSocket for live LTP (24/7)
 try:
     from broker.websocket_mgr import start as ws_start, status as ws_status
@@ -2056,6 +2067,7 @@ def stream_ltp():
 
 @app.route("/api/options/chain")
 @require_auth
+@require_feature("options_chain_nse")
 def options_chain():
     """NSE + MCX Options Chain with OI, LTP, Greeks"""
     try:
