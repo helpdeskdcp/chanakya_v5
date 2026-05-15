@@ -1047,6 +1047,8 @@ def mythos_scan():
                 opt_sl     = round(opt_entry*0.80,2) if opt_entry else 0
                 opt_target = round(opt_entry*1.40,2) if opt_entry else 0
                 opt_trail  = round(opt_entry*0.90,2) if opt_entry else 0
+                opt_exchange_final = EXCH.get(sym["name"],"NFO")
+                if not opt_tok or opt_tok=="None": opt_tok=None
                 results.append({
                     "symbol":sym["name"],
                     "signal":fusion["signal"],
@@ -1068,10 +1070,10 @@ def mythos_scan():
                     "opt_ltp":opt_ltp,"opt_strike":atm,
                     "opt_type":opt_type,"opt_lot":sym["lot"],
                     "opt_entry":opt_entry,
-                    "opt_sl":   round(opt_entry*0.70,2) if opt_entry else 0,
+                    "opt_sl":   round(opt_entry*0.80,2) if opt_entry else 0,
                     "opt_target":round(opt_entry*1.40,2) if opt_entry else 0,
                     "opt_trail": round(opt_entry*0.85,2) if opt_entry else 0,
-                    "opt_exchange":EXCH.get(sym["name"],"NFO"),
+                    "opt_exchange":opt_exchange_final,
                 })
             except Exception as e:
                 logger.warning("Mythos %s: %s", sym["name"], e)
