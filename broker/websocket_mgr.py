@@ -10,8 +10,12 @@ import pytz
 logger = logging.getLogger("ws_mgr")
 IST = pytz.timezone("Asia/Kolkata")
 
-# ── LTP Cache ─────────────────────────────────────────────────────
-_ltp      = {}
+# ── LTP + OI Cache ─────────────────────────────────────────────────
+_ltp      = {}   # {token: price}
+_oi       = {}   # {token: open_interest}
+_vol      = {}   # {token: volume}
+_bid      = {}   # {token: bid_price}
+_ask      = {}   # {token: ask_price}
 _ltp_lock = threading.Lock()
 
 # ── State ─────────────────────────────────────────────────────────
@@ -58,8 +62,26 @@ def get_all_ltp_named():
     with _ltp_lock:
         return {TOKEN_MAP.get(k,k):v for k,v in _ltp.items()}
 
+def get_oi(token):
+    with _ltp_lock: return _oi.get(str(token))
+
+def get_bid_ask(token):
+    with _ltp_lock: return _bid.get(str(token)), _ask.get(str(token))
+
+def get_all_oi():
+    with _ltp_lock: return dict(_oi)
+
 def set_ltp(token, price):
     with _ltp_lock: _ltp[str(token)] = float(price)
+
+def set_tick(token, price, oi=None, vol=None, bid=None, ask=None):
+    with _ltp_lock:
+        tok = str(token)
+        if price: _ltp[tok] = float(price)
+        if oi is not None: _oi[tok] = int(oi)
+        if vol is not None: _vol[tok] = int(vol)
+        if bid is not None: _bid[tok] = float(bid)
+        if ask is not None: _ask[tok] = float(ask)
 
 def is_connected(): return _connected
 
@@ -74,19 +96,37 @@ def status():
 
 # ── Binary Parser (Angel One format) ─────────────────────────────
 def _parse_binary(data):
-    """Parse Angel One binary tick data"""
+    """Parse Angel One SNAP_QUOTE binary tick data"""
     try:
-        # Minimum packet size check
         if len(data) < 51: return None
-        # Extract token (bytes 2-27, null-terminated string)
-        token_bytes = data[2:27]
-        token = token_bytes.split(b'\x00')[0].decode('utf-8').strip()
+        # Token (bytes 2-27)
+        token = data[2:27].split(b"\x00")[0].decode("utf-8").strip()
         if not token: return None
-        # LTP at bytes 43-51 (8 bytes, little-endian int64, in paise)
-        ltp_paise = struct.unpack('<q', data[43:51])[0]
-        # NSE index tokens → paise, MCX → direct
+        # LTP (bytes 43-51, little-endian int64, in paise)
+        ltp_paise = struct.unpack("<q", data[43:51])[0]
         ltp = ltp_paise / 100.0
-        return {"token": token, "ltp": ltp}
+
+        result = {"token": token, "ltp": ltp, "oi": None, "vol": None, "bid": None, "ask": None}
+
+        # SNAP_QUOTE extra fields (if packet large enough)
+        if len(data) >= 91:
+            try:
+                # OI at bytes 83-91 (varies by packet version)
+                oi_raw = struct.unpack("<q", data[83:91])[0]
+                result["oi"] = oi_raw if 0 < oi_raw < 10**10 else None
+            except: pass
+
+        if len(data) >= 115:
+            try:
+                # Volume
+                vol_raw = struct.unpack("<q", data[99:107])[0]
+                result["vol"] = vol_raw if 0 < vol_raw < 10**10 else None
+                # Best bid
+                bid_raw = struct.unpack("<q", data[107:115])[0]
+                result["bid"] = bid_raw / 100.0 if bid_raw > 0 else None
+            except: pass
+
+        return result
     except Exception as e:
         logger.debug("Parse error: %s", e)
         return None
@@ -144,7 +184,7 @@ def _subscribe(ws_obj):
         msg = json.dumps({
             "action": 1,
             "params": {
-                "mode": 1,
+                "mode": 3,  # SNAP_QUOTE: LTP + OI + Volume + Bid/Ask
                 "tokenList": [{"exchangeType": exch_type, "tokens": tokens}]
             }
         })
@@ -166,13 +206,16 @@ def _on_message(ws, msg):
     try:
         if isinstance(msg, bytes):
             parsed = _parse_binary(msg)
-            if parsed and parsed["token"] in TOKEN_MAP:
-                set_ltp(parsed["token"], parsed["ltp"])
-                logger.debug("LTP %s = %.2f", TOKEN_MAP[parsed["token"]], parsed["ltp"])
+            if parsed:
+                tok = parsed["token"]
+                set_tick(tok, parsed["ltp"], parsed.get("oi"),
+                        parsed.get("vol"), parsed.get("bid"), parsed.get("ask"))
+                if tok in TOKEN_MAP:
+                    logger.debug("TICK %s LTP=%.2f OI=%s", TOKEN_MAP[tok], parsed["ltp"], parsed.get("oi"))
         elif isinstance(msg, str):
             d = json.loads(msg)
             if "token" in d and "ltp" in d:
-                set_ltp(d["token"], d["ltp"])
+                set_tick(d["token"], d.get("ltp"), d.get("oi"), d.get("vol"))
     except Exception as e:
         logger.debug("Message error: %s", e)
 

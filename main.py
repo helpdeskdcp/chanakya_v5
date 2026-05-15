@@ -198,6 +198,13 @@ def market():
         if is_connected():
             data = get_all_ltp_named()
             source = "websocket"
+            # Include OI for index tokens
+            try:
+                from broker.websocket_mgr import get_all_oi
+                oi_data = get_all_oi()
+                if oi_data:
+                    return jsonify({"success":True,"data":data,"oi":oi_data,"source":source})
+            except: pass
         else:
             dm = get_data_manager()
             data = dm.get_market_snapshot()
@@ -1235,6 +1242,21 @@ def scalping_backtest():
 def scalping_buy():
     try:
         data = request.json or {}
+        # Subscription gate
+        _role = getattr(request,'role','demo')
+        _paper = data.get('paper', True)
+        if _role == 'demo' and not _paper:
+            return jsonify({"success":False,"error":"Demo: paper trade only. Upgrade to PREMIUM.","upgrade_url":"/v5/upgrade"})
+        if _role == 'demo':
+            import sqlite3 as _sq2
+            from datetime import datetime as _dt2
+            _c2 = _sq2.connect("data/chanakya_v5.db")
+            _today2 = _dt2.now().strftime("%Y-%m-%d")
+            _cnt2 = _c2.execute("SELECT COUNT(*) FROM trades WHERE username=? AND DATE(created_at)=?",
+                                (request.username, _today2)).fetchone()[0]
+            _c2.close()
+            if _cnt2 >= 1:
+                return jsonify({"success":False,"error":"Demo: 1 trade/day limit. Upgrade to PREMIUM.","upgrade_url":"/v5/upgrade"})
         sym        = data.get("opt_symbol")
         token      = data.get("opt_token")
         exchange   = data.get("opt_exchange","NFO")
