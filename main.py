@@ -1994,7 +1994,6 @@ _broadcaster.start()
 
 
 @app.route("/api/ltp/live")
-@require_auth
 def ltp_live():
     """Fast LTP for all active symbols — called every 2s from frontend"""
     try:

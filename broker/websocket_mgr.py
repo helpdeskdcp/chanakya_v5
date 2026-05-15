@@ -41,6 +41,7 @@ TOKEN_MAP = {
 
 WATCH = {
     1: ["99926000","99926009","99926037","99926074"],  # NSE index
+    2: ["57036","57037"],  # NFO ATM options
     5: ["488290","488505","466583","67695"],             # MCX
 }
 
@@ -103,7 +104,7 @@ def _parse_binary(data):
         token = data[2:27].split(b"\x00")[0].decode("utf-8").strip()
         if not token: return None
         # LTP (bytes 43-51, little-endian int64, in paise)
-        ltp_paise = struct.unpack("<q", data[43:51])[0]
+        ltp_paise = struct.unpack("<i", data[43:47])[0]
         ltp = ltp_paise / 100.0
 
         result = {"token": token, "ltp": ltp, "oi": None, "vol": None, "bid": None, "ask": None}
@@ -162,7 +163,7 @@ def _refresh_jwt():
         totp = pyotp.TOTP(creds["totp_key"]).now()
         data = obj.generateSession(creds["client_id"], creds["password"], totp)
         if data.get("status"):
-            _jwt        = data["data"]["jwtToken"]
+            _jwt = data["data"]["jwtToken"].replace("Bearer ","").strip()
             _feed_token = data["data"]["feedToken"]
             _jwt_expiry = datetime.now(IST) + timedelta(hours=22)
             _save_env("ANGEL_JWT", _jwt)
@@ -206,16 +207,38 @@ def _on_message(ws, msg):
     try:
         if isinstance(msg, bytes):
             parsed = _parse_binary(msg)
+
             if parsed:
                 tok = parsed["token"]
-                set_tick(tok, parsed["ltp"], parsed.get("oi"),
-                        parsed.get("vol"), parsed.get("bid"), parsed.get("ask"))
+
+                set_tick(
+                    tok,
+                    parsed["ltp"],
+                    parsed.get("oi"),
+                    parsed.get("vol"),
+                    parsed.get("bid"),
+                    parsed.get("ask")
+                )
+
                 if tok in TOKEN_MAP:
-                    logger.debug("TICK %s LTP=%.2f OI=%s", TOKEN_MAP[tok], parsed["ltp"], parsed.get("oi"))
+                    logger.debug(
+                        "TICK %s LTP=%.2f OI=%s",
+                        TOKEN_MAP[tok],
+                        parsed["ltp"],
+                        parsed.get("oi")
+                    )
+
         elif isinstance(msg, str):
             d = json.loads(msg)
+
             if "token" in d and "ltp" in d:
-                set_tick(d["token"], d.get("ltp"), d.get("oi"), d.get("vol"))
+                set_tick(
+                    d["token"],
+                    d.get("ltp"),
+                    d.get("oi"),
+                    d.get("vol")
+                )
+
     except Exception as e:
         logger.debug("Message error: %s", e)
 
@@ -253,7 +276,13 @@ def _connect():
             on_open=_on_open, on_message=_on_message,
             on_error=_on_error, on_close=_on_close,
         )
+        
         logger.info("Connecting to Angel One WebSocket...")
+        logger.info("WS AUTH client=%s feed=%s jwt=%s",
+                    client_id,
+                    str(feed)[:15] if feed else None,
+                    str(jwt)[:20] if jwt else None)
+
         _ws.run_forever(
             sslopt={"cert_reqs": ssl.CERT_NONE},
             ping_interval=25, ping_timeout=10
@@ -287,14 +316,20 @@ def _run_forever():
             time.sleep(10)
 
 def start():
-    global _running, _jwt, _feed_token, _jwt_expiry
-    if _running: return
-    creds = _load_env()
-    _jwt        = creds.get("jwt","")
-    _feed_token = creds.get("feed","")
-    _jwt_expiry = datetime.now(IST) + timedelta(hours=20)
-    t = threading.Thread(target=_run_forever, daemon=True, name="ws-24x7")
+    global _running
+
+    if _running:
+        return
+
+    logger.info("WS start waiting for fresh auth tokens...")
+
+    t = threading.Thread(
+        target=_run_forever,
+        daemon=True,
+        name="ws-24x7"
+    )
     t.start()
+
     logger.info("WebSocket thread started")
 
 def stop():

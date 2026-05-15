@@ -97,6 +97,19 @@ class DataManager:
 
     def get_ltp(self, symbol):
         now = time.time()
+
+        # Direct websocket token lookup
+        try:
+            from broker.websocket_mgr import get_ltp as ws_get_ltp
+
+            ws_ltp = ws_get_ltp(symbol)
+
+            if ws_ltp:
+                return float(ws_ltp)
+
+        except Exception:
+            pass
+
         with self._lock:
             if symbol in self._ltp_cache:
                 if now - self._ltp_cache[symbol]["ts"] < self.LTP_TTL:
