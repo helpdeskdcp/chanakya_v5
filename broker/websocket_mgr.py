@@ -2,8 +2,19 @@
 Chanakya SmartWebSocket Manager™ — 24/7 Live LTP
 Direct Angel One WebSocket — Binary parse — Auto JWT refresh
 """
-import threading, time, logging, os, re, json, struct, ssl
+import threading
+from core.auth_throttle import (
+    can_refresh,
+    mark_attempt,
+    mark_success,
+    mark_failure
+)
+
+_REFRESH_LOCK = threading.Lock()
+import time, logging, os, re, json, struct, ssl
 import websocket
+from core.heartbeat import beat
+from core.rate_limiter import allow
 from datetime import datetime, timedelta
 import pytz
 
@@ -20,6 +31,7 @@ _ltp_lock = threading.Lock()
 
 # ── State ─────────────────────────────────────────────────────────
 _ws          = None
+_ws_thread = None
 _connected   = False
 _running     = False
 _jwt         = None
@@ -73,9 +85,11 @@ def get_all_oi():
     with _ltp_lock: return dict(_oi)
 
 def set_ltp(token, price):
+    beat()
     with _ltp_lock: _ltp[str(token)] = float(price)
 
 def set_tick(token, price, oi=None, vol=None, bid=None, ask=None):
+    beat()
     with _ltp_lock:
         tok = str(token)
         if price: _ltp[tok] = float(price)
@@ -96,41 +110,82 @@ def status():
     }
 
 # ── Binary Parser (Angel One format) ─────────────────────────────
+
 def _parse_binary(data):
-    """Parse Angel One SNAP_QUOTE binary tick data"""
+    """SmartAPI V2 Binary Parser"""
+
     try:
-        if len(data) < 51: return None
-        # Token (bytes 2-27)
-        token = data[2:27].split(b"\x00")[0].decode("utf-8").strip()
-        if not token: return None
-        # LTP (bytes 43-51, little-endian int64, in paise)
-        ltp_paise = struct.unpack("<i", data[43:47])[0]
-        ltp = ltp_paise / 100.0
 
-        result = {"token": token, "ltp": ltp, "oi": None, "vol": None, "bid": None, "ask": None}
+        if len(data) < 60:
+            return None
 
-        # SNAP_QUOTE extra fields (if packet large enough)
-        if len(data) >= 91:
-            try:
-                # OI at bytes 83-91 (varies by packet version)
-                oi_raw = struct.unpack("<q", data[83:91])[0]
-                result["oi"] = oi_raw if 0 < oi_raw < 10**10 else None
-            except: pass
+        # DEBUG LOG REMOVED
 
-        if len(data) >= 115:
-            try:
-                # Volume
-                vol_raw = struct.unpack("<q", data[99:107])[0]
-                result["vol"] = vol_raw if 0 < vol_raw < 10**10 else None
-                # Best bid
-                bid_raw = struct.unpack("<q", data[107:115])[0]
-                result["bid"] = bid_raw / 100.0 if bid_raw > 0 else None
-            except: pass
+        # ---- TOKEN ----
+        raw_token = data[2:27]
 
-        return result
+        token = (
+            raw_token
+            .replace(b"\\x00", b"")
+            .decode("utf-8", errors="ignore")
+            .strip()
+        )
+
+        token = "".join(ch for ch in token if ch.isdigit())
+
+        # DEBUG LOG REMOVED
+
+        if not token:
+            return None
+
+        # ---- FIXED SMARTAPI V2 LTP OFFSET ----
+
+        try:
+
+            ltp_raw = struct.unpack("<i", data[43:47])[0]
+
+            ltp = ltp_raw / 100.0
+
+            global LAST_TICK_TS
+            import time
+            globals()["LAST_TICK_TS"] = time.time()
+
+            if ltp <= 0:
+                return None
+
+            return {
+                "token": token,
+                "ltp": ltp,
+                "oi": None,
+                "vol": None,
+                "bid": None,
+                "ask": None
+            }
+
+        except Exception as e:
+
+            logger.error(f"LTP PARSE ERROR: {e}")
+
+            return None
+
+        if ltp <= 0:
+            return None
+
+        return {
+            "token": token,
+            "ltp": ltp,
+            "oi": None,
+            "vol": None,
+            "bid": None,
+            "ask": None
+        }
+
     except Exception as e:
-        logger.debug("Parse error: %s", e)
+
+        logger.error(f"PARSE ERROR: {e}")
+
         return None
+
 
 # ── JWT Management ────────────────────────────────────────────────
 def _load_env():
@@ -153,27 +208,119 @@ def _save_env(key, value):
         content += f'\n{key}={value}'
     with open(ENV_PATH,'w') as f: f.write(content)
 
+
 def _refresh_jwt():
     global _jwt, _feed_token, _jwt_expiry
+
     try:
-        import pyotp
-        from SmartApi import SmartConnect
+        from broker.auth_manager import get_auth
+
+        auth = get_auth()
+
+        if not auth.ensure_connected():
+            logger.error("AuthManager connection failed")
+            return False
+
+        api = auth.get_api()
+
+        if not api:
+            logger.error("AuthManager returned no API")
+            return False
+
+        _feed_token = getattr(api, "feed_token", "")
+
+        if not _feed_token:
+            logger.error("Feed token missing")
+            return False
+
         creds = _load_env()
-        obj = SmartConnect(api_key=creds["api_key"])
-        totp = pyotp.TOTP(creds["totp_key"]).now()
-        data = obj.generateSession(creds["client_id"], creds["password"], totp)
-        if data.get("status"):
-            _jwt = data["data"]["jwtToken"].replace("Bearer ","").strip()
-            _feed_token = data["data"]["feedToken"]
-            _jwt_expiry = datetime.now(IST) + timedelta(hours=22)
-            _save_env("ANGEL_JWT", _jwt)
-            _save_env("ANGEL_FEED_TOKEN", _feed_token)
-            logger.info("✅ JWT refreshed")
-            return True
-        return False
+
+        _jwt = creds.get("jwt", "")
+        _jwt_expiry = datetime.now(IST) + timedelta(hours=6)
+
+        logger.info("✅ JWT refreshed via AuthManager")
+
+        return True
+
     except Exception as e:
-        logger.error("JWT refresh error: %s", e)
+        logger.error(f"JWT refresh error: {e}")
         return False
+
+    try:
+
+        gate = can_refresh()
+
+        if not gate["allowed"]:
+
+            logger.warning(
+                f"⏳ JWT cooldown "
+                f"{gate['wait']}s "
+                f"(fails={gate['fails']})"
+            )
+
+            return False
+
+        mark_attempt()
+
+        import pyotp
+
+        from SmartApi import SmartConnect
+
+        creds = _load_env()
+
+        logger.info("Using centralized AuthManager...")
+
+        obj = SmartConnect(
+            api_key=creds["api_key"]
+        )
+
+        totp = pyotp.TOTP(
+            creds["totp_key"]
+        ).now()
+
+        data = obj.generateSession(
+            creds["client_id"],
+            creds["password"],
+            totp
+        )
+
+        if data.get("status"):
+
+            _jwt = data["data"]["jwtToken"]                 .replace("Bearer ","")                 .strip()
+
+            _feed_token = data["data"]["feedToken"]
+
+            _jwt_expiry = datetime.now(IST) + timedelta(hours=22)
+
+            _save_env("ANGEL_JWT", _jwt)
+
+            _save_env("ANGEL_FEED_TOKEN", _feed_token)
+
+            mark_success()
+
+            logger.info("✅ JWT refreshed")
+
+            return True
+
+        mark_failure()
+
+        return False
+
+    except Exception as e:
+
+        mark_failure()
+
+        logger.error(
+            "JWT refresh error: %s",
+            e
+        )
+
+        return False
+
+    finally:
+
+        _REFRESH_LOCK.release()
+
 
 def _is_jwt_valid():
     return _jwt and _feed_token and _jwt_expiry and datetime.now(IST) < _jwt_expiry
@@ -257,6 +404,10 @@ def _connect():
     global _ws, _jwt, _feed_token, _jwt_expiry
     try:
         if not _is_jwt_valid():
+            if not allow("jwt_refresh", cooldown=15):
+                logger.warning("⏳ JWT refresh cooldown active")
+                return False
+
             logger.info("Refreshing JWT...")
             if not _refresh_jwt(): return False
         creds = _load_env()
@@ -284,8 +435,10 @@ def _connect():
                     str(jwt)[:20] if jwt else None)
 
         _ws.run_forever(
+            ping_interval=25,
+            ping_timeout=10,
+            reconnect=5,
             sslopt={"cert_reqs": ssl.CERT_NONE},
-            ping_interval=25, ping_timeout=10
         )
     except Exception as e:
         logger.error("Connect error: %s", e)
@@ -315,26 +468,52 @@ def _run_forever():
             logger.error("Loop error: %s", e)
             time.sleep(10)
 
-def start():
-    global _running
 
-    if _running:
+def start():
+
+    global _running, _ws_thread
+
+    if _ws_thread and _ws_thread.is_alive():
+
+        logger.warning(
+            "⛔ WS thread already alive"
+        )
+
         return
 
-    logger.info("WS start waiting for fresh auth tokens...")
+    if _running:
 
-    t = threading.Thread(
+        logger.warning(
+            "⛔ WS manager already running"
+        )
+
+        return
+
+    _running = True
+
+    logger.info(
+        "WS start waiting for fresh auth tokens..."
+    )
+
+    _ws_thread = threading.Thread(
         target=_run_forever,
         daemon=True,
         name="ws-24x7"
     )
-    t.start()
 
-    logger.info("WebSocket thread started")
+    _ws_thread.start()
+
+    logger.info(
+        "✅ WebSocket singleton started"
+    )
+
 
 def stop():
     global _running, _ws
+    
     _running = False
+    _ws_thread = None
+
     if _ws:
         try: _ws.close()
         except: pass

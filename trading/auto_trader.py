@@ -1,3 +1,18 @@
+from core.trade_guard import can_trade
+from core.kill_switch import active as kill_switch_active
+from core.system_state import get_state, set_state, inc, reset
+from core.regime_detector import detect_regime
+from core.strategy_memory import remember_trade, score as memory_score
+from core.mutation_engine import mutate
+from core.meta_brain import remember as brain_remember, score_hour, score_symbol
+from core.nervous_system import current_mode, config as nervous_config
+from core.evolution_engine import evolve, remember_trade as evolve_remember
+from core.sensor_fusion import fuse as sensor_fuse
+from core.parallel_reality import simulate as parallel_sim
+from core.anomaly_detector import detect as detect_anomaly
+from core.telemetry import update as telemetry_update, heartbeat as telemetry_heartbeat
+from core.portfolio_brain import analyze as portfolio_analyze
+
 """
 Chanakya AI v5.0 — Auto Trader
 """
@@ -75,6 +90,19 @@ def _monitor_positions():
                         with _lock: _state["today_pnl"] += pnl
                         _log(f"🔔 SQUAREOFF: {sym} {dirn} LTP={ltp} P&L=₹{pnl:+.0f} [{exch}]")
                         alert_trade_close(user, sym, dirn, entry, ltp, pnl, mode)
+                        try:
+                            brain_remember(
+                                sym,
+                                get_state().get("market_mode", "UNKNOWN"),
+                                pnl
+                            )
+                        except Exception as be:
+                            logger.debug(f"brain remember: {be}")
+                        try:
+                            evolve_remember(pnl)
+                        except Exception as ee:
+                            logger.debug(f"evolve remember: {ee}")
+
                     continue
 
                 hit_sl     = (dirn=="BUY" and ltp<=sl)     or (dirn=="SELL" and ltp>=sl)
@@ -113,6 +141,19 @@ def _monitor_positions():
                         emoji = "🎯" if hit_target else "🛑"
                         _log(f"{emoji} {reason}: {sym} {dirn} LTP={ltp} P&L=₹{pnl:+.0f}")
                         alert_trade_close(user, sym, dirn, entry, ltp, pnl, mode)
+                        try:
+                            brain_remember(
+                                sym,
+                                get_state().get("market_mode", "UNKNOWN"),
+                                pnl
+                            )
+                        except Exception as be:
+                            logger.debug(f"brain remember: {be}")
+                        try:
+                            evolve_remember(pnl)
+                        except Exception as ee:
+                            logger.debug(f"evolve remember: {ee}")
+
             except Exception as e: tid2=t.get("id"); logger.debug(f"Monitor {tid2}: {e}")
     except Exception as e: logger.error(f"Monitor error: {e}")
 
@@ -198,12 +239,72 @@ def _scan_and_trade():
                 elif e9 < e21 and today_close < today_open: nifty_bias = "BEAR"
         except: pass
 
+        # ── Adaptive Mutation Config ──
+        mutation = mutate()
+
+        evolution = evolve()
+
+        
+        adaptive_min_score = 60
+        adaptive_sl_mult = 1.0
+        adaptive_target_mult = 2.0
+
+
+        adaptive_min_score = max(
+            adaptive_min_score,
+            evolution["min_score"]
+        )
+
+        adaptive_sl_mult = max(
+            adaptive_sl_mult,
+            evolution["sl_mult"]
+        )
+
+        adaptive_target_mult = max(
+            adaptive_target_mult,
+            evolution["target_mult"]
+        )
+
+        adaptive_risk_mult *= evolution["risk_mult"]
+
+
+        adaptive_min_score = mutation["min_score"]
+        adaptive_risk_mult = mutation["risk_mult"]
+        adaptive_cooldown = mutation["cooldown"]
+        adaptive_sl_mult = mutation["sl_mult"]
+        adaptive_target_mult = mutation["target_mult"]
+
+        # ── Nervous System State ──
+        organism_mode = current_mode()
+        nervous_cfg   = nervous_config(organism_mode)
+
+        adaptive_min_score = max(
+            adaptive_min_score,
+            nervous_cfg["min_score"]
+        )
+
+        adaptive_risk_mult *= nervous_cfg["risk_mult"]
+
+        _log(
+            f"🧠 Organism={organism_mode} "
+            f"score={adaptive_min_score} "
+            f"risk={adaptive_risk_mult:.2f}"
+        )
+
+
+        _log(
+            f"🧬 Mutation "
+            f"score={adaptive_min_score} "
+            f"risk={adaptive_risk_mult:.2f} "
+            f"cd={adaptive_cooldown}s"
+        )
+
         good = []
         for s in (signals or []):
             sym   = s.get("symbol","")
             score = s.get("score",0)
             dirn  = s.get("direction","")
-            if score < MIN_SCORE: continue
+            if score < adaptive_min_score: continue
             if s.get("fake"): continue
             if is_option(sym): continue
             if skip_open:
@@ -226,7 +327,30 @@ def _scan_and_trade():
 
         _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
         for sig in good:
+            # ── Meta Brain Conscious Filter ──
+            hour_score   = score_hour()
+            state        = get_state()
+
+            if state.get("consecutive_loss", 0) >= 3:
+                adaptive_min_score += 10
+                _log("🛡 Defensive mode activated after loss streak")
+
+
+            if kill_switch_active():
+                _log("🛑 Kill switch active — trading halted")
+                break
+
             sym=sig["symbol"]; score=sig.get("score",0); dirn=sig["direction"]
+            symbol_score = score_symbol(sym)
+
+            if hour_score < -2000:
+                _log(f"🧠 Bad trading hour detected score={hour_score}")
+                continue
+
+            if symbol_score < -3000:
+                _log(f"☠️ Toxic symbol blocked: {sym}")
+                continue
+
             exch=sig.get("exchange","NSE"); token=sig.get("token","")
             # Live LTP वापरतो (candle close stale असू शकते!)
             try:
@@ -239,16 +363,143 @@ def _scan_and_trade():
             from engine.indicators import atr as _atr
             from data_stream.cache import get as _cget
             _candles = _cget(f"candles_{sym}_5m")
+
+            regime_info = detect_regime(_candles or [])
+
+            fusion = sensor_fuse(
+                regime=regime_info.get("regime"),
+                volatility=regime_info.get("volatility", 0),
+                trend_strength=regime_info.get("trend_strength", 0),
+                ws_health=get_state().get("ws_health", "GOOD"),
+                hour_score=score_hour(),
+                symbol_score=score_symbol(sym)
+            )
+
+            exec_mode = fusion["execution_mode"]
+
+            telemetry_update({
+
+                "heartbeat": time.time(),
+
+                "execution_mode": exec_mode,
+
+                "threat": fusion["threat"],
+
+                "confidence": fusion["confidence"],
+
+                "organism_mode": organism_mode,
+
+                "adaptive_risk": adaptive_risk_mult,
+
+                "adaptive_score": adaptive_min_score,
+
+                "anomaly": anomaly.get("type", "NONE"),
+
+                "last_symbol": sym,
+
+                "shadow_expectancy":
+                    best_shadow.get("expectancy", 0)
+                    if 'best_shadow' in locals()
+                    else 0
+            })
+
+            telemetry_heartbeat()
+
+
+            anomaly = detect_anomaly(
+                _candles or [],
+                spread=0,
+                tick_gap=0,
+                ws_health=get_state().get("ws_health", "GOOD")
+            )
+
+            if anomaly.get("anomaly"):
+
+                sev = anomaly.get("severity", 0)
+                atp = anomaly.get("type")
+
+                _log(
+                    f"🧿 Anomaly {atp} "
+                    f"severity={sev}"
+                )
+
+                if sev >= 80:
+                    continue
+
+                adaptive_risk_mult *= 0.5
+                adaptive_min_score += 10
+
+
+            _log(
+                f"🛰 Fusion mode={exec_mode} "
+                f"conf={fusion['confidence']} "
+                f"threat={fusion['threat']}"
+            )
+
+            if exec_mode == "HIBERNATE":
+                continue
+
+            if exec_mode == "SURVIVAL":
+                adaptive_min_score += 15
+                adaptive_risk_mult *= 0.4
+
+            elif exec_mode == "ATTACK":
+                adaptive_risk_mult *= 1.2
+
+
+            # ── Adaptive Market Regime ──
+            regime_info = detect_regime(_candles or [])
+            market_regime = regime_info.get("regime", "UNKNOWN")
+
+            set_state("market_mode", market_regime)
+
+            if market_regime == "DEAD":
+                _log(f"💤 DEAD MARKET: skip {sym}")
+                continue
+
+            if market_regime == "CHOPPY" and score < 80:
+                _log(f"🌪 CHOPPY market skip weak setup {sym}")
+                continue
+
+            if market_regime == "VOLATILE":
+                _lot_mult *= 0.5
+                _log(f"⚠ VOLATILE regime: reducing risk {sym}")
+
+            elif market_regime == "TRENDING":
+                _lot_mult *= 1.2
+                _log(f"🚀 TRENDING regime: boosting aggression {sym}")
+
             if _candles and len(_candles)>=14:
                 _at = _atr(_candles) or abs(entry - float(sig["sl"])) / 1.5
             else:
                 _at = abs(entry - float(sig["sl"])) / 1.5
+
+            shadow = parallel_sim(
+                dirn,
+                entry,
+                _candles or [],
+                sl,
+                target
+            )
+
+            best_shadow = shadow.get("best", {})
+
+            _log(
+                f"🧪 Shadow reality="
+                f"{best_shadow.get('reality')} "
+                f"exp={best_shadow.get('expectancy')}"
+            )
+
+            if best_shadow.get("expectancy", 0) < 1.2:
+                _log(f"🚫 Weak expectancy rejected: {sym}")
+                continue
+
             if dirn=="BUY":
-                sl     = round(entry - 1.5*_at, 1)
-                target = round(entry + 3.0*_at, 1)
+                sl     = round(entry - adaptive_sl_mult*_at, 1)
+                target = round(entry + adaptive_target_mult*_at, 1)
             else:
-                sl     = round(entry + 1.5*_at, 1)
-                target = round(entry - 3.0*_at, 1)
+                sl     = round(entry + adaptive_sl_mult*_at, 1)
+                target = round(entry - adaptive_target_mult*_at, 1)
             alert_signal(sym, dirn, entry, sl, target, score)
             if not auto: continue
             # Per-user open trade count check
@@ -262,10 +513,42 @@ def _scan_and_trade():
                 _log(f"⚠️ Max trades({user_open}/{MAX_OPEN_TRADES}) reached, skip {sym}"); continue
             # Duplicate check: same symbol already open?
             open_trades = _get_all_open_trades()
+
+            portfolio = portfolio_analyze(
+                open_trades,
+                sym
+            )
+
+            _log(
+                f"🧭 Portfolio "
+                f"group={portfolio['group']} "
+                f"heat={portfolio['heat']} "
+                f"decision={portfolio['decision']}"
+            )
+
+            if portfolio["decision"] == "BLOCK":
+
+                _log(
+                    f"🚫 Portfolio blocked: {sym}"
+                )
+
+                continue
+
+            elif portfolio["decision"] == "REDUCE":
+
+                adaptive_risk_mult *= 0.5
+
             open_syms = [t["symbol"] for t in open_trades]
+
             if sym in open_syms:
                 _log(f"⚠️ Skip {sym} — already open")
                 continue
+
+            # Survivability Layer — duplicate cooldown guard
+            if not can_trade(sym, dirn, cooldown=60):
+                _log(f"🚫 Duplicate cooldown blocked: {sym} {dirn}")
+                continue
+
             sig_key = f"{sym}_{dirn}_{int(entry)}"
             with _lock:
                 if sig_key in _state["signals_seen"]: continue

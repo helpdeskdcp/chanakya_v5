@@ -839,7 +839,7 @@ async function api(path, method, body) {
       opts.headers["X-Auth-Token"] = TOKEN;
     }
     if(body) opts.body = JSON.stringify(body);
-    var r = await fetch("/v5/api"+path, opts);
+    var r = await fetch("/api"+path, opts);
     if(r.status === 401) {
       localStorage.removeItem("ch_token");
       TOKEN = "";

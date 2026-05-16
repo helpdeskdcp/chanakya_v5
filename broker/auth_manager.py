@@ -16,6 +16,8 @@ class AuthManager:
         self._retry_count=0
         self._last_attempt=0
         self._min_interval=60
+        self._connecting=False
+        self._connect_lock=threading.Lock()
         from dotenv import load_dotenv
         load_dotenv("/root/chanakya_v5/.env")
         self.api_key=os.getenv("ANGEL_API_KEY","")
@@ -24,12 +26,33 @@ class AuthManager:
         self.totp_key=os.getenv("ANGEL_TOTP_KEY","")
 
     def connect(self):
-        with self._lock: return self._do_connect()
+        with self._connect_lock:
+
+            if self._connecting:
+                logger.warning("AuthManager: connect already running")
+                return self._connected
+
+            self._connecting = True
+
+        try:
+            with self._lock:
+                return self._do_connect()
+
+        finally:
+            self._connecting = False
 
     def ensure_connected(self):
         with self._lock:
             if self._connected and not self._expired(): return True
-            if time.time()-self._last_attempt < self._min_interval: return self._connected
+            if self._connecting:
+                return self._connected
+
+            if time.time()-self._last_attempt < self._min_interval:
+                logger.warning(
+                    f"AuthManager cooldown active "
+                    f"{round(self._min_interval-(time.time()-self._last_attempt),1)}s"
+                )
+                return self._connected
             return self._do_connect()
 
     def get_api(self): return self._api if self._connected else None

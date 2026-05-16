@@ -1,5 +1,6 @@
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os, sys, logging
+from core.recovery_engine import recover_open_trades, detect_stale_trades
 sys.path.insert(0,'/root/chanakya_v5')
 from flask import Flask, jsonify, request, render_template, session
 from flask_socketio import SocketIO, emit as sio_emit
@@ -136,7 +137,7 @@ def ws_status():
 @app.route("/")
 def login_page():
     from flask import redirect
-    return redirect("/v5")
+    return redirect("/v5/")
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -1645,24 +1646,66 @@ try:
 except Exception as e:
     logger.warning('Telegram not configured: %s', e)
 
-# Auto-start WebSocket for live LTP (24/7)
+# DISABLED_DUP_WS # Auto-start WebSocket for live LTP (24/7)
+# DISABLED_DUP_WS try:
+# DISABLED_DUP_WS     from broker.websocket_mgr import start as ws_start, status as ws_status
+# DISABLED_DUP_WS     import threading
+# DISABLED_DUP_WS     _ws_thread = threading.Thread(target=ws_start, daemon=True)
+# DISABLED_DUP_WS     _ws_thread.start()
+# DISABLED_DUP_WS     import time; time.sleep(3)
+# DISABLED_DUP_WS     logger.info("WS Status: %s", ws_status()["connected"])
+# DISABLED_DUP_WS except Exception as e:
+# DISABLED_DUP_WS     logger.error("WS start failed: %s", e)
+# Start Watchdog
+
 try:
-    from broker.websocket_mgr import start as ws_start, status as ws_status
-    import threading
-    _ws_thread = threading.Thread(target=ws_start, daemon=True)
-    _ws_thread.start()
-    import time; time.sleep(3)
-    logger.info("WS Status: %s", ws_status()["connected"])
+
+    from core.watchdog import run_watchdog
+
+    from core.thread_registry import start_singleton
+
+    start_singleton("Watchdog", run_watchdog)
+
+    logger.info("🛡 Watchdog started")
+
+    try:
+
+        rec = recover_open_trades()
+
+        logger.info(
+            f"♻ Recovered "
+            f"{rec['count']} open trades"
+        )
+
+        stale = detect_stale_trades()
+
+        if stale:
+
+            logger.warning(
+                f"⚠ Stale trades detected: "
+                f"{len(stale)}"
+            )
+
+    except Exception as re:
+
+        logger.error(
+            f"Recovery engine: {re}"
+        )
+
+
 except Exception as e:
+
+    logger.error(f"Watchdog start failed: {e}")
+
     logger.error("WS start failed: %s", e)
-try:
-    from broker.websocket_mgr import start as ws_start, status as ws_status
-    import threading
-    threading.Thread(target=ws_start, daemon=True).start()
-    import time; time.sleep(2)
-    print("WebSocket:", ws_status())
-except Exception as e:
-    print("WS start error:", e)
+# DISABLED_DUP_WS try:
+# DISABLED_DUP_WS     from broker.websocket_mgr import start as ws_start, status as ws_status
+# DISABLED_DUP_WS     import threading
+# DISABLED_DUP_WS     threading.Thread(target=ws_start, daemon=True).start()
+# DISABLED_DUP_WS     import time; time.sleep(2)
+# DISABLED_DUP_WS     print("WebSocket:", ws_status())
+# DISABLED_DUP_WS except Exception as e:
+# DISABLED_DUP_WS     print("WS start error:", e)
 
 # Pre-warm DataManager cache on startup
 try:
