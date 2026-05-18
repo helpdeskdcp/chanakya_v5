@@ -1,52 +1,73 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+const UI_URL = `${BACKEND_URL}/api/ui`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+function App() {
+  const iframeRef = useRef(null);
+  const [status, setStatus] = useState({ ok: null, version: null, error: null });
 
   useEffect(() => {
-    helloWorldApi();
+    fetch(`${BACKEND_URL}/api/health`)
+      .then((r) => r.json())
+      .then((d) => setStatus({ ok: d.status === "ok", version: d.version, error: null }))
+      .catch((e) => setStatus({ ok: false, version: null, error: String(e) }));
   }, []);
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div
+      data-testid="chanakya-app-shell"
+      style={{
+        margin: 0,
+        padding: 0,
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        flexDirection: "column",
+        background: "#0a0a0a",
+        color: "#e7e7e7",
+        fontFamily: "DM Sans, system-ui, sans-serif",
+      }}
+    >
+      <div
+        data-testid="chanakya-topbar"
+        style={{
+          padding: "8px 16px",
+          background: "#0f0f10",
+          borderBottom: "1px solid #1f1f22",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: 13,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <strong style={{ letterSpacing: 0.5 }}>Chanakya AI v5</strong>
+          <span style={{ opacity: 0.6 }}>· Professional Trading Platform</span>
+        </div>
+        <div data-testid="chanakya-health-status" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: status.ok ? "#22c55e" : status.ok === false ? "#ef4444" : "#a3a3a3",
+              boxShadow: status.ok ? "0 0 8px #22c55e" : "none",
+            }}
+          />
+          <span style={{ opacity: 0.8 }}>
+            {status.ok ? `backend ok · v${status.version}` : status.ok === false ? "backend down" : "checking…"}
+          </span>
+        </div>
+      </div>
+      <iframe
+        ref={iframeRef}
+        data-testid="chanakya-ui-iframe"
+        title="Chanakya UI"
+        src={UI_URL}
+        style={{ border: "none", flex: 1, width: "100%", background: "#0a0a0a" }}
+      />
     </div>
   );
 }

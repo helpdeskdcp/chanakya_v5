@@ -1,0 +1,24 @@
+{
+  "name": "Chanakya AI Trading",
+  "short_name": "Chanakya AI",
+  "description": "Professional Algorithmic Trading Platform",
+  "start_url": "/v5/",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/v5/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/v5/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

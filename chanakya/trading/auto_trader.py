@@ -1,0 +1,653 @@
+from core.trade_guard import can_trade
+from core.kill_switch import active as kill_switch_active
+from core.system_state import get_state, set_state, inc, reset
+from core.regime_detector import detect_regime
+from core.strategy_memory import remember_trade, score as memory_score
+from core.mutation_engine import mutate
+from core.meta_brain import remember as brain_remember, score_hour, score_symbol
+from core.nervous_system import current_mode, config as nervous_config
+from core.evolution_engine import evolve, remember_trade as evolve_remember
+from core.sensor_fusion import fuse as sensor_fuse
+from core.parallel_reality import simulate as parallel_sim
+from core.anomaly_detector import detect as detect_anomaly
+from core.telemetry import update as telemetry_update, heartbeat as telemetry_heartbeat
+from core.portfolio_brain import analyze as portfolio_analyze
+
+"""
+Chanakya AI v5.0 — Auto Trader
+"""
+import threading, time, logging, datetime, sqlite3
+logger = logging.getLogger(__name__)
+
+MIN_SCORE        = 65
+MONITOR_INTERVAL = 10
+SCAN_INTERVAL    = 300
+MAX_OPEN_TRADES  = 3
+AUTO_USERNAME    = "avinash"
+DB_PATH          = "data/chanakya_v5.db"
+
+_state = {
+    "running":False,"mode":"PAPER","auto_trade":False,
+    "last_scan":None,"last_monitor":None,"open_count":0,
+    "today_pnl":0.0,"signals_seen":set(),"log":[],
+}
+_lock = threading.Lock()
+
+def _log(msg):
+    ts = datetime.datetime.now().strftime("%H:%M:%S")
+    entry = f"[{ts}] {msg}"
+    logger.info(entry)
+    with _lock:
+        _state["log"].append(entry)
+        if len(_state["log"]) > 20:
+            _state["log"].pop(0)
+
+def _get_all_open_trades():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT * FROM trades WHERE status='OPEN' ORDER BY id DESC").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"get_open_trades error: {e}"); return []
+
+def _monitor_positions():
+    try:
+        from broker.global_broker import get_broker
+        from notifications.telegram import alert_trade_close
+        from trading.paper_engine import close_trade
+        broker = get_broker()
+        if not broker.is_connected(): broker.ensure_connected()
+        if not broker.is_connected(): return
+        trades = _get_all_open_trades()
+        with _lock:
+            _state["open_count"] = len(trades)
+            _state["last_monitor"] = datetime.datetime.now().strftime("%H:%M:%S")
+        for t in trades:
+            try:
+                ltp = broker.get_ltp(t.get("exchange","NSE"), t.get("symbol",""), t.get("token",""))
+                if not ltp or ltp <= 0: continue
+                entry=float(t["entry_price"]); sl=float(t["sl_price"]); target=float(t["target_price"])
+                qty=int(t.get("qty",1)); sym=t["symbol"]; dirn=t["direction"]
+                tid=t["id"]; mode=t.get("mode","PAPER"); user=t.get("username","avinash")
+                # ── Market Close Square-off ───────────────────
+                now_t = datetime.datetime.now().time()
+                exch  = t.get("exchange","NSE")
+                # NSE: 15:15, MCX: 23:15
+                nse_cutoff = datetime.time(15, 15)
+                mcx_cutoff = datetime.time(23, 15)
+                is_squareoff = False
+                if exch == "NSE" and now_t >= nse_cutoff:
+                    is_squareoff = True
+                elif exch == "MCX" and now_t >= mcx_cutoff:
+                    is_squareoff = True
+
+                if is_squareoff:
+                    pnl = round((ltp-entry)*qty if dirn=="BUY" else (entry-ltp)*qty, 2)
+                    ok  = close_trade(tid, ltp, "MARKET_CLOSE_SQUAREOFF")
+                    if ok:
+                        with _lock: _state["today_pnl"] += pnl
+                        _log(f"🔔 SQUAREOFF: {sym} {dirn} LTP={ltp} P&L=₹{pnl:+.0f} [{exch}]")
+                        alert_trade_close(user, sym, dirn, entry, ltp, pnl, mode)
+                        try:
+                            brain_remember(
+                                sym,
+                                get_state().get("market_mode", "UNKNOWN"),
+                                pnl
+                            )
+                        except Exception as be:
+                            logger.debug(f"brain remember: {be}")
+                        try:
+                            evolve_remember(pnl)
+                        except Exception as ee:
+                            logger.debug(f"evolve remember: {ee}")
+
+                    continue
+
+                hit_sl     = (dirn=="BUY" and ltp<=sl)     or (dirn=="SELL" and ltp>=sl)
+                hit_target = (dirn=="BUY" and ltp>=target)  or (dirn=="SELL" and ltp<=target)
+
+                # ── Trailing SL logic ──────────────────────────
+                if not hit_sl and not hit_target:
+                    risk = abs(entry - sl)  # initial risk per unit
+                    profit = (ltp - entry) if dirn=="BUY" else (entry - ltp)
+                    if risk > 0:
+                        if profit >= risk * 2.0:
+                            # Profit > 2R → trail SL to +1R (lock profit)
+                            new_sl = round(entry + risk * 1.0, 2) if dirn=="BUY" else round(entry - risk * 1.0, 2)
+                            if (dirn=="BUY" and new_sl > sl) or (dirn=="SELL" and new_sl < sl):
+                                conn2 = sqlite3.connect(DB_PATH)
+                                conn2.execute("UPDATE trades SET sl_price=?,updated_at=? WHERE id=?",
+                                    (new_sl, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tid))
+                                conn2.commit(); conn2.close()
+                                _log(f"📈 TRAIL SL: {sym} {dirn} SL {sl}→{new_sl} (profit={profit:+.1f})")
+                        elif profit >= risk * 1.0:
+                            # Profit > 1R → trail SL to breakeven
+                            new_sl = round(entry, 2)
+                            if (dirn=="BUY" and new_sl > sl) or (dirn=="SELL" and new_sl < sl):
+                                conn2 = sqlite3.connect(DB_PATH)
+                                conn2.execute("UPDATE trades SET sl_price=?,updated_at=? WHERE id=?",
+                                    (new_sl, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tid))
+                                conn2.commit(); conn2.close()
+                                _log(f"⚖️ BREAKEVEN SL: {sym} {dirn} SL→{new_sl}")
+
+                if hit_target or hit_sl:
+                    reason = "TARGET" if hit_target else "STOPLOSS"
+                    pnl = round((ltp-entry)*qty if dirn=="BUY" else (entry-ltp)*qty, 2)
+                    ok = close_trade(tid, ltp, reason)
+                    if ok:
+                        with _lock: _state["today_pnl"] += pnl
+                        emoji = "🎯" if hit_target else "🛑"
+                        _log(f"{emoji} {reason}: {sym} {dirn} LTP={ltp} P&L=₹{pnl:+.0f}")
+                        alert_trade_close(user, sym, dirn, entry, ltp, pnl, mode)
+                        try:
+                            brain_remember(
+                                sym,
+                                get_state().get("market_mode", "UNKNOWN"),
+                                pnl
+                            )
+                        except Exception as be:
+                            logger.debug(f"brain remember: {be}")
+                        try:
+                            evolve_remember(pnl)
+                        except Exception as ee:
+                            logger.debug(f"evolve remember: {ee}")
+
+            except Exception as e: tid2=t.get("id"); logger.debug(f"Monitor {tid2}: {e}")
+    except Exception as e: logger.error(f"Monitor error: {e}")
+
+def _scan_and_trade():
+    try:
+        from engine.scanner import scan_all
+        from broker.global_broker import get_broker
+        from trading.paper_engine import place_trade
+        from notifications.telegram import alert_signal, alert_trade_open
+        broker = get_broker()
+        # Force reconnect if needed
+        if not broker.is_connected():
+            broker.ensure_connected()
+        if not broker.is_connected():
+            _log("⚠️ Broker not connected — skipping scan"); return
+        with _lock:
+            _state["last_scan"] = datetime.datetime.now().strftime("%H:%M:%S")
+            auto=_state["auto_trade"]; mode=_state["mode"]; open_count=_state["open_count"]
+        signals = scan_all(broker)
+        # MTF predictor signals पण merge करतो
+        try:
+            from data_stream.cache import get as cget
+            pred = cget("predictions") or []
+            for p in pred:
+                if p.get("confidence",0) >= MIN_SCORE and p.get("rr",0) >= 1.8:
+                    # scanner format मध्ये convert
+                    signals.append({
+                        "symbol": p["symbol"], "direction": p["direction"],
+                        "entry": p["entry"], "sl": p["sl"], "target": p["target"],
+                        "score": p["confidence"], "exchange": p.get("exchange","NSE"),
+                        "token": "", "type": "prediction", "fake": p.get("fake",[]),
+                        "rr": p.get("rr",2.0)
+                    })
+        except: pass
+        # Deduplicate by symbol
+        seen_syms = set()
+        deduped = []
+        for s in signals:
+            k = s["symbol"]+s["direction"]
+            if k not in seen_syms:
+                seen_syms.add(k); deduped.append(s)
+        signals = deduped
+        # ── Quality Filters ──────────────────────────
+        import pytz as _pytz, datetime as _dt
+        now_ist = _dt.datetime.now(_pytz.timezone("Asia/Kolkata"))
+        h, mn = now_ist.hour, now_ist.minute
+
+        # Filter 1: पहिले 15 मिनिट skip (volatile open)
+        skip_open = (h == 9 and mn < 30)
+
+        # Filter 2: Options symbols skip
+        def is_option(sym):
+            return any(c.isdigit() for c in str(sym)) or                    any(x in str(sym) for x in ["CE","PE","FUT"])
+
+        # Filter 3: Index साठी careful
+        INDEX_SYMS = {"NIFTY","BANKNIFTY","FINNIFTY","SENSEX"}
+
+        # Filter 4: Gap Down/Up detect
+        def detect_gap(sig):
+            """Gap 0.5%+ असेल तर direction विरुद्ध trade skip"""
+            try:
+                ltp   = sig.get("ltp", 0)
+                entry = sig.get("entry", 0)
+                # candle open vs prev close gap
+                return False  # placeholder
+            except: return False
+
+        # Filter 5: NIFTY overall market bias
+        nifty_bias = "NEUTRAL"
+        try:
+            from data_stream.cache import get as cget
+            nifty_candles = cget("candles_NIFTY_5m")
+            if nifty_candles and len(nifty_candles) >= 5:
+                from engine.indicators import ema
+                closes = [float(c[4]) for c in nifty_candles]
+                e9  = ema(closes, 9)
+                e21 = ema(closes, 21)
+                # Today open vs current
+                today_open  = float(nifty_candles[0][1]) if nifty_candles else closes[0]
+                today_close = closes[-1]
+                gap_pct = (today_open - float(nifty_candles[-max(len(nifty_candles)//2,1)][4])) / float(nifty_candles[-max(len(nifty_candles)//2,1)][4]) * 100
+                if e9 > e21 and today_close > today_open: nifty_bias = "BULL"
+                elif e9 < e21 and today_close < today_open: nifty_bias = "BEAR"
+        except: pass
+
+        # ── Adaptive Mutation Config ──
+        mutation = mutate()
+
+        evolution = evolve()
+
+        
+        adaptive_min_score = 60
+        adaptive_sl_mult = 1.0
+        adaptive_target_mult = 2.0
+
+
+        adaptive_min_score = max(
+            adaptive_min_score,
+            evolution["min_score"]
+        )
+
+        adaptive_sl_mult = max(
+            adaptive_sl_mult,
+            evolution["sl_mult"]
+        )
+
+        adaptive_target_mult = max(
+            adaptive_target_mult,
+            evolution["target_mult"]
+        )
+
+        adaptive_risk_mult *= evolution["risk_mult"]
+
+
+        adaptive_min_score = mutation["min_score"]
+        adaptive_risk_mult = mutation["risk_mult"]
+        adaptive_cooldown = mutation["cooldown"]
+        adaptive_sl_mult = mutation["sl_mult"]
+        adaptive_target_mult = mutation["target_mult"]
+
+        # ── Nervous System State ──
+        organism_mode = current_mode()
+        nervous_cfg   = nervous_config(organism_mode)
+
+        adaptive_min_score = max(
+            adaptive_min_score,
+            nervous_cfg["min_score"]
+        )
+
+        adaptive_risk_mult *= nervous_cfg["risk_mult"]
+
+        _log(
+            f"🧠 Organism={organism_mode} "
+            f"score={adaptive_min_score} "
+            f"risk={adaptive_risk_mult:.2f}"
+        )
+
+
+        _log(
+            f"🧬 Mutation "
+            f"score={adaptive_min_score} "
+            f"risk={adaptive_risk_mult:.2f} "
+            f"cd={adaptive_cooldown}s"
+        )
+
+        good = []
+        for s in (signals or []):
+            sym   = s.get("symbol","")
+            score = s.get("score",0)
+            dirn  = s.get("direction","")
+            if score < adaptive_min_score: continue
+            if s.get("fake"): continue
+            if is_option(sym): continue
+            if skip_open:
+                _log(f"⏳ Skip {sym} — first 15min rule")
+                continue
+            if sym in INDEX_SYMS and score < 75: continue
+
+            # ── OUR SYSTEM RULES (May 7: +Rs70,819 proven) ───────
+            # All weekdays, 9:45-15:15, WITH EMA200, score>=75
+            # (Bhau's Tue/Wed/counter rules removed — too restrictive)
+
+            # Market bias filter: BEAR market मध्ये BUY skip
+            if nifty_bias == "BEAR" and dirn == "BUY" and sym not in ["CRUDEOIL","NATURALGAS","GOLD"]:
+                _log(f"🐻 Skip BUY {sym} — Market BEARISH")
+                continue
+            if nifty_bias == "BULL" and dirn == "SELL" and sym not in ["CRUDEOIL","NATURALGAS","GOLD"]:
+                _log(f"🐂 Skip SELL {sym} — Market BULLISH")
+                continue
+            good.append(s)
+
+        _log(f"🔍 Scan: {len(signals or [])} signals, {len(good)} qualify")
+        for sig in good:
+            # ── Meta Brain Conscious Filter ──
+            hour_score   = score_hour()
+            state        = get_state()
+
+            if state.get("consecutive_loss", 0) >= 3:
+                adaptive_min_score += 10
+                _log("🛡 Defensive mode activated after loss streak")
+
+
+            if kill_switch_active():
+                _log("🛑 Kill switch active — trading halted")
+                break
+
+            sym=sig["symbol"]; score=sig.get("score",0); dirn=sig["direction"]
+            symbol_score = score_symbol(sym)
+
+            if hour_score < -2000:
+                _log(f"🧠 Bad trading hour detected score={hour_score}")
+                continue
+
+            if symbol_score < -3000:
+                _log(f"☠️ Toxic symbol blocked: {sym}")
+                continue
+
+            exch=sig.get("exchange","NSE"); token=sig.get("token","")
+            # Live LTP वापरतो (candle close stale असू शकते!)
+            try:
+                from broker.global_broker import get_broker as _gb
+                _ltp_live = _gb().get_ltp(exch, sym, token)
+                entry = float(_ltp_live) if _ltp_live and float(_ltp_live)>0 else float(sig["entry"])
+            except:
+                entry = float(sig["entry"])
+            # SL/Target recalculate from live entry
+            from engine.indicators import atr as _atr
+            from data_stream.cache import get as _cget
+            _candles = _cget(f"candles_{sym}_5m")
+
+            regime_info = detect_regime(_candles or [])
+
+            fusion = sensor_fuse(
+                regime=regime_info.get("regime"),
+                volatility=regime_info.get("volatility", 0),
+                trend_strength=regime_info.get("trend_strength", 0),
+                ws_health=get_state().get("ws_health", "GOOD"),
+                hour_score=score_hour(),
+                symbol_score=score_symbol(sym)
+            )
+
+            exec_mode = fusion["execution_mode"]
+
+            telemetry_update({
+
+                "heartbeat": time.time(),
+
+                "execution_mode": exec_mode,
+
+                "threat": fusion["threat"],
+
+                "confidence": fusion["confidence"],
+
+                "organism_mode": organism_mode,
+
+                "adaptive_risk": adaptive_risk_mult,
+
+                "adaptive_score": adaptive_min_score,
+
+                "anomaly": anomaly.get("type", "NONE"),
+
+                "last_symbol": sym,
+
+                "shadow_expectancy":
+                    best_shadow.get("expectancy", 0)
+                    if 'best_shadow' in locals()
+                    else 0
+            })
+
+            telemetry_heartbeat()
+
+
+            anomaly = detect_anomaly(
+                _candles or [],
+                spread=0,
+                tick_gap=0,
+                ws_health=get_state().get("ws_health", "GOOD")
+            )
+
+            if anomaly.get("anomaly"):
+
+                sev = anomaly.get("severity", 0)
+                atp = anomaly.get("type")
+
+                _log(
+                    f"🧿 Anomaly {atp} "
+                    f"severity={sev}"
+                )
+
+                if sev >= 80:
+                    continue
+
+                adaptive_risk_mult *= 0.5
+                adaptive_min_score += 10
+
+
+            _log(
+                f"🛰 Fusion mode={exec_mode} "
+                f"conf={fusion['confidence']} "
+                f"threat={fusion['threat']}"
+            )
+
+            if exec_mode == "HIBERNATE":
+                continue
+
+            if exec_mode == "SURVIVAL":
+                adaptive_min_score += 15
+                adaptive_risk_mult *= 0.4
+
+            elif exec_mode == "ATTACK":
+                adaptive_risk_mult *= 1.2
+
+
+            # ── Adaptive Market Regime ──
+            regime_info = detect_regime(_candles or [])
+            market_regime = regime_info.get("regime", "UNKNOWN")
+
+            set_state("market_mode", market_regime)
+
+            if market_regime == "DEAD":
+                _log(f"💤 DEAD MARKET: skip {sym}")
+                continue
+
+            if market_regime == "CHOPPY" and score < 80:
+                _log(f"🌪 CHOPPY market skip weak setup {sym}")
+                continue
+
+            if market_regime == "VOLATILE":
+                _lot_mult *= 0.5
+                _log(f"⚠ VOLATILE regime: reducing risk {sym}")
+
+            elif market_regime == "TRENDING":
+                _lot_mult *= 1.2
+                _log(f"🚀 TRENDING regime: boosting aggression {sym}")
+
+            if _candles and len(_candles)>=14:
+                _at = _atr(_candles) or abs(entry - float(sig["sl"])) / 1.5
+            else:
+                _at = abs(entry - float(sig["sl"])) / 1.5
+
+            shadow = parallel_sim(
+                dirn,
+                entry,
+                _candles or [],
+                sl,
+                target
+            )
+
+            best_shadow = shadow.get("best", {})
+
+            _log(
+                f"🧪 Shadow reality="
+                f"{best_shadow.get('reality')} "
+                f"exp={best_shadow.get('expectancy')}"
+            )
+
+            if best_shadow.get("expectancy", 0) < 1.2:
+                _log(f"🚫 Weak expectancy rejected: {sym}")
+                continue
+
+            if dirn=="BUY":
+                sl     = round(entry - adaptive_sl_mult*_at, 1)
+                target = round(entry + adaptive_target_mult*_at, 1)
+            else:
+                sl     = round(entry + adaptive_sl_mult*_at, 1)
+                target = round(entry - adaptive_target_mult*_at, 1)
+            alert_signal(sym, dirn, entry, sl, target, score)
+            if not auto: continue
+            # Per-user open trade count check
+            import sqlite3 as _sq3
+            _uc = _sq3.connect(DB_PATH)
+            user_open = _uc.execute(
+                "SELECT COUNT(*) FROM trades WHERE username=? AND status='OPEN'",
+                (AUTO_USERNAME,)).fetchone()[0]
+            _uc.close()
+            if user_open >= MAX_OPEN_TRADES:
+                _log(f"⚠️ Max trades({user_open}/{MAX_OPEN_TRADES}) reached, skip {sym}"); continue
+            # Duplicate check: same symbol already open?
+            open_trades = _get_all_open_trades()
+
+            portfolio = portfolio_analyze(
+                open_trades,
+                sym
+            )
+
+            _log(
+                f"🧭 Portfolio "
+                f"group={portfolio['group']} "
+                f"heat={portfolio['heat']} "
+                f"decision={portfolio['decision']}"
+            )
+
+            if portfolio["decision"] == "BLOCK":
+
+                _log(
+                    f"🚫 Portfolio blocked: {sym}"
+                )
+
+                continue
+
+            elif portfolio["decision"] == "REDUCE":
+
+                adaptive_risk_mult *= 0.5
+
+            open_syms = [t["symbol"] for t in open_trades]
+
+            if sym in open_syms:
+                _log(f"⚠️ Skip {sym} — already open")
+                continue
+
+            # Survivability Layer — duplicate cooldown guard
+            if not can_trade(sym, dirn, cooldown=60):
+                _log(f"🚫 Duplicate cooldown blocked: {sym} {dirn}")
+                continue
+
+            sig_key = f"{sym}_{dirn}_{int(entry)}"
+            with _lock:
+                if sig_key in _state["signals_seen"]: continue
+                _state["signals_seen"].add(sig_key)
+            # Capital-aware position sizing
+            try:
+                from trading.capital_manager import calculate_position_size, get_capital, check_daily_limit
+                cap_data = get_capital(mode)
+                capital  = cap_data["available"]
+                # Daily limit check
+                limit = check_daily_limit(capital, signal_score=score)
+                if not limit["can_trade"]:
+                    _log(f"🚫 Daily limit: {limit['reason']} PnL={limit['daily_pnl']}")
+                    break
+                smart_qty, size_info = calculate_position_size(sym, exch, entry, sl, capital)
+                # Drawdown lot reduction apply
+                if _lot_mult < 1.0 and smart_qty > 1:
+                    import math
+                    smart_qty = max(1, math.floor(smart_qty * _lot_mult))
+                    size_info["lots"] = max(1, math.floor(size_info.get("lots",1) * _lot_mult))
+                    _log(f"⚠️ Lot reduced {_lot_mult*100:.0f}%: qty={smart_qty} consec={limit.get('consec_loss',0)}")
+                if not size_info.get("can_trade", True) and mode == "LIVE":
+                    _log(f"⚠️ Insufficient margin for {sym} - need Rs{size_info.get('margin_est',0):,.0f}")
+                    continue
+                lot_size = size_info.get("lot_size", 1)
+                lots     = size_info.get("lots", 1)
+                _log(f"💰 {sym} qty={smart_qty} lots={lots} risk=Rs{size_info.get('risk_amount',0)}")
+            except Exception as ce:
+                smart_qty = 1; lot_size = 1; lots = 1
+                logger.debug("capital_manager: %s", ce)
+
+            # Place for ALL active users (multi-user)
+            try:
+                from trading.user_auto_trader import process_signal_for_all_users
+                results = process_signal_for_all_users(sig)
+                if results:
+                    open_count += len(results)
+                    with _lock: _state["open_count"] = open_count
+                    _log(f"✅ AUTO {mode}: {dirn} {sym} @₹{entry} → {len(results)} users")
+                else:
+                    # Fallback: single user
+                    tid = place_trade(AUTO_USERNAME, sym, exch, dirn, entry, sl, target,
+                                     qty=smart_qty, token=token, strategy="AUTO_AI", mode=mode,
+                                     lot_size=lot_size, lots=lots)
+                    if tid:
+                        open_count += 1
+                        with _lock: _state["open_count"] = open_count
+                        _log(f"✅ AUTO {mode}: {dirn} {sym} @₹{entry} #{tid}")
+                        alert_trade_open(AUTO_USERNAME, sym, dirn, entry, sl, target, 1, mode)
+            except Exception as _me:
+                logger.error("multi-user place: %s", _me)
+        with _lock: _state["signals_seen"].clear()
+    except Exception as e: logger.error(f"Scan error: {e}")
+
+def _run_loop():
+    _log("🚀 Auto Trader started")
+    import time as _time
+    _time.sleep(15)  # Wait for broker to connect on startup
+    last_scan_time = 0
+    while True:
+        try:
+            with _lock:
+                if not _state["running"]: break
+            _monitor_positions()
+            if time.time() - last_scan_time >= SCAN_INTERVAL:
+                _scan_and_trade()
+                last_scan_time = time.time()
+            time.sleep(MONITOR_INTERVAL)
+        except Exception as e:
+            logger.error(f"Loop error: {e}"); time.sleep(30)
+    _log("⛔ Auto Trader stopped")
+
+def start(mode="PAPER", auto_trade=False):
+    with _lock:
+        if _state["running"]: return {"success":False,"error":"Already running"}
+        _state.update({"running":True,"mode":mode,"auto_trade":auto_trade,"today_pnl":0.0,"log":[]})
+    threading.Thread(target=_run_loop, daemon=True, name="AutoTrader").start()
+    _log(f"✅ Mode={mode} AutoTrade={'ON' if auto_trade else 'OFF'}")
+    return {"success":True,"mode":mode,"auto_trade":auto_trade}
+
+def stop():
+    with _lock: _state["running"] = False
+    _log("⛔ Stop requested")
+    return {"success":True}
+
+def set_auto_trade(enabled, mode=None):
+    with _lock:
+        _state["auto_trade"] = enabled
+        if mode: _state["mode"] = mode
+    _log(f"🔄 AutoTrade={'ON' if enabled else 'OFF'}")
+    return {"success":True}
+
+def get_status():
+    with _lock:
+        return {
+            "running":_state["running"],"auto_trade":_state["auto_trade"],
+            "mode":_state["mode"],"open_count":_state["open_count"],
+            "today_pnl":round(_state["today_pnl"],2),
+            "last_scan":_state["last_scan"],"last_monitor":_state["last_monitor"],
+            "min_score":MIN_SCORE,"max_trades":MAX_OPEN_TRADES,
+            "log":list(_state["log"]),
+        }
