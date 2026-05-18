@@ -1,3 +1,5 @@
+# NOTE: This is GLOBAL state — OK for single-broker stats
+# Per-user data must use DB (trades table) NOT this module
 import threading, time
 _lock = threading.Lock()
 _state = {

@@ -1656,6 +1656,17 @@ except Exception as e:
 # DISABLED_DUP_WS     logger.info("WS Status: %s", ws_status()["connected"])
 # DISABLED_DUP_WS except Exception as e:
 # DISABLED_DUP_WS     logger.error("WS start failed: %s", e)
+# Auto-start WebSocket (24/7 live LTP)
+try:
+    from broker.websocket_mgr import start as ws_start, status as ws_status
+    import threading as _thr
+    _wst = _thr.Thread(target=ws_start, daemon=True, name="ws-24x7")
+    _wst.start()
+    import time; time.sleep(3)
+    logger.info("WS Status: %s", ws_status().get("connected"))
+except Exception as e:
+    logger.error("WS start failed: %s", e)
+
 # Start Watchdog
 
 try:
